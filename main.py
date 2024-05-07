@@ -9,6 +9,8 @@ from datetime import datetime
 import time
 import threading
 from geopy.exc import GeocoderRateLimited
+import script 
+import geocode_function.py
 
 
 def fetch_additional_data():

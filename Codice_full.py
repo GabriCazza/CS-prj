@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import datetime, date, time
 from geopy import geocoders
+from geopy.geocoders import Nominatim
 import pandas as pd
 import folium
 from streamlit_folium import folium_static
@@ -83,19 +84,21 @@ def fetch_parking_data():
 
 
 def geocode_address(location):
-    """Converts an address to a point (latitude, longitude) using Nominatim API."""
+    """Converts an address to a point (latitude, longitude) using the Nominatim API."""
     if location:
-        geolocator = geocoders.Nominatim(user_agent="geocoding_app", timeout=10)  # Aumento del timeout a 10 secondi
+        # Access Nominatim through the geocoders module
+        geolocator = geocoders.Nominatim(user_agent="geocoding_app", timeout=10)
         try:
             geocoded_location = geolocator.geocode(location + ", St. Gallen, Switzerland")
             if geocoded_location:
                 return (geocoded_location.longitude, geocoded_location.latitude)
-        except GeocoderRateLimited as e:
+        except geocoders.exc.GeocoderRateLimited as e:
             st.warning("Rate limit exceeded, waiting to retry...")
             time.sleep(10)  # wait 10 seconds before retrying
         except Exception as e:
             st.error(f"Geocoding error: {e}")
     return None
+
 
 
 def add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address):
@@ -453,7 +456,7 @@ def main():
             st.title("arkGallen")
         with col1:
             # Using a raw string to handle file path on Windows
-            logo_path = r"GabriCazza/CS-prj/image-removebg-preview (1).png"
+            logo_path = r"image-removebg-preview (1).png"
             st.image(logo_path, width=100)  # Adjust size as needed
 
     # Get input from the user via sidebar

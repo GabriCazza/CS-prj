@@ -1,7 +1,6 @@
 import streamlit as st
 from datetime import datetime, date, time
-from geopy import geocoders
-from geopy.geocoders import Nominatim
+from geopy import geocoders, exc
 import pandas as pd
 import folium
 from streamlit_folium import folium_static
@@ -86,18 +85,18 @@ def fetch_parking_data():
 def geocode_address(location):
     """Converts an address to a point (latitude, longitude) using the Nominatim API."""
     if location:
-        # Access Nominatim through the geocoders module
         geolocator = geocoders.Nominatim(user_agent="geocoding_app", timeout=10)
         try:
             geocoded_location = geolocator.geocode(location + ", St. Gallen, Switzerland")
             if geocoded_location:
                 return (geocoded_location.longitude, geocoded_location.latitude)
-        except geocoders.exc.GeocoderRateLimited as e:
+        except exc.GeocoderRateLimited as e:
             st.warning("Rate limit exceeded, waiting to retry...")
-            time.sleep(10)  # wait 10 seconds before retrying
+            time.sleep(10)  # Wait 10 seconds before retrying
         except Exception as e:
             st.error(f"Geocoding error: {e}")
     return None
+
 
 
 

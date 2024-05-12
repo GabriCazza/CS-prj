@@ -1,17 +1,13 @@
 import streamlit as st
+from datetime import datetime, date, time
 from geopy.geocoders import Nominatim
 import pandas as pd
 import folium
 from streamlit_folium import folium_static
 import requests
 from geopy.distance import geodesic
-from datetime import datetime
-import time
-import threading
-from geopy.exc import GeocoderRateLimited
 import random
 import re
-
 
 
 def safe_request(url, params):
@@ -221,23 +217,30 @@ def filter_parking_by_radius(data, destination_point, radius, show_only_free, ad
 
 def find_nearest_parking_place(data, destination_point):
     if destination_point is None or data.empty:
+        st.error("Destination not specified or no parking data available.")
         return None, None
-    # Calculate the distance to the destination for each parking spot
+
     data['distance_to_destination'] = data.apply(
         lambda row: geodesic(
-            ((row['latitude'] if pd.notna(row['latitude']) else 0),
-             (row['longitude'] if pd.notna(row['longitude']) else 0)),
+            (row['latitude'], row['longitude']),
             (destination_point[1], destination_point[0])
-        ).meters, axis=1
+        ).meters if 'latitude' in row and 'longitude' in row else float('inf'), axis=1
     )
-    # Check if there are any data points to evaluate
-    if not data['distance_to_destination'].empty:
-        min_distance_index = data['distance_to_destination'].idxmin()
-        nearest_place = data.loc[min_distance_index] if min_distance_index is not None else None
-        if nearest_place is not None:
-            estimated_walking_time = nearest_place['distance_to_destination'] / 1.1 / 60  # Convert seconds to minutes
-            return nearest_place, estimated_walking_time
-    return None, None
+
+    # Attempt to find the nearest parking place
+    try:
+        nearest_parking = data.loc[data['distance_to_destination'].idxmin()]
+        if nearest_parking and nearest_parking['distance_to_destination'] != float('inf'):
+            estimated_walking_time = nearest_parking['distance_to_destination'] / 1000 / 1.1 * 60  # Convert meters to minutes
+            return nearest_parking, estimated_walking_time
+        else:
+            st.error("No nearby valid parking found.")
+            return None, None
+    except Exception as e:
+        st.error(f"Error finding nearest parking: {e}")
+        return None, None
+
+
 
 def display_time(time_container):
     # Define a custom style for the clock
@@ -263,7 +266,7 @@ def calculate_and_display_distances(map_folium, location_point, destination_poin
             # Calculate distance from location point to destination
             distance_to_destination = geodesic((location_point[1], location_point[0]), (destination_point[1], destination_point[0])).meters
             time_to_destination = distance_to_destination / 1.1 / 60  # Convert to minutes
-            st.markdown(f"**Estimated walking time from your location to destination:** {int(time_to_destination)} minutes")
+            st.markdown(f"*Estimated walking time from your location to destination:* {int(time_to_destination)} minutes")
 
         # Check if nearest_parking DataFrame is not empty and is specifically a Parkhaus
         if nearest_parking is not None and not nearest_parking.empty and nearest_parking['category'] == 'Parkhaus':
@@ -291,13 +294,6 @@ def calculate_and_display_distances(map_folium, location_point, destination_poin
 
 def parse_datetime(date_str, time_str):
     try:
-        return datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
-    except ValueError:
-        st.sidebar.error("Invalid datetime format. Please enter the date as YYYY-MM-DD and time as HHMM or HH:MM.")
-        return None
-
-def parse_datetime(date_str, time_str):
-    try:
         if re.match(r'^\d{4}$', time_str):  # HHMM
             time_str = f"{time_str[:2]}:{time_str[2:]}"
         elif re.match(r'^\d{2}.\d{2}$', time_str):  # HH.MM
@@ -308,59 +304,211 @@ def parse_datetime(date_str, time_str):
         return None
 
 def calculate_duration(arrival_datetime, departure_datetime):
-    if departure_datetime < arrival_datetime:
+    """Calculates the duration between arrival and departure times and returns the duration in days, hours, and minutes."""
+    if departure_datetime <= arrival_datetime:
         st.sidebar.error("Departure datetime must be later than arrival datetime.")
-        return None
+        return 0, 0, 0  # Return zero days, hours, and minutes if invalid.
     duration_delta = departure_datetime - arrival_datetime
     days = duration_delta.days
-    hours = duration_delta.seconds // 3600
+    hours = (duration_delta.seconds // 3600) % 24
     minutes = (duration_delta.seconds % 3600) // 60
     return days, hours, minutes
-    
+
+
+def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
+    rates = {
+        "Manor": {
+            "daytime": (5.5, 21),  # Active hours start, end
+            "nighttime": (21, 0.5),  # Night hours start, end
+            "rates": [(1, 2), (3, 1, 20), (None, 1.5, 20)],
+            "night_rate": 1
+        },
+        "Bahnhof": {
+            "free_minutes": 10,
+            "rates": [(0.5, 1.5), (1, 3), (None, 2, 30)]
+        },
+        "Neumarkt": {
+            "flat_rate": 1
+        },
+        "Rathaus": {
+            "daytime": (7, 22),
+            "nighttime": (22, 7),
+            "day_rate": 2.4,
+            "night_rate": 1.2
+        },
+        "Kreuzbleiche": {
+            "daytime": (7, 22),
+            "nighttime": (22, 7),
+            "day_rate": 1.5,
+            "night_rate": 1
+        },
+        "Oberer Graben": {
+            "daytime": (6, 23),
+            "nighttime": (23, 6),
+            "day_rate": 2,
+            "night_rate": 1.5
+        },
+        "Raiffeisen": {
+            "flat_rate": 2,
+            "extended_rate": 1.5,
+            "extended_after_hours": 3
+        },
+        "Einstein": {
+            "flat_rate": 2.5
+        },
+        "Spisertor": {
+            "flat_rate": 2.5
+        },
+        "Burggraben": {
+            "daytime": (7, 24),
+            "nighttime": (24, 7),
+            "day_rate": 2,
+            "extended_rate": 1,
+            "extended_after_hours": 3,
+            "night_rate": 0.6
+        },
+        "Brühltor": {
+            "daytime": (7, 24),
+            "nighttime": (24, 7),
+            "day_rate": 2,
+            "extended_rate": 1,
+            "extended_after_hours": 3,
+            "night_rate": 0.6
+        },
+        "Stadtpark/AZSG": {
+            "daytime": (7, 24),
+            "nighttime": (24, 7),
+            "day_rate": 1.6,
+            "extended_rate": 0.8,
+            "extended_after_hours": 3,
+            "night_rate": 0.6
+        },
+        "Spelterini": {
+            "daytime": (7, 24),
+            "nighttime": (24, 7),
+            "day_rate": 2,
+            "extended_rate": 1.5,
+            "extended_after_hours": 3,
+            "night_rate": 0.6
+        },
+        "Olma fairs": {
+            "flat_rate": 2,
+            "extended_rate": 1.5,
+            "extended_after_hours": 3
+        },
+        "Unterer Graben": {
+            "flat_rate": 2
+        },
+        "Olma parking lot": {
+            "daytime": (6, 23),
+            "nighttime": (23, 6),
+            "day_rate": 2,
+            "night_rate": 1.5
+        }
+    }
+
+    park_info = rates.get(parking_name)
+    if not park_info:
+        return "Parking rate information not available."
+
+    total_fee = 0
+    current_time = arrival_datetime.hour + arrival_datetime.minute / 60
+
+    # Handle flat rate parking
+    if "flat_rate" in park_info:
+        return f"Total parking fee at {parking_name}: {duration_hours * park_info['flat_rate']:.2f} CHF"
+
+    # Check free minutes
+    if "free_minutes" in park_info and duration_hours * 60 <= park_info["free_minutes"]:
+        return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
+
+    hours_left = duration_hours
+
+    # Calculate daytime and nighttime fees
+    while hours_left > 0:
+        if park_info['daytime'][0] <= current_time < park_info['daytime'][1]:
+            # Daytime rate calculation
+            day_hours = min(hours_left, park_info['daytime'][1] - current_time)
+            total_fee += day_hours * park_info.get('day_rate', 0)
+        else:
+            # Nighttime rate calculation
+            night_hours = min(hours_left, 24 - current_time + park_info['nighttime'][0] if current_time >= park_info['nighttime'][0] else park_info['nighttime'][1] - current_time)
+            total_fee += night_hours * park_info.get('night_rate', 0)
+
+        # Update the time and remaining hours
+        current_time = (current_time + night_hours + day_hours) % 24
+        hours_left -= (night_hours + day_hours)
+
+    return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
 
 def main():
-    # Set page configuration with the new title and icon
-    st.set_page_config(page_title="ParkGallen", page_icon="🅿️", layout="wide")
-
+    st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
+    
     # Define a container for the top row where the logo and the title will be placed
     top_row = st.container()
     with top_row:
         # Place logo in the top right corner above the search bar
-        col1, col2 = st.columns([4,1])
-        with col1:
-            st.title("🅿️ ParkGallen")
+        col1, col2 = st.columns([0.4,4])
         with col2:
+            st.title("arkGallen")
+        with col1:
             # Using a raw string to handle file path on Windows
-            logo_path = r"C:\Users\gcazz\Downloads\Screenshot_2024-05-12_134147-removebg.png"
-            st.image(logo_path, width=300)  # Adjust size as needed
+            logo_path = r"C:\Users\gcazz\Downloads\image-removebg-preview (1).png"
+            st.image(logo_path, width=100)  # Adjust size as needed
 
+    # Get input from the user via sidebar
+    picture= st.sidebar.image(logo_path, width=120)
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
+    arrival_date = st.sidebar.date_input("Arrival Date", date.today())
+    departure_date = st.sidebar.date_input("Departure Date", date.today())
+    arrival_time = st.sidebar.time_input("Arrival Time", time(8, 0))
+    departure_time = st.sidebar.time_input("Departure Time", time(18, 0))
 
-    arrival_date_str = st.sidebar.date_input("Arrival Date")
-    departure_date_str = st.sidebar.date_input("Departure Date")
-    arrival_time_str = st.sidebar.text_input("Arrival Time")
-    departure_time_str = st.sidebar.text_input("Departure Time")
+    # Combine dates and times into datetime objects
+    arrival_datetime = datetime.combine(arrival_date, arrival_time)
+    departure_datetime = datetime.combine(departure_date, departure_time)
+    
+    # Calculate duration
+    days, hours, minutes = calculate_duration(arrival_datetime, departure_datetime)
+    total_hours = days * 24 + hours + minutes / 60  # Convert total duration to hours
 
-    arrival_datetime = parse_datetime(arrival_date_str.strftime("%Y-%m-%d"), arrival_time_str) if arrival_time_str else None
-    departure_datetime = parse_datetime(departure_date_str.strftime("%Y-%m-%d"), departure_time_str) if departure_time_str else None
+    # Display the duration in the sidebar
+    st.sidebar.write(f"Duration: {days} days, {hours} hours, {minutes} minutes")
 
-    if arrival_datetime and departure_datetime:
-        duration_info = calculate_duration(arrival_datetime, departure_datetime)
-        if duration_info:
-            days, hours, minutes = duration_info
-            st.sidebar.text(f"Duration: {days} days, {hours} hours, {minutes} minutes")
+    # Geocode the addresses
+    location_point = geocode_address(address) if address else None
+    destination_point = geocode_address(destination) if destination else None
 
+    if not destination_point:
+        st.sidebar.write("Insert Location and Destination and hw long your Parking will last")
+        return
+
+    # Settings for the map and markers
     radius = st.sidebar.slider("Select search radius (in meters):", min_value=50, max_value=1000, value=500, step=50)
-
     show_parkhaus = st.sidebar.checkbox("🅿️ Parkhaus (Free & Limited)", True)
     show_extended_blue = st.sidebar.checkbox("🔵 Extended Blue Zone", True)
     show_white = st.sidebar.checkbox("⚪ White Parking", True)
     show_handicapped = st.sidebar.checkbox("♿ Handicapped Parking", True)
 
+    # Button to show the parking
     if st.sidebar.button("Show Parking"):
-        # Assuming other necessary data-fetching and processing functions are defined elsewhere
-        st.write("Implement the logic to show parking data on the map")
+        original_data = fetch_parking_data()
+        additional_data = fetch_additional_data()
+
+        nearest_parking = find_nearest_parking_place(original_data.append(additional_data, ignore_index=True), destination_point)
+
+        map_folium = create_map()
+        add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address, nearest_parking)
+        folium_static(map_folium)
+
+        if nearest_parking:
+            st.markdown(f"### Nearest Parking Spot: **{nearest_parking['name']}**")
+            st.markdown(f"**Distance:** {nearest_parking['distance_to_destination']:.2f} m")
+            st.markdown(f"**Available Spaces:** {nearest_parking['shortfree']}")
+            st.markdown(f"**Estimated Parking Fee:** {calculate_parking_fees(nearest_parking['name'], arrival_datetime, total_hours)}")
+        else:
+            st.error("No nearest parking found or data is incorrect.")
 
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")

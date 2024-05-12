@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime, date, time
-from geopy.geocoders import Nominatim
+from geopy import geocoders
 import pandas as pd
 import folium
 from streamlit_folium import folium_static
@@ -85,7 +85,7 @@ def fetch_parking_data():
 def geocode_address(location):
     """Converts an address to a point (latitude, longitude) using Nominatim API."""
     if location:
-        geolocator = Nominatim(user_agent="geocoding_app", timeout=10)  # Aumento del timeout a 10 secondi
+        geolocator = geocoders.Nominatim(user_agent="geocoding_app", timeout=10)  # Aumento del timeout a 10 secondi
         try:
             geocoded_location = geolocator.geocode(location + ", St. Gallen, Switzerland")
             if geocoded_location:
@@ -453,7 +453,7 @@ def main():
             st.title("arkGallen")
         with col1:
             # Using a raw string to handle file path on Windows
-            logo_path = r"C:\Users\gcazz\Downloads\image-removebg-preview (1).png"
+            logo_path = r"GabriCazza/CS-prj/image-removebg-preview (1).png"
             st.image(logo_path, width=100)  # Adjust size as needed
 
     # Get input from the user via sidebar

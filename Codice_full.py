@@ -8,6 +8,8 @@ import requests
 from geopy.distance import geodesic
 import random
 import re
+import time as tm
+
 
 
 def safe_request(url, params):

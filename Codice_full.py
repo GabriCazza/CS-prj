@@ -105,6 +105,9 @@ def add_markers_to_map(map_folium, original_data, additional_data, location_poin
     address_provided = bool(address)
     filtered_original_data = filter_parking_by_radius(original_data, destination_point, radius, show_parkhaus, address_provided)
     filtered_additional_data = filter_parking_by_radius(additional_data, destination_point, radius, False, address_provided)
+    blue_count = sum(1 for _ in additional_data if "erweiterte blaue zone" in _.get('info', '').lower())
+    white_count = sum(1 for _ in additional_data if "weiss" in _.get('info', '').lower())
+    handicapped_count = sum(1 for _ in additional_data if "invalidenparkplatz" in _.get('info', '').lower())
 
     blue_count = 0
     white_count = 0
@@ -497,7 +500,6 @@ def main():
                 """, unsafe_allow_html=True)
         else:
             st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
-            
     # Display legend for map markers
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")

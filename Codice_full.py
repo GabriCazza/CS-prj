@@ -451,14 +451,24 @@ def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
     st.markdown("""
-        <div id="real-time-clock" style="font-size: 20px; text-align: right; margin-bottom: 10px;"></div>
-        <script>
-            function updateClock() {
-                var currentTime = new Date().toLocaleTimeString();
-                document.getElementById('real-time-clock').innerHTML = 'Current Time: ' + currentTime;
-            }
-            setInterval(updateClock, 1000);
-        </script>
+    <div style="text-align: right; font-size: 20px;" id="real-time-clock"></div>
+    <script>
+        function startTime() {
+            var today = new Date();
+            var h = today.getHours();
+            var m = today.getMinutes();
+            var s = today.getSeconds();
+            m = checkTime(m);
+            s = checkTime(s);
+            document.getElementById('real-time-clock').innerHTML = h + ":" + m + ":" + s;
+            var t = setTimeout(startTime, 500);
+        }
+        function checkTime(i) {
+            if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+            return i;
+        }
+        startTime();
+    </script>
     """, unsafe_allow_html=True)
         
     # Setup the top row with title and optional image

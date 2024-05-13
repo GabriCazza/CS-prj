@@ -502,20 +502,13 @@ def main():
         add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
         folium_static(map_folium)
 
-        nearest_parkhaus, walking_time_to_parking = find_nearest_parking_place(combined_data, destination_point)
-        if not nearest_parkhaus.empty:
-            # Display the nearest Parkhaus and details
-            map_folium = create_map()
-            add_markers_to_map(map_folium, original_data, additional_data, None, destination_point, 500, True, False, False, False, destination)
-            folium_static(map_folium)
-            st.markdown(f"### Nearest Parkhaus: **{nearest_parkhaus['name']}**")
+        if not nearest_parking.empty:
+            st.markdown(f"### Nearest Parking Spot: **{nearest_parking['name']}**")
             st.markdown(f"**Walking time:** {int(walking_time_to_parking)} minutes")
-            st.markdown(f"**Available Spaces:** {nearest_parkhaus.get('shortfree', 'N/A')}")
-            st.markdown(f"**Estimated Parking Fee:** {calculate_parking_fees(nearest_parkhaus['name'], arrival_datetime, total_hours)}")
+            st.markdown(f"**Available Spaces:** {nearest_parking.get('shortfree', 'N/A')}")
+            st.markdown(f"**Estimated Parking Fee:** {calculate_parking_fees(nearest_parking['name'], arrival_datetime, total_hours)}")
         else:
-            st.error("No nearby valid Parkhaus found.")
-    else:
-        st.sidebar.error("Please enter a valid destination to find nearby Parkhaus.")
+            st.error("No nearest parking found or data is incorrect.")
 
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")

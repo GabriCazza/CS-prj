@@ -498,7 +498,10 @@ def main():
         original_data = fetch_parking_data()
         additional_data = fetch_additional_data()
 
-        nearest_parking = find_nearest_parking_place(original_data.append(additional_data, ignore_index=True), destination_point)
+        # Use pd.concat instead of .append
+        combined_data = pd.concat([original_data, additional_data], ignore_index=True)
+
+        nearest_parking = find_nearest_parking_place(combined_data, destination_point)
 
         map_folium = create_map()
         add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address, nearest_parking)

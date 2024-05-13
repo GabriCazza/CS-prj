@@ -451,7 +451,7 @@ def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
     if 'auto_refresh' not in st.session_state:
-        st.session_state.auto_refresh = time.time()
+        st.session_state.auto_refresh = tm.time()  # Use 'tm.time()' to clearly refer to the 'time' module
 
     header = st.columns([8, 2])
     with header[1]:
@@ -460,8 +460,8 @@ def main():
         time_container.markdown(f"<div style='text-align: right;'>{current_time}</div>", unsafe_allow_html=True)
 
     # Trigger an automatic rerun every second
-    if time.time() - st.session_state.auto_refresh > 1:
-        st.session_state.auto_refresh = time.time()
+    if tm.time() - st.session_state.auto_refresh > 1:  # Use 'tm.time()' for clarity
+        st.session_state.auto_refresh = tm.time()
         st.experimental_rerun()
         
     # Setup the top row with title and optional image

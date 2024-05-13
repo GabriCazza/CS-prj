@@ -450,7 +450,7 @@ def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
     time_display = clock_main()
-    st.write(time_display) 
+    time_display
         
     # Setup the top row with title and optional image
     top_row = st.container()

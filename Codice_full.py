@@ -461,7 +461,7 @@ def main():
 
       # Setup sidebar
     picture = st.sidebar.image(logo_path, width=120)
-    text= st.sidebar.markdown("### Please enter a valid destination to find nearby parking.")
+    text= st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
 

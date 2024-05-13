@@ -437,7 +437,7 @@ def main():
     with top_row:
         col1, col2 = st.columns([0.4, 4])
         with col2:
-            st.title("Parking in St. Gallen")
+            st.title("arkGallen")
         with col1:
             logo_path = "image-removebg-preview (1).png"  # Update the path if necessary
             st.image(logo_path, width=100)

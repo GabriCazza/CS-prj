@@ -459,13 +459,12 @@ def main():
             st.image(logo_path, width=100)
 
 
-    # Input handling for address and destination
-    picture= st.sidebar.image(logo_path, width=120)
+      # Setup sidebar
+    picture = st.sidebar.image(logo_path, width=120)
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
 
-    # Date and time handling
-   
+    # Date and time inputs
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())
     arrival_time = st.sidebar.time_input("Arrival Time", time(8, 0))
@@ -485,7 +484,7 @@ def main():
     destination_point = geocode_address(destination) if destination else None
 
     if not destination_point:
-        st.sidebar.write("### Please enter a valid destination to find nearby parking.")
+        st.sidebar.markdown("### Please enter a valid destination to find nearby parking.")
         return
 
     # Additional settings for parking search

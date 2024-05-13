@@ -1,39 +1,28 @@
 import streamlit as st
+from datetime import datetime, timedelta
+import pytz
+import time
 
 def clock_main():
-     
-    # Clock HTML and inline CSS/JS
-    clock_html = """
-    <div style="width: 200px; height: 200px; background: #fff; border-radius: 50%; border: 10px solid #333; display: flex; justify-content: center; align-items: center; position: relative;">
-        <div style="position: absolute; width: 8px; height: 50px; background: black; transform-origin: bottom; transform: rotate(-90deg);" id="hour_hand"></div>
-        <div style="position: absolute; width: 4px; height: 80px; background: black; transform-origin: bottom; transform: rotate(-90deg);" id="minute_hand"></div>
-        <div style="position: absolute; width: 2px; height: 90px; background: red; transform-origin: bottom; transform: rotate(-90deg);" id="second_hand"></div>
-        <div style="width: 12px; height: 12px; background: black; border-radius: 50%;"></div>
-    </div>
-    <script>
-        function updateHands() {
-            const now = new Date();
-            const seconds = now.getSeconds();
-            const minutes = now.getMinutes();
-            const hours = now.getHours();
-            
-            const secondsAngle = seconds * 6;  // 360/60
-            const minutesAngle = minutes * 6 + seconds * 0.1;  // 360/60 + partial minute
-            const hoursAngle = (hours % 12) * 30 + minutes * 0.5;  // 360/12 + partial hour
+    # Set the timezone to Zurich
+    timezone = pytz.timezone("Europe/Zurich")
 
-            document.getElementById('second_hand').style.transform = 'rotate(' + (secondsAngle - 90) + 'deg)';
-            document.getElementById('minute_hand').style.transform = 'rotate(' + (minutesAngle - 90) + 'deg)';
-            document.getElementById('hour_hand').style.transform = 'rotate(' + (hoursAngle - 90) + 'deg)';
-        }
+    # Initialize the current_time in session state if it doesn't exist
+    if 'current_time' not in st.session_state:
+        st.session_state.current_time = datetime.now(timezone).strftime("%H:%M:%S")
 
-        setInterval(updateHands, 1000);
-        updateHands(); // Initial call to set the hands correctly
-    </script>
-    """
-    
-    # Display the HTML clock in Streamlit
-    st.markdown(clock_html, unsafe_allow_html=True)
+    st.title('Orologio in Tempo Reale')
+
+    # Display the clock
+    time_display = st.empty()  # This creates a placeholder to update the time
+
+    while True:
+        # Update the time every second
+        current_time = datetime.now(timezone).strftime("%H:%M:%S")
+        time_display.subheader(f"Ora corrente: {current_time}")
+        time.sleep(1)  # Delay for 1 second before updating the time again
 
 if __name__ == "__main__":
+    st.experimental_singleton()  # Ensures the app does not restart every time
     clock_main()
 

@@ -445,6 +445,13 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 
     return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
 
+import streamlit as st
+from datetime import datetime, date, time
+import pandas as pd
+import folium
+from streamlit_folium import folium_static
+from geopy.distance import geodesic
+
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
     
@@ -459,7 +466,6 @@ def main():
             st.image(logo_path, width=100)  # Adjust size as needed
 
     # Input from the user via sidebar
-    address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())
@@ -477,38 +483,29 @@ def main():
     # Display the duration in the sidebar
     st.sidebar.write(f"Duration: {days} days, {hours} hours, {minutes} minutes")
 
-    # Geocode the addresses
-    location_point = geocode_address(address) if address else None
+    # Geocode the destination
     destination_point = geocode_address(destination) if destination else None
-
-    if not destination_point:
-        st.sidebar.error("Please enter a valid destination to find nearby parking.")
-        return
-
-    # Settings for the map and markers
-    radius = st.sidebar.slider("Select search radius (in meters):", min_value=50, max_value=1000, value=500, step=50)
-    show_parkhaus = st.sidebar.checkbox("🅿️ Parkhaus (Free & Limited)", True)
-    show_extended_blue = st.sidebar.checkbox("🔵 Extended Blue Zone", True)
-    show_white = st.sidebar.checkbox("⚪ White Parking", True)
-    show_handicapped = st.sidebar.checkbox("♿ Handicapped Parking", True)
-
-    if st.sidebar.button("Show Parking"):
+    if destination_point:
+        # Fetch parking data
         original_data = fetch_parking_data()
         additional_data = fetch_additional_data()
         combined_data = pd.concat([original_data, additional_data], ignore_index=True)
-        nearest_parking, walking_time_to_parking = find_nearest_parking_place(combined_data, destination_point)
 
-        map_folium = create_map()
-        add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
-        folium_static(map_folium)
-
-        if not nearest_parking.empty:
-            st.markdown(f"### Nearest Parking Spot: **{nearest_parking['name']}**")
+        # Find the nearest Parkhaus
+        nearest_parkhaus, walking_time_to_parking = find_nearest_parking_place(combined_data, destination_point)
+        if not nearest_parkhaus.empty:
+            # Display the nearest Parkhaus and details
+            map_folium = create_map()
+            add_markers_to_map(map_folium, original_data, additional_data, None, destination_point, 500, True, False, False, False, destination)
+            folium_static(map_folium)
+            st.markdown(f"### Nearest Parkhaus: **{nearest_parkhaus['name']}**")
             st.markdown(f"**Walking time:** {int(walking_time_to_parking)} minutes")
-            st.markdown(f"**Available Spaces:** {nearest_parking.get('shortfree', 'N/A')}")
-            st.markdown(f"**Estimated Parking Fee:** {calculate_parking_fees(nearest_parking['name'], arrival_datetime, total_hours)}")
+            st.markdown(f"**Available Spaces:** {nearest_parkhaus.get('shortfree', 'N/A')}")
+            st.markdown(f"**Estimated Parking Fee:** {calculate_parking_fees(nearest_parkhaus['name'], arrival_datetime, total_hours)}")
         else:
-            st.error("No nearest parking found or data is incorrect.")
+            st.error("No nearby valid Parkhaus found.")
+    else:
+        st.sidebar.error("Please enter a valid destination to find nearby Parkhaus.")
 
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")

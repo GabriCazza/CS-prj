@@ -220,24 +220,31 @@ def filter_parking_by_radius(data, destination_point, radius, show_only_free, ad
 def find_nearest_parking_place(data, destination_point):
     if destination_point is None or data.empty:
         st.error("Destination not specified or no parking data available.")
-        return pd.DataFrame(), None  # Restituisci un DataFrame vuoto e None se non ci sono dati validi
+        return pd.DataFrame(), None
 
-    # Calcola la distanza di ogni parcheggio dalla destinazione
-    data['distance_to_destination'] = data.apply(
+    # Filtra solo i Parkhaus
+    parkhaus_data = data[data['category'] == 'Parkhaus']
+    if parkhaus_data.empty:
+        st.error("No Parkhaus available in the data.")
+        return pd.DataFrame(), None
+
+    # Calcola la distanza di ogni Parkhaus dalla destinazione
+    parkhaus_data['distance_to_destination'] = parkhaus_data.apply(
         lambda row: geodesic(
             (row['latitude'], row['longitude']),
             (destination_point[1], destination_point[0])
-        ).meters if 'latitude' in row and 'longitude' in row else float('inf'), axis=1
+        ).meters, axis=1
     )
 
-    # Trova il parcheggio più vicino
-    nearest_parking = data.loc[data['distance_to_destination'].idxmin()] if not data.empty else pd.DataFrame()
-    if not nearest_parking.empty and nearest_parking['distance_to_destination'] != float('inf'):
-        estimated_walking_time = nearest_parking['distance_to_destination'] / 1000 / 1.1 * 60  # Converti i metri in minuti
-        return nearest_parking, estimated_walking_time
+    # Trova il Parkhaus più vicino
+    nearest_parkhaus = parkhaus_data.loc[parkhaus_data['distance_to_destination'].idxmin()] if not parkhaus_data.empty else pd.DataFrame()
+    if not nearest_parkhaus.empty:
+        estimated_walking_time = nearest_parkhaus['distance_to_destination'] / 1000 / 1.1 * 60  # Converti i metri in minuti
+        return nearest_parkhaus, estimated_walking_time
     else:
-        st.error("No nearby valid parking found.")
+        st.error("No nearby valid Parkhaus found.")
         return pd.DataFrame(), None
+
 
 def display_time(time_container):
     # Define a custom style for the clock
@@ -495,13 +502,20 @@ def main():
         add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
         folium_static(map_folium)
 
-        if not nearest_parking.empty:
-            st.markdown(f"### Nearest Parking Spot: **{nearest_parking['name']}**")
+        nearest_parkhaus, walking_time_to_parking = find_nearest_parking_place(combined_data, destination_point)
+        if not nearest_parkhaus.empty:
+            # Display the nearest Parkhaus and details
+            map_folium = create_map()
+            add_markers_to_map(map_folium, original_data, additional_data, None, destination_point, 500, True, False, False, False, destination)
+            folium_static(map_folium)
+            st.markdown(f"### Nearest Parkhaus: **{nearest_parkhaus['name']}**")
             st.markdown(f"**Walking time:** {int(walking_time_to_parking)} minutes")
-            st.markdown(f"**Available Spaces:** {nearest_parking.get('shortfree', 'N/A')}")
-            st.markdown(f"**Estimated Parking Fee:** {calculate_parking_fees(nearest_parking['name'], arrival_datetime, total_hours)}")
+            st.markdown(f"**Available Spaces:** {nearest_parkhaus.get('shortfree', 'N/A')}")
+            st.markdown(f"**Estimated Parking Fee:** {calculate_parking_fees(nearest_parkhaus['name'], arrival_datetime, total_hours)}")
         else:
-            st.error("No nearest parking found or data is incorrect.")
+            st.error("No nearby valid Parkhaus found.")
+    else:
+        st.sidebar.error("Please enter a valid destination to find nearby Parkhaus.")
 
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")

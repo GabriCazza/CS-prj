@@ -1,7 +1,7 @@
 import streamlit as st
 
 def clock_main():
-    st.title('Orologio in Tempo Reale')
+    
     
     # Embed a publicly available JavaScript clock
     # This example uses a generic clock URL which you should replace with the actual URL of the clock you want to embed

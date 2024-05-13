@@ -435,7 +435,7 @@ def main():
             st.image(logo_path, width=100)
 
     # Setup sidebar
-    picture = st.sidebar.image(logo_path, width=120)
+    st.sidebar.image(logo_path, width=120)
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
@@ -483,19 +483,27 @@ def main():
         folium_static(map_folium)
 
         nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
-        info_column, extra_info_column = st.columns(2)  
         if nearest_parkhaus:
+            info_column, extra_info_column = st.columns(2)  
             with info_column:
-                st.subheader("Nearest Parkhaus Information")
-                # Display any necessary details from nearest_parkhaus
-                st.write(f"Name: {nearest_parkhaus['phname']}")
+                st.markdown(f"""
+                <div style="background-color: #ADD8E6; padding: 10px; border-radius: 10px;">
+                    <h4>Nearest Parkhaus Information</h4>
+                    <p>Name: {nearest_parkhaus['phname']}</p>
+                    <p>Estimated Walking Time: {nearest_parkhaus['Estimated Walking Time']} minutes</p>
+                    <p>Spaces: {nearest_parkhaus['shortfree']}/{nearest_parkhaus['shortmax']}</p>
+                </div>
+                """, unsafe_allow_html=True)
             with extra_info_column:
-                st.subheader("Additional Information")
-                st.write(f"Blue parking spots: {blue_count}")
-                st.write(f"White parking spots: {white_count}")
-                st.write(f"Handicapped parking spots: {handicapped_count}")
-                parking_fee = calculate_parking_fees(nearest_parkhaus['phname'], arrival_datetime, total_hours)
-                st.write(f"Estimated parking fee at {nearest_parkhaus['phname']}: {parking_fee}")
+                st.markdown(f"""
+                <div style="background-color: #FFB6C1; padding: 10px; border-radius: 10px;">
+                    <h4>Additional Information</h4>
+                    <p>Blue parking spots: {blue_count}</p>
+                    <p>White parking spots: {white_count}</p>
+                    <p>Handicapped parking spots: {handicapped_count}</p>
+                    <p>Estimated parking fee at {nearest_parkhaus['phname']}: {calculate_parking_fees(nearest_parkhaus['phname'], arrival_datetime, total_hours)}</p>
+                </div>
+                """, unsafe_allow_html=True)
         else:
             st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
 

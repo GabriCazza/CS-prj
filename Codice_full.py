@@ -241,11 +241,16 @@ def find_nearest_parking_place(data, destination_point):
     if nearest_parkhaus is not None:
         print("Nearest Parkhaus Found:", nearest_parkhaus)
         estimated_walking_time = nearest_parkhaus['distance_to_destination'] / 1000 / 1.1 * 60  # Converti i metri in minuti
-        return nearest_parkhaus, estimated_walking_time
+        parkhaus_info = {
+            "name": nearest_parkhaus['name'],
+            "description": nearest_parkhaus.get('description', 'No Description Provided'),
+            "spaces": f"{nearest_parkhaus.get('shortfree', 'N/A')}/{nearest_parkhaus.get('shortmax', 'N/A')}",
+            "estimated_walking_time": int(estimated_walking_time)
+        }
+        return parkhaus_info, estimated_walking_time
     else:
         st.error("No nearby valid Parkhaus found.")
         return None, None
-
 
 def display_time(time_container):
     # Define a custom style for the clock

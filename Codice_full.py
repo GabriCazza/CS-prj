@@ -285,7 +285,7 @@ def calculate_and_display_distances(map_folium, location_point, destination_poin
 
             # Display detailed parking information with HTML and CSS styling
             info_html = f"""
-            <div style="background-color: #E5E4E2; padding: 10px; border-radius: 10px; margin: 10px 0;">
+            <div style="background-color: #AAF5B3; padding: 10px; border-radius: 10px; margin: 10px 0;">
                 <h4><b>Nearest Parkhaus Information</b></h4>
                 <p><b>Name:</b> {name}</p>
                 <p><b>Estimated Walking Time:</b> {int(parking_time)} minutes</p>

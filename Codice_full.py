@@ -35,28 +35,31 @@ def fetch_additional_data():
         "offset": 0
     }
     parking_data = []
+
     while True:
         response = safe_request(base_url, params)
         if response and response.status_code == 200:
             data = response.json()
-            results = data.get('records', [])  # Cambia 'results' con 'records' se necessario
+            results = data.get('results', [])
             if not results:
                 break
+
             for item in results:
-                fields = item['fields']  # Assicurati di accedere ai campi correttamente
+                geo_point = item.get('geo_point_2d', {})
                 parking_data.append({
-                    'latitude': fields['geo_point_2d'][0],
-                    'longitude': fields['geo_point_2d'][1],
-                    'name': fields.get('name', 'No Name Provided'),
-                    'description': fields.get('description', 'No Description Provided'),
-                    'address': fields.get('adresse', 'No Address Provided'),
-                    'info': fields.get('information', 'No Information Provided')
+                    'latitude': geo_point.get('lat', 0),  # Default to 0 if no latitude
+                    'longitude': geo_point.get('lon', 0),  # Default to 0 if no longitude
+                    'name': item.get('name', 'No Name Provided'),
+                    'description': item.get('description', 'No Description Provided'),
+                    'address': item.get('adresse', 'No Address Provided'),
+                    'info': item.get('informatio', 'No Information Provided')  # Additional info
                 })
             params['offset'] += params['limit']
         else:
             st.error("Failed to fetch additional data after multiple attempts.")
             break
-    return pd.DataFrame(parking_data)
+
+    return pd.DataFrame(parking_data)  # Assicurati di restituire sempre un DataFrame
 
 def fetch_parking_data():
     """Fetch parking data from an API."""

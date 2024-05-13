@@ -220,13 +220,13 @@ def filter_parking_by_radius(data, destination_point, radius, show_only_free, ad
 def find_nearest_parking_place(data, destination_point):
     if destination_point is None or data.empty:
         st.error("Destination not specified or no parking data available.")
-        return pd.DataFrame(), None
+        return None, None
 
     # Filtra solo i Parkhaus
     parkhaus_data = data[data['category'] == 'Parkhaus']
     if parkhaus_data.empty:
         st.error("No Parkhaus available in the data.")
-        return pd.DataFrame(), None
+        return None, None
 
     # Calcola la distanza di ogni Parkhaus dalla destinazione
     parkhaus_data['distance_to_destination'] = parkhaus_data.apply(
@@ -237,13 +237,13 @@ def find_nearest_parking_place(data, destination_point):
     )
 
     # Trova il Parkhaus più vicino
-    nearest_parkhaus = parkhaus_data.loc[parkhaus_data['distance_to_destination'].idxmin()] if not parkhaus_data.empty else pd.DataFrame()
-    if not nearest_parkhaus.empty:
+    nearest_parkhaus = parkhaus_data.loc[parkhaus_data['distance_to_destination'].idxmin()] if not parkhaus_data.empty else None
+    if nearest_parkhaus is not None:
         estimated_walking_time = nearest_parkhaus['distance_to_destination'] / 1000 / 1.1 * 60  # Converti i metri in minuti
         return nearest_parkhaus, estimated_walking_time
     else:
         st.error("No nearby valid Parkhaus found.")
-        return pd.DataFrame(), None
+        return None, None
 
 
 def display_time(time_container):
@@ -448,7 +448,6 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
     
-    # Define a container for the top row where the logo and the title will be placed
     top_row = st.container()
     with top_row:
         col1, col2 = st.columns([0.4, 4])
@@ -456,28 +455,19 @@ def main():
             st.title("Parking in St. Gallen")
         with col1:
             logo_path = r"image-removebg-preview (1).png"
-            st.image(logo_path, width=100)  # Adjust size as needed
+            st.image(logo_path, width=100)
 
-    # Input from the user via sidebar
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())
     arrival_time = st.sidebar.time_input("Arrival Time", time(8, 0))
     departure_time = st.sidebar.time_input("Departure Time", time(18, 0))
-
-    # Combine dates and times into datetime objects
     arrival_datetime = datetime.combine(arrival_date, arrival_time)
     departure_datetime = datetime.combine(departure_date, departure_time)
-    
-    # Calculate duration
     days, hours, minutes = calculate_duration(arrival_datetime, departure_datetime)
-    total_hours = days * 24 + hours + minutes / 60  # Convert total duration to hours
-
-    # Display the duration in the sidebar
+    total_hours = days * 24 + hours + minutes / 60
     st.sidebar.write(f"Duration: {days} days, {hours} hours, {minutes} minutes")
-
-    # Geocode the addresses
     location_point = geocode_address(address) if address else None
     destination_point = geocode_address(destination) if destination else None
 
@@ -485,7 +475,6 @@ def main():
         st.sidebar.error("Please enter a valid destination to find nearby parking.")
         return
 
-    # Settings for the map and markers
     radius = st.sidebar.slider("Select search radius (in meters):", min_value=50, max_value=1000, value=500, step=50)
     show_parkhaus = st.sidebar.checkbox("🅿️ Parkhaus (Free & Limited)", True)
     show_extended_blue = st.sidebar.checkbox("🔵 Extended Blue Zone", True)
@@ -496,17 +485,15 @@ def main():
         original_data = fetch_parking_data()
         additional_data = fetch_additional_data()
         combined_data = pd.concat([original_data, additional_data], ignore_index=True)
-        nearest_parking, walking_time_to_parking = find_nearest_parking_place(combined_data, destination_point)
-
+        nearest_parkhaus, walking_time_to_parking = find_nearest_parking_place(combined_data, destination_point)
         map_folium = create_map()
         add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
         folium_static(map_folium)
 
-        if not nearest_parking.empty:
-            st.markdown(f"### Nearest Parking Spot: **{nearest_parking['name']}**")
+        if nearest_parkhaus is not None:
+            st.markdown(f"### Nearest Parkhaus: **{nearest_parkhaus['name']}**")
             st.markdown(f"**Walking time:** {int(walking_time_to_parking)} minutes")
-            st.markdown(f"**Available Spaces:** {nearest_parking.get('shortfree', 'N/A')}")
-            st.markdown(f"**Estimated Parking Fee:** {calculate_parking_fees(nearest_parking['name'], arrival_datetime, total_hours)}")
+            st.markdown(f"**Available Spaces:** {nearest_parkhaus.get('shortfree', 'N/A')}")
         else:
             st.error("No nearest parking found or data is incorrect.")
 

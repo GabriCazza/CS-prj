@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import pytz
 import time
 
-def main():
+def clock_main():
     # Set the timezone to Zurich
     timezone = pytz.timezone("Europe/Zurich")
 
@@ -11,8 +11,7 @@ def main():
     if 'current_time' not in st.session_state:
         st.session_state.current_time = datetime.now(timezone).strftime("%H:%M:%S")
 
-    st.title('Orologio in Tempo Reale')
-
+  
     # Display the clock
     time_display = st.empty()  # This creates a placeholder to update the time
 
@@ -24,5 +23,5 @@ def main():
 
 if __name__ == "__main__":
     st.experimental_singleton()  # Ensures the app does not restart every time
-    main()
+    clock_main()
 

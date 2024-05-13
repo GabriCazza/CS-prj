@@ -431,7 +431,7 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
-    # Setup the top row with title and optional image
+          # Setup the top row with title and optional image
     top_row = st.container()
     with top_row:
         col1, col2 = st.columns([0.4, 4])

@@ -450,19 +450,16 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
-    if 'auto_refresh' not in st.session_state:
-        st.session_state.auto_refresh = time.time()
-
-    header = st.columns([8, 2])
-    with header[1]:
-        current_time = datetime.now().strftime("%H:%M:%S")
-        time_container = st.empty()
-        time_container.markdown(f"<div style='text-align: right;'>{current_time}</div>", unsafe_allow_html=True)
-
-    # Trigger an automatic rerun every second
-    if time.time() - st.session_state.auto_refresh > 1:
-        st.session_state.auto_refresh = time.time()
-        st.experimental_rerun()
+    st.markdown("""
+        <div id="real-time-clock" style="font-size: 20px; text-align: right; margin-bottom: 10px;"></div>
+        <script>
+            function updateClock() {
+                var currentTime = new Date().toLocaleTimeString();
+                document.getElementById('real-time-clock').innerHTML = 'Current Time: ' + currentTime;
+            }
+            setInterval(updateClock, 1000);
+        </script>
+    """, unsafe_allow_html=True)
         
     # Setup the top row with title and optional image
     top_row = st.container()

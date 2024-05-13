@@ -196,16 +196,19 @@ def create_map():
 
 
 def filter_parking_by_radius(data, destination_point, radius, show_only_free, address_provided):
-    """Filter parking data by proximity to a destination point and optionally by availability."""
     if destination_point is None:
-        return data  # Return unchanged data if no destination is defined.
+        return data  # Restituisce i dati invariati se il punto di destinazione non è definito
 
     def condition(row):
+        # Estrai le coordinate direttamente dai dati se disponibili, altrimenti usa 0,0 come default
         lat = row.get('latitude') or row.get('standort', {}).get('lat', 0)
         lon = row.get('longitude') or row.get('standort', {}).get('lon', 0)
         if lat and lon:
-            distance_within_radius = geodesic((lat, lon), (destination_point[1], destination_point[0])).meters <= radius
+            distance_within_radius = geodesic(
+                (lat, lon), (destination_point[1], destination_point[0])
+            ).meters <= radius
             if show_only_free:
+                # Considera solo i parcheggi liberi se richiesto
                 return distance_within_radius and row.get('shortfree', 0) > 0
             return distance_within_radius
         return False

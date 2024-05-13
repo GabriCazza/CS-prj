@@ -448,20 +448,20 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
+    
     # Setup the top row with title and optional image
     top_row = st.container()
     with top_row:
         col1, col2 = st.columns([0.4, 4])
         with col2:
-            st.title("arkgallen")
+            st.title("Parking in St. Gallen")
         with col1:
             logo_path = "image-removebg-preview (1).png"  # Update the path if necessary
             st.image(logo_path, width=100)
 
-
-      # Setup sidebar
+    # Setup sidebar
     picture = st.sidebar.image(logo_path, width=120)
-    text= st.sidebar.markdown("### Enter a valid destination in St. Gallen")
+    st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
 
@@ -485,6 +485,7 @@ def main():
     destination_point = geocode_address(destination) if destination else None
 
     if not destination_point:
+        st.sidebar.error("Please enter a valid destination to find nearby parking.")
         return
 
     # Additional settings for parking search
@@ -502,18 +503,18 @@ def main():
         map_folium = create_map()
         add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
 
+        folium_static(map_folium)
+        
+        # Display nearest parking information
         nearest_parking, _ = find_nearest_parking_place(filtered_data, destination_point)
         if nearest_parking is not None:
             parking_name = nearest_parking.get('name', 'No Name Provided')  # Ensure this matches your DataFrame
-            print(f"Debug: parking_name={parking_name}, arrival_datetime={arrival_datetime}, total_hours={total_hours}")
             if parking_name != 'No Name Provided':
                 parking_fee = calculate_parking_fees(parking_name, arrival_datetime, total_hours)
-                st.sidebar.write(parking_fee)
+                st.write(f"Nearest parking: {parking_name}, Fee: {parking_fee}")
             else:
-                st.sidebar.error("Failed to find a valid parking name.")
+                st.error("Failed to find a valid parking name.")
             calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parking)
-
-        folium_static(map_folium)
 
     # Display legend for map markers
     st.write("### Legend")

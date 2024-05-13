@@ -106,29 +106,35 @@ def add_markers_to_map(map_folium, original_data, additional_data, location_poin
     filtered_original_data = filter_parking_by_radius(original_data, destination_point, radius, show_parkhaus, address_provided)
     filtered_additional_data = filter_parking_by_radius(additional_data, destination_point, radius, False, address_provided)
 
+    blue_count = 0
+    white_count = 0
+    handicapped_count = 0
+
     if show_parkhaus:
         for _, row in filtered_original_data.iterrows():
             if row.get('category', '') == 'Parkhaus':
-                add_marker(map_folium, row, "🅿️", destination_point)  # Pass destination point for Parkhaus markers
+                add_marker(map_folium, row, "🅿️", destination_point)  # Parkhaus markers
 
-    # Adding other types of markers
     if show_extended_blue:
         for _, row in filtered_additional_data.iterrows():
             if "erweiterte blaue zone" in row.get('info', '').lower():
                 add_marker(map_folium, row, "🔵", None)
+                blue_count += 1
 
     if show_white:
         for _, row in filtered_additional_data.iterrows():
             if "weiss (bewirtschaftet)" in row.get('info', '').lower() or "weisse zone" in row.get('info', '').lower():
                 add_marker(map_folium, row, "⚪", None)
+                white_count += 1
 
     if show_handicapped:
         for _, row in filtered_additional_data.iterrows():
             if "invalidenparkplatz" in row.get('info', '').lower():
                 add_marker(map_folium, row, "♿", None)
+                handicapped_count += 1
 
-    add_user_markers(map_folium, location_point, destination_point)
-    add_search_radius(map_folium, destination_point, radius)
+    # Return counts
+    return blue_count, white_count, handicapped_count
 
 
 

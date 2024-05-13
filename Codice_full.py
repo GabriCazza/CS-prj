@@ -40,42 +40,37 @@ def fetch_additional_data():
         response = safe_request(base_url, params)
         if response and response.status_code == 200:
             data = response.json()
-            results = data.get('results', [])
+            results = data.get('records', [])
             if not results:
                 break
 
             for item in results:
-                geo_point = item.get('geo_point_2d', {})
                 parking_data.append({
-                    'latitude': geo_point.get('lat', 0),  # Default to 0 if no latitude
-                    'longitude': geo_point.get('lon', 0),  # Default to 0 if no longitude
-                    'name': item.get('name', 'No Name Provided'),
-                    'description': item.get('description', 'No Description Provided'),
-                    'address': item.get('adresse', 'No Address Provided'),
-                    'info': item.get('informatio', 'No Information Provided')  # Additional info
+                    'latitude': item['fields'].get('geo_point_2d', [0, 0])[0],
+                    'longitude': item['fields'].get('geo_point_2d', [0, 0])[1],
+                    'name': item['fields'].get('name', 'No Name Provided'),
+                    'description': item['fields'].get('description', 'No Description Provided'),
+                    'address': item['fields'].get('adresse', 'No Address Provided'),
+                    'info': item['fields'].get('information', 'No Information Provided')  # Additional info
                 })
             params['offset'] += params['limit']
         else:
             st.error("Failed to fetch additional data after multiple attempts.")
             break
 
-    return pd.DataFrame(parking_data)  # Assicurati di restituire sempre un DataFrame
+    return pd.DataFrame(parking_data)
 
 def fetch_parking_data():
     """Fetch parking data from an API."""
     API_ENDPOINT = "https://daten.stadt.sg.ch/api/explore/v2.1/catalog/datasets/freie-parkplatze-in-der-stadt-stgallen-pls/records?limit=20"
     response = requests.get(API_ENDPOINT)
     if response.status_code == 200:
-        data = response.json()['results']
-        if data:
-            parking_data = pd.DataFrame(data)
-            parking_data['latitude'] = parking_data['standort'].apply(lambda x: x.get('lat'))
-            parking_data['longitude'] = parking_data['standort'].apply(lambda x: x.get('lon'))
-            parking_data['category'] = parking_data.apply(lambda x: 'Parkhaus' if x['phstate'] == 'offen' else 'Closed', axis=1)
-            return parking_data
-        else:
-            st.error("No data available from the API.")
-            return pd.DataFrame()
+        data = response.json()
+        parking_data = pd.DataFrame(data['records'])
+        parking_data['latitude'] = parking_data['fields'].apply(lambda x: x['geo_point_2d'][0])
+        parking_data['longitude'] = parking_data['fields'].apply(lambda x: x['geo_point_2d'][1])
+        parking_data['category'] = parking_data['fields'].apply(lambda x: 'Parkhaus' if x['phstate'] == 'offen' else 'Closed')
+        return parking_data
     else:
         st.error(f'Failed to retrieve data: HTTP Status Code {response.status_code}')
         return pd.DataFrame()
@@ -220,28 +215,22 @@ def filter_parking_by_radius(data, destination_point, radius, show_only_free, ad
 def find_nearest_parking_place(data, destination_point):
     if destination_point is None or data.empty:
         st.error("Destination not specified or no parking data available.")
-        return None, None
+        return None
 
+    # Filter for Parkhaus category
     parkhaus_data = data[data['category'] == 'Parkhaus']
     if parkhaus_data.empty:
-        st.error("No Parkhaus available in the data.")
-        return None, None
+        st.error("No 'Parkhaus' available in the data.")
+        return None
 
-    # Calcola la distanza per ogni Parkhaus dalla destinazione
+    # Calculate the geodesic distance to the destination for each Parkhaus
     parkhaus_data['distance_to_destination'] = parkhaus_data.apply(
-        lambda row: geodesic(
-            (row['latitude'], row['longitude']),
-            (destination_point[1], destination_point[0])
-        ).meters, axis=1
+        lambda row: geodesic((row['latitude'], row['longitude']), (destination_point[1], destination_point[0])).meters, axis=1
     )
 
-    nearest_parkhaus = parkhaus_data.loc[parkhaus_data['distance_to_destination'].idxmin()] if not parkhaus_data.empty else None
-    if nearest_parkhaus is not None:
-        estimated_walking_time = nearest_parkhaus['distance_to_destination'] / 1000 / 1.1 * 60  # Converti i metri in minuti
-        return nearest_parkhaus, estimated_walking_time
-    else:
-        st.error("No nearby valid Parkhaus found.")
-        return None, None
+    # Find the Parkhaus with the minimum distance
+    nearest_parkhaus = parkhaus_data.loc[parkhaus_data['distance_to_destination'].idxmin()]
+    return nearest_parkhaus
 
 
 def display_time(time_container):

@@ -432,18 +432,18 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
-    # Setup the top row with title and optional image
+       # Setup the top row with title and optional image
     top_row = st.container()
     with top_row:
         col1, col2 = st.columns([0.4, 4])
         with col2:
-            st.title("Parking in St. Gallen")
+            st.title("arkGallen")
         with col1:
             logo_path = "image-removebg-preview (1).png"  # Update the path if necessary
             st.image(logo_path, width=100)
 
     # Setup sidebar
-    st.sidebar.image(logo_path, width=120)
+    picture = st.sidebar.image(logo_path, width=120)
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
@@ -477,28 +477,37 @@ def main():
     show_white = st.sidebar.checkbox("⚪ White Parking", True)
     show_handicapped = st.sidebar.checkbox("♿ Handicapped Parking", True)
 
-    # Unified button to show parking and calculate fees
-    if st.sidebar.button("Show Parking and Calculate Fees"):
+    if st.sidebar.button("Show Parking"):
         original_data = fetch_parking_data()
         additional_data = fetch_additional_data()
         filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
 
         map_folium = create_map()
+        # Only include parking spots that are 'open' and have 'shortfree' > 1
         open_parking_data = original_data[(original_data['phstate'] == 'offen') & (original_data['shortfree'] > 1)]
+        # Ensure add_markers_to_map function is called with all necessary parameters including address
         add_markers_to_map(map_folium, open_parking_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
+        
+        nearest_parking, _ = find_nearest_parking_place(filtered_data, destination_point)
+        if nearest_parking is not None:
+            calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parking)
+
         folium_static(map_folium)
 
+    if st.sidebar.button("Calculate Fees"):
+        original_data = fetch_parking_data()
+        filtered_data = filter_parking_by_radius(original_data, destination_point, 500, True, bool(address))
         nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
-        if nearest_parkhaus is not None and 'name' in nearest_parkhaus:
-            parking_fee = calculate_parking_fees(nearest_parkhaus['name'], arrival_datetime, total_hours)
-            st.write(f"Estimated parking fee at {nearest_parkhaus['name']}: {parking_fee}")
+        if nearest_parkhaus is not None and 'phname' in nearest_parkhaus:
+            parking_fee = calculate_parking_fees(nearest_parkhaus['phname'], arrival_datetime, total_hours)
+            st.write(f"Estimated parking fee at {nearest_parkhaus['phname']}: {parking_fee}")
         else:
             st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
-
     # Display legend for map markers
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
 
 if __name__ == "__main__":
     main()
+
 

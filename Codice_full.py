@@ -493,6 +493,16 @@ def main():
             calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parking)
 
         folium_static(map_folium)
+        
+    if st.sidebar.button("Calculate Fees"):
+        original_data = fetch_parking_data()
+        filtered_data = filter_parking_by_radius(original_data, destination_point, 500, True, bool(address))
+        nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
+        if nearest_parkhaus is not None:
+            parking_fee = calculate_parking_fees(nearest_parkhaus['name'], arrival_datetime, total_hours)
+            st.write(f"Estimated parking fee at {nearest_parkhaus['name']}: {parking_fee}")
+        else:
+            st.error("No nearby valid Parkhaus found.")
     # Display legend for map markers
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")

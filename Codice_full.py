@@ -433,8 +433,7 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
-    current_time = clock_main()  
-    st.write(f"Current Time: {current_time}") 
+    clock_main()
 
        # Setup the top row with title and optional image
     top_row = st.container()

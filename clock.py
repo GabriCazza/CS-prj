@@ -17,5 +17,4 @@ def clock_main():
         st.session_state.last_update = current_time
 
     # Display the title and the time
-    st.title('Orologio in Tempo Reale')
     st.subheader(f"Ora corrente: {st.session_state.current_time}")

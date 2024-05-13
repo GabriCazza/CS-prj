@@ -220,8 +220,9 @@ def filter_parking_by_radius(data, destination_point, radius, show_only_free, ad
 def find_nearest_parking_place(data, destination_point):
     if destination_point is None or data.empty:
         st.error("Destination not specified or no parking data available.")
-        return None, None
+        return pd.DataFrame(), None  # Restituisci un DataFrame vuoto e None se non ci sono dati validi
 
+    # Calcola la distanza di ogni parcheggio dalla destinazione
     data['distance_to_destination'] = data.apply(
         lambda row: geodesic(
             (row['latitude'], row['longitude']),
@@ -229,20 +230,14 @@ def find_nearest_parking_place(data, destination_point):
         ).meters if 'latitude' in row and 'longitude' in row else float('inf'), axis=1
     )
 
-    # Attempt to find the nearest parking place
-    try:
-        nearest_parking = data.loc[data['distance_to_destination'].idxmin()]
-        if nearest_parking and nearest_parking['distance_to_destination'] != float('inf'):
-            estimated_walking_time = nearest_parking['distance_to_destination'] / 1000 / 1.1 * 60  # Convert meters to minutes
-            return nearest_parking, estimated_walking_time
-        else:
-            st.error("No nearby valid parking found.")
-            return None, None
-    except Exception as e:
-        st.error(f"Error finding nearest parking: {e}")
-        return None, None
-
-
+    # Trova il parcheggio più vicino
+    nearest_parking = data.loc[data['distance_to_destination'].idxmin()] if not data.empty else pd.DataFrame()
+    if not nearest_parking.empty and nearest_parking['distance_to_destination'] != float('inf'):
+        estimated_walking_time = nearest_parking['distance_to_destination'] / 1000 / 1.1 * 60  # Converti i metri in minuti
+        return nearest_parking, estimated_walking_time
+    else:
+        st.error("No nearby valid parking found.")
+        return pd.DataFrame(), None
 
 def display_time(time_container):
     # Define a custom style for the clock
@@ -449,17 +444,14 @@ def main():
     # Define a container for the top row where the logo and the title will be placed
     top_row = st.container()
     with top_row:
-        # Place logo in the top right corner above the search bar
-        col1, col2 = st.columns([0.4,4])
+        col1, col2 = st.columns([0.4, 4])
         with col2:
-            st.title("arkGallen")
+            st.title("Parking in St. Gallen")
         with col1:
-            # Using a raw string to handle file path on Windows
             logo_path = r"image-removebg-preview (1).png"
             st.image(logo_path, width=100)  # Adjust size as needed
 
-    # Get input from the user via sidebar
-    picture= st.sidebar.image(logo_path, width=120)
+    # Input from the user via sidebar
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
@@ -483,7 +475,7 @@ def main():
     destination_point = geocode_address(destination) if destination else None
 
     if not destination_point:
-        st.sidebar.write("Insert Location and Destination and hw long your Parking will last")
+        st.sidebar.error("Please enter a valid destination to find nearby parking.")
         return
 
     # Settings for the map and markers
@@ -493,24 +485,20 @@ def main():
     show_white = st.sidebar.checkbox("⚪ White Parking", True)
     show_handicapped = st.sidebar.checkbox("♿ Handicapped Parking", True)
 
-    # Button to show the parking
     if st.sidebar.button("Show Parking"):
         original_data = fetch_parking_data()
         additional_data = fetch_additional_data()
-
-        # Use pd.concat instead of .append
         combined_data = pd.concat([original_data, additional_data], ignore_index=True)
-
-        nearest_parking = find_nearest_parking_place(combined_data, destination_point)
+        nearest_parking, walking_time_to_parking = find_nearest_parking_place(combined_data, destination_point)
 
         map_folium = create_map()
-        add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address, nearest_parking)
+        add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
         folium_static(map_folium)
 
-        if nearest_parking:
+        if not nearest_parking.empty:
             st.markdown(f"### Nearest Parking Spot: **{nearest_parking['name']}**")
-            st.markdown(f"**Distance:** {nearest_parking['distance_to_destination']:.2f} m")
-            st.markdown(f"**Available Spaces:** {nearest_parking['shortfree']}")
+            st.markdown(f"**Walking time:** {int(walking_time_to_parking)} minutes")
+            st.markdown(f"**Available Spaces:** {nearest_parking.get('shortfree', 'N/A')}")
             st.markdown(f"**Estimated Parking Fee:** {calculate_parking_fees(nearest_parking['name'], arrival_datetime, total_hours)}")
         else:
             st.error("No nearest parking found or data is incorrect.")

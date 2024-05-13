@@ -481,13 +481,18 @@ def main():
         blue_count, white_count, handicapped_count = add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
         folium_static(map_folium)
 
-        nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
-        info_column, extra_info_column = st.columns(2)
+        nearest_parkhaus, estimated_walking_time = find_nearest_parking_place(filtered_data, destination_point)
+        info_column, extra_info_column = st.columns(2)  
         if nearest_parkhaus is not None:
             with info_column:
-                calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parkhaus)
+                st.subheader("Nearest Parkhaus Information")
+                st.write(f"Name: {nearest_parkhaus['phname']}")
+                st.write(f"Estimated Walking Time: {int(estimated_walking_time)} minutes")
+                st.write(f"Spaces: {nearest_parkhaus['shortfree']}/{nearest_parkhaus['shortmax']}")
+
             with extra_info_column:
                 st.subheader("Additional Information")
+                st.write(f"Estimated walking time from your location to destination: {int(estimated_walking_time)} minutes")
                 st.write(f"Blue parking spots: {blue_count}")
                 st.write(f"White parking spots: {white_count}")
                 st.write(f"Handicapped parking spots: {handicapped_count}")

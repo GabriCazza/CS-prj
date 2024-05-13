@@ -511,10 +511,11 @@ def main():
             parking_name = nearest_parking.get('name', 'No Name Provided')  # Ensure this matches your DataFrame
             if parking_name != 'No Name Provided':
                 parking_fee = calculate_parking_fees(parking_name, arrival_datetime, total_hours)
-                st.write(f"Nearest parking: {parking_name}, Fee: {parking_fee}")
+                st.markdown(f"### Nearest Parkhaus Information\nName: {parking_name}\nEstimated Walking Time: {nearest_parking.get('estimated_walking_time', 'N/A')} minutes\nDescription: {nearest_parking.get('description', 'No Description Provided')}\nSpaces: {nearest_parking.get('spaces', 'N/A')}")
             else:
                 st.error("Failed to find a valid parking name.")
-            calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parking)
+        else:
+            st.error("No nearby valid Parkhaus found.")
 
     # Display legend for map markers
     st.write("### Legend")

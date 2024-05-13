@@ -474,10 +474,9 @@ def main():
         add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
         folium_static(map_folium)
 
-        nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point) if filtered_data is not None else (None, None)
-        
-        if nearest_parkhaus:
-            info_column, extra_info_column = st.columns(2)  # Create two columns for displaying information
+        nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
+        info_column, extra_info_column = st.columns(2)  
+        if nearest_parkhaus is not None:
             with info_column:
                 calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parkhaus)
             with extra_info_column:

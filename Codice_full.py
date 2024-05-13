@@ -400,26 +400,34 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
         return "Parking rate information not available."
 
     total_fee = 0
-    current_time = arrival_datetime.hour + arrival_datetime.minute / 60  # Convert time to hours
+    current_time = arrival_datetime.hour + arrival_datetime.minute / 60
+
+    # Handle flat rate parking
+    if "flat_rate" in park_info:
+        return f"Total parking fee at {parking_name}: {duration_hours * park_info['flat_rate']:.2f} CHF"
+
+    # Check free minutes
+    if "free_minutes" in park_info and duration_hours * 60 <= park_info["free_minutes"]:
+        return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
 
     hours_left = duration_hours
 
+    # Calculate daytime and nighttime fees
     while hours_left > 0:
         day_hours = 0
         night_hours = 0
-
-        # Handling daytime rates
         if park_info['daytime'][0] <= current_time < park_info['daytime'][1]:
+            # Daytime rate calculation
             day_hours = min(hours_left, park_info['daytime'][1] - current_time)
-            total_fee += day_hours * park_info['day_rate']
+            total_fee += day_hours * park_info.get('day_rate', 0)
         else:
-            # Handling nighttime rates
-            if current_time >= park_info['nighttime'][0] or current_time < park_info['nighttime'][1]:
-                end_of_night = 24 if current_time >= park_info['nighttime'][0] else park_info['nighttime'][1]
-                night_hours = min(hours_left, end_of_night - current_time)
-                total_fee += night_hours * park_info['night_rate']
+            # Calculate the end of the nighttime period which is either midnight or the start of the daytime
+            end_of_night = park_info['daytime'][0] if current_time >= park_info['nighttime'][0] else 24
+            night_hours = min(hours_left, end_of_night - current_time)
+            total_fee += night_hours * park_info.get('night_rate', 0)
 
-        current_time = (current_time + night_hours + day_hours) % 24  # Normalize current_time for the 24-hour format
+        # Update the time and remaining hours
+        current_time = (current_time + night_hours + day_hours) % 24
         hours_left -= (night_hours + day_hours)
 
     return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"

@@ -485,7 +485,7 @@ def main():
     destination_point = geocode_address(destination) if destination else None
 
     if not destination_point:
-        st.sidebar.write("###Please enter a valid destination to find nearby parking.")
+        st.sidebar.write("Please enter a valid destination to find nearby parking.")
         return
 
     # Additional settings for parking search

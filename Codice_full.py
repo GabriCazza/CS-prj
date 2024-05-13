@@ -475,17 +475,17 @@ def main():
         folium_static(map_folium)
 
         nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
-        info_column, extra_info_column = st.columns(2)  # Create two columns for different types of information
         if nearest_parkhaus is not None:
+            estimated_walking_time = calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parkhaus)
+            info_column, extra_info_column = st.columns(2)
             with info_column:
                 st.subheader("Nearest Parkhaus Information")
                 st.write(f"Name: {nearest_parkhaus['phname']}")
-                st.write(f"Estimated Walking Time: {nearest_parkhaus['Estimated Walking Time']}")
+                st.write(f"Description: {nearest_parkhaus['description']}")
                 st.write(f"Spaces: {nearest_parkhaus['shortfree']}/{nearest_parkhaus['shortmax']}")
             with extra_info_column:
                 st.subheader("Additional Information")
-                walking_time = calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parkhaus)
-                st.write(f"Estimated walking time from your location to destination: {walking_time} minutes")
+                st.write(f"Estimated walking time from your location to destination: {estimated_walking_time} minutes")
                 parking_fee = calculate_parking_fees(nearest_parkhaus['phname'], arrival_datetime, total_hours)
                 st.write(f"Estimated parking fee at {nearest_parkhaus['phname']}: {parking_fee}")
         else:

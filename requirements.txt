@@ -6,4 +6,3 @@ requests
 streamlit_folium
 time
 datetime
-pytz

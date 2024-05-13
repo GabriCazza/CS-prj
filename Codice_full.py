@@ -10,6 +10,7 @@ import random
 import re
 
 
+
 def safe_request(url, params):
     """Make a request with exponential backoff."""
     attempts = 0
@@ -431,7 +432,6 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
-   
        # Setup the top row with title and optional image
     top_row = st.container()
     with top_row:

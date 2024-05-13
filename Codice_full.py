@@ -498,19 +498,35 @@ def main():
     if st.sidebar.button("Show Parking"):
         original_data = fetch_parking_data()
         additional_data = fetch_additional_data()
-        filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
+        # Filter to combine data and focus only on "Parkhaus" type parking spots
+        combined_data = pd.concat([original_data, additional_data], ignore_index=True)
+        combined_data = combined_data[combined_data['category'] == 'Parkhaus']  # Ensure we are only dealing with Parkhaus type
 
-        map_folium = create_map()
-        # Only include parking spots that are 'open' and have 'shortfree' > 1
-        open_parking_data = original_data[(original_data['phstate'] == 'offen') & (original_data['shortfree'] > 1)]
-        # Ensure add_markers_to_map function is called with all necessary parameters including address
-        add_markers_to_map(map_folium, open_parking_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
-        
-        nearest_parking, _ = find_nearest_parking_place(filtered_data, destination_point)
-        if nearest_parking is not None:
-            calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parking)
+        nearest_parkhaus, walking_time_to_parking = find_nearest_parking_place(combined_data, destination_point)
+        if nearest_parkhaus is not None:
+            # Create and display the map
+            map_folium = create_map()
+            # Filter to include only Parkhaus that are 'open' and have 'shortfree' > 1
+            open_parkhaus_data = combined_data[(combined_data['phstate'] == 'offen') & (combined_data['shortfree'] > 1)]
+            add_markers_to_map(map_folium, open_parkhaus_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
+            folium_static(map_folium)
 
-        folium_static(map_folium)
+            # Calculate total hours from duration
+            arrival_datetime = datetime.combine(arrival_date, arrival_time)
+            departure_datetime = datetime.combine(departure_date, departure_time)
+            duration_delta = departure_datetime - arrival_datetime
+            total_hours = duration_delta.total_seconds() / 3600  # Convert seconds to hours
+
+            # Calculate and display the estimated parking fee
+            parking_name = nearest_parkhaus['name']  # Ensure 'name' is correctly mapped in your data
+            parking_fee = calculate_parking_fees(parking_name, arrival_datetime, total_hours)
+            st.markdown(f"### Nearest Parkhaus: **{nearest_parkhaus['name']}**")
+            st.markdown(f"**Location:** {nearest_parkhaus.get('address', 'Address not available')}")
+            st.markdown(f"**Estimated Parking Fee:** {parking_fee}")
+            st.markdown(f"**Estimated Walking Time to Destination:** {int(walking_time_to_parking)} minutes")
+        else:
+            st.error("No nearby valid Parkhaus found.")
+
     # Display legend for map markers
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")

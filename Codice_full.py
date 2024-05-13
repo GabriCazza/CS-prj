@@ -448,19 +448,18 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
-    if 'time_init' not in st.session_state:
-        st.session_state.time_init = True
+    if 'auto_refresh' not in st.session_state:
+        st.session_state.auto_refresh = time.time()
 
     header = st.columns([8, 2])
     with header[1]:
-        if 'current_time' not in st.session_state:
-            st.session_state.current_time = datetime.now().strftime("%H:%M:%S")
+        current_time = datetime.now().strftime("%H:%M:%S")
         time_container = st.empty()
-        time_container.markdown(f"<div style='text-align: right;'>{st.session_state.current_time}</div>", unsafe_allow_html=True)
+        time_container.markdown(f"<div style='text-align: right;'>{current_time}</div>", unsafe_allow_html=True)
 
-    # Button to update the time
-    if st.button('Update Time'):
-        st.session_state.current_time = datetime.now().strftime("%H:%M:%S")
+    # Trigger an automatic rerun every second
+    if time.time() - st.session_state.auto_refresh > 1:
+        st.session_state.auto_refresh = time.time()
         st.experimental_rerun()
         
     # Setup the top row with title and optional image

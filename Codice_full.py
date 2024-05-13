@@ -414,13 +414,16 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 
     # Calculate daytime and nighttime fees
     while hours_left > 0:
+        day_hours = 0
+        night_hours = 0
         if park_info['daytime'][0] <= current_time < park_info['daytime'][1]:
             # Daytime rate calculation
             day_hours = min(hours_left, park_info['daytime'][1] - current_time)
             total_fee += day_hours * park_info.get('day_rate', 0)
         else:
-            # Nighttime rate calculation
-            night_hours = min(hours_left, 24 - current_time + park_info['nighttime'][0] if current_time >= park_info['nighttime'][0] else park_info['nighttime'][1] - current_time)
+            # Calculate the end of the nighttime period which is either midnight or the start of the daytime
+            end_of_night = park_info['daytime'][0] if current_time >= park_info['nighttime'][0] else 24
+            night_hours = min(hours_left, end_of_night - current_time)
             total_fee += night_hours * park_info.get('night_rate', 0)
 
         # Update the time and remaining hours

@@ -9,7 +9,7 @@ import requests
 from geopy.distance import geodesic
 import random
 import re
-from clock import clock_main 
+
 
 
 def safe_request(url, params):
@@ -249,23 +249,6 @@ def find_nearest_parking_place(data, destination_point):
         return None, None
 
 
-def display_time(time_container):
-    """Display current time updated every second in a designated Streamlit container."""
-    clock_style = """
-    <style>
-    .clock {
-        font-size: 20px;
-        color: #333;
-        text-align: right;
-        padding-right: 10px;
-    }
-    </style>
-    """
-    while True:
-        current_time = datetime.now().strftime("%H:%M:%S")
-        time_container.markdown(clock_style + f"<div class='clock'>{current_time}</div>", unsafe_allow_html=True)
-        time.sleep(1)
-
 def calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parking):
     if destination_point:
         if location_point:
@@ -450,10 +433,7 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
-    result = clock_main()
-    st.write(f"The result is: {result}")
-        
-    # Setup the top row with title and optional image
+       # Setup the top row with title and optional image
     top_row = st.container()
     with top_row:
         col1, col2 = st.columns([0.4, 4])

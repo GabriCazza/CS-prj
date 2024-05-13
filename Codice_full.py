@@ -424,38 +424,32 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
-    # Setup the top row with title and optional image
     top_row = st.container()
     with top_row:
         col1, col2 = st.columns([0.4, 4])
         with col2:
             st.title("Parking in St. Gallen")
         with col1:
-            logo_path = "image-removebg-preview (1).png"  # Update the path if necessary
+            logo_path = "image-removebg-preview (1).png"
             st.image(logo_path, width=100)
 
-    # Setup sidebar
     st.sidebar.image(logo_path, width=120)
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
 
-    # Date and time inputs
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())
     arrival_time = st.sidebar.time_input("Arrival Time", time(8, 0))
     departure_time = st.sidebar.time_input("Departure Time", time(18, 0))
 
-    # Combine date and time inputs into datetime objects
     arrival_datetime = datetime.combine(arrival_date, arrival_time)
     departure_datetime = datetime.combine(departure_date, departure_time)
 
-    # Calculate duration of stay
     days, hours, minutes = calculate_duration(arrival_datetime, departure_datetime)
     total_hours = days * 24 + hours + minutes / 60
     st.sidebar.write(f"Duration: {days} days, {hours} hours, {minutes} minutes")
 
-    # Geocode handling
     location_point = geocode_address(address) if address else None
     destination_point = geocode_address(destination) if destination else None
 
@@ -463,7 +457,6 @@ def main():
         st.error("Please provide a valid destination.")
         return
 
-    # Additional settings for parking search
     radius = st.sidebar.slider("Select search radius (in meters):", min_value=50, max_value=1000, value=500, step=50)
     show_parkhaus = st.sidebar.checkbox("🅿️ Parkhaus (Free & Limited)", True)
     show_extended_blue = st.sidebar.checkbox("🔵 Extended Blue Zone", True)
@@ -504,7 +497,7 @@ def main():
                 """, unsafe_allow_html=True)
         else:
             st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
-
+            
     # Display legend for map markers
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")

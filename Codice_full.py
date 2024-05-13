@@ -225,10 +225,10 @@ def find_nearest_parking_place(data, destination_point):
     # Filtra solo i Parkhaus
     parkhaus_data = data[data['category'] == 'Parkhaus']
     if parkhaus_data.empty:
-        st.error("No Parkhaus available in the data.")
+        st.error("No 'Parkhaus' available in the data.")
         return None, None
 
-    # Calcola la distanza di ogni Parkhaus dalla destinazione e non dalla posizione corrente dell'utente
+    # Calcola la distanza di ogni Parkhaus dalla destinazione
     parkhaus_data['distance_to_destination'] = parkhaus_data.apply(
         lambda row: geodesic(
             (row['latitude'], row['longitude']),
@@ -239,6 +239,7 @@ def find_nearest_parking_place(data, destination_point):
     # Trova il Parkhaus più vicino
     nearest_parkhaus = parkhaus_data.loc[parkhaus_data['distance_to_destination'].idxmin()] if not parkhaus_data.empty else None
     if nearest_parkhaus is not None:
+        print("Nearest Parkhaus Found:", nearest_parkhaus)
         estimated_walking_time = nearest_parkhaus['distance_to_destination'] / 1000 / 1.1 * 60  # Converti i metri in minuti
         return nearest_parkhaus, estimated_walking_time
     else:
@@ -447,59 +448,75 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
-    
+
+    # Setup the top row with title and optional image
     top_row = st.container()
     with top_row:
         col1, col2 = st.columns([0.4, 4])
         with col2:
             st.title("Parking in St. Gallen")
         with col1:
-            logo_path = "image-removebg-preview (1).png"
+            logo_path = "image-removebg-preview (1).png"  # Update the path if necessary
             st.image(logo_path, width=100)
 
+    # Input fields for user to enter address and destination
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
+
+    # Input fields for selecting arrival and departure dates and times
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())
     arrival_time = st.sidebar.time_input("Arrival Time", time(8, 0))
     departure_time = st.sidebar.time_input("Departure Time", time(18, 0))
+
+    # Combine date and time inputs into datetime objects
     arrival_datetime = datetime.combine(arrival_date, arrival_time)
     departure_datetime = datetime.combine(departure_date, departure_time)
+
+    # Calculate duration of stay
     days, hours, minutes = calculate_duration(arrival_datetime, departure_datetime)
     total_hours = days * 24 + hours + minutes / 60
     st.sidebar.write(f"Duration: {days} days, {hours} hours, {minutes} minutes")
-    
+
+    # Geocode the address and destination input by the user
     location_point = geocode_address(address) if address else None
     destination_point = geocode_address(destination) if destination else None
 
+    # Validate the destination point
     if not destination_point:
         st.sidebar.error("Please enter a valid destination to find nearby parking.")
         return
 
+    # Additional settings for parking search
     radius = st.sidebar.slider("Select search radius (in meters):", min_value=50, max_value=1000, value=500, step=50)
     show_parkhaus = st.sidebar.checkbox("🅿️ Parkhaus (Free & Limited)", True)
     show_extended_blue = st.sidebar.checkbox("🔵 Extended Blue Zone", True)
     show_white = st.sidebar.checkbox("⚪ White Parking", True)
     show_handicapped = st.sidebar.checkbox("♿ Handicapped Parking", True)
 
+    # Button to trigger parking search
     if st.sidebar.button("Show Parking"):
         original_data = fetch_parking_data()
         additional_data = fetch_additional_data()
         combined_data = pd.concat([original_data, additional_data], ignore_index=True)
-        nearest_parkhaus, walking_time_to_parking = find_nearest_parking_place(combined_data, destination_point)
-        map_folium = create_map()
-        add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
-        folium_static(map_folium)
 
-        if nearest_parkhaus is not None:
-            st.markdown(f"### Nearest Parkhaus: **{nearest_parkhaus['name']}**")
-            st.markdown(f"**Location:** {nearest_parkhaus['address']}")
-            st.markdown(f"**Description:** {nearest_parkhaus['description']}")
-            st.markdown(f"**Available Spaces:** {nearest_parkhaus.get('shortfree', 'N/A')}")
-            st.markdown(f"**Estimated Walking Time:** {int(walking_time_to_parking)} minutes")
+        if not combined_data.empty:
+            nearest_parkhaus, walking_time_to_parking = find_nearest_parking_place(combined_data, destination_point)
+            if nearest_parkhaus is not None:
+                map_folium = create_map()
+                add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
+                folium_static(map_folium)
+                st.markdown(f"### Nearest Parkhaus: **{nearest_parkhaus['name']}**")
+                st.markdown(f"**Location:** {nearest_parkhaus['address']}")
+                st.markdown(f"**Description:** {nearest_parkhaus['description']}")
+                st.markdown(f"**Available Spaces:** {nearest_parkhaus.get('shortfree', 'N/A')}")
+                st.markdown(f"**Estimated Walking Time:** {int(walking_time_to_parking)} minutes")
+            else:
+                st.error("No nearest parking found or data is incorrect.")
         else:
-            st.error("No nearest parking found or data is incorrect.")
+            st.error("Failed to load parking data. Please check data sources or API calls.")
 
+    # Display legend for map markers
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
 

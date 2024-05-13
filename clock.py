@@ -1,23 +1,12 @@
 import streamlit as st
-import datetime
-import time
+from datetime import datetime
 
-def main():
+def clock_main():
+    if 'last_update' not in st.session_state or (datetime.now() - st.session_state.last_update).seconds >= 1:
+        st.session_state.current_time = datetime.now().strftime("%H:%M:%S")
+        st.session_state.last_update = datetime.now()
+
     st.title('Orologio in Tempo Reale')
-
-    # Definisce un posto fisso per l'orologio nella pagina
     placeholder = st.empty()
+    placeholder.subheader(f"Ora corrente: {st.session_state.current_time}")
 
-    # Aggiorna l'orologio ogni secondo
-    while True:
-        # Ottiene l'ora corrente
-        current_time = datetime.datetime.now().strftime("%H:%M:%S")
-        
-        # Aggiorna l'orologio nello stesso posto
-        placeholder.subheader(f'Ora corrente: {current_time}')
-        
-        # Pausa di un secondo prima del prossimo aggiornamento
-        time.sleep(1)
-
-if __name__ == "__main__":
-    main()

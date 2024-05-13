@@ -496,7 +496,7 @@ def main():
                 """, unsafe_allow_html=True)
             with extra_info_column:
                 st.markdown(f"""
-                <div style="background-color: #FFB6C1; padding: 10px; border-radius: 10px;">
+                <div style="background-color: #F70C7E; padding: 10px; border-radius: 10px;">
                     <h4>Additional Information</h4>
                     <p>Blue parking spots: {blue_count}</p>
                     <p>White parking spots: {white_count}</p>

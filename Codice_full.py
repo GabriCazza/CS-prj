@@ -430,7 +430,7 @@ def main():
             st.image(logo_path, width=100)
 
     # Setup sidebar
-    st.sidebar.image(logo_path, width=120)
+    picture = st.sidebar.image(logo_path, width=120)
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
@@ -465,8 +465,6 @@ def main():
     show_white = st.sidebar.checkbox("⚪ White Parking", True)
     show_handicapped = st.sidebar.checkbox("♿ Handicapped Parking", True)
 
-    map_col, legend_col = st.columns([3, 1])  # Adjust the width ratio as needed
-
     if st.sidebar.button("Show Parking and Calculate Fees"):
         original_data = fetch_parking_data()
         additional_data = fetch_additional_data()
@@ -474,28 +472,24 @@ def main():
 
         map_folium = create_map()
         add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
+        folium_static(map_folium)
 
-        with map_col:
-            folium_static(map_folium)
-            if nearest_parkhaus:
-                calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parkhaus)
-
-        nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
+        nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point) if filtered_data is not None else (None, None)
+        
         if nearest_parkhaus:
-            parking_fee = calculate_parking_fees(nearest_parkhaus['phname'], arrival_datetime, total_hours)
-            with legend_col:
-                st.subheader("Legend")
-                st.write("🏡 = Your Location")
-                st.write("📍= Your Destination")
-                st.write("🅿️ = Parkhaus")
-                st.write("🔵 = Extended Blue Zone")
-                st.write("⚪ = White Parking")
-                st.write("♿ = Handicapped Parking")
+            info_column, extra_info_column = st.columns(2)  # Create two columns for displaying information
+            with info_column:
+                calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parkhaus)
+            with extra_info_column:
                 st.subheader("Additional Information")
+                parking_fee = calculate_parking_fees(nearest_parkhaus['phname'], arrival_datetime, total_hours)
                 st.write(f"Estimated parking fee at {nearest_parkhaus['phname']}: {parking_fee}")
         else:
-            with map_col:
-                st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
+            st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
+
+    # Display legend for map markers
+    st.write("### Legend")
+    st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
 
 if __name__ == "__main__":
     main()

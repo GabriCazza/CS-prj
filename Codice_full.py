@@ -8,7 +8,6 @@ import requests
 from geopy.distance import geodesic
 import random
 import re
-import time as tm
 from clock import clock_main 
 
 

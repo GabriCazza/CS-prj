@@ -9,7 +9,7 @@ from geopy.distance import geodesic
 import random
 import re
 import time as tm
-
+from clock import clock_main 
 
 
 def safe_request(url, params):
@@ -449,6 +449,8 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
+
+    clock_main()
 
     st.markdown("""
     <div style="text-align: right; font-size: 20px;" id="real-time-clock"></div>

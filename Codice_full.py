@@ -484,7 +484,7 @@ def main():
 
     # Validate the destination point
     if not destination_point:
-        st.sidebar.write("Please enter a valid destination to find nearby parking.")
+        st.sidebar.write("##Please enter a valid destination to find nearby parking.")
         return
 
     # Additional settings for parking search
@@ -501,22 +501,15 @@ def main():
         filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
 
         map_folium = create_map()
+        # Only include parking spots that are 'open' and have 'shortfree' > 1
         open_parking_data = original_data[(original_data['phstate'] == 'offen') & (original_data['shortfree'] > 1)]
+        # Ensure add_markers_to_map function is called with all necessary parameters including address
         add_markers_to_map(map_folium, open_parking_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
         
         nearest_parking, _ = find_nearest_parking_place(filtered_data, destination_point)
         if nearest_parking is not None:
             calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parking)
-            parking_fee = calculate_parking_fees(parking_name, arrival_datetime, total_hours)
-            st.sidebar.write(parking_fee)
-        if nearest_parking is not None:
-            parking_name = nearest_parking.get('name', 'No Name Provided')  # Check this line
-            if parking_name != 'No Name Provided':
-                parking_fee = calculate_parking_fees(parking_name, arrival_datetime, total_hours)
-                st.sidebar.write(parking_fee)
-            else:
-                st.sidebar.error("Failed to find a valid parking name.")
-            calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parking)    
+
         folium_static(map_folium)
     # Display legend for map markers
     st.write("### Legend")

@@ -306,14 +306,14 @@ def calculate_duration(arrival_datetime, departure_datetime):
 def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     rates = {
         "Manor": {
-            "daytime": (5.5, 21),  # Active hours start, end
-            "nighttime": (21, 0.5),  # Night hours start, end
-            "rates": [(1, 2), (3, 1, 20), (None, 1.5, 20)],
+            "daytime": (5.5, 21),
+            "nighttime": (21, 0.5),
+            "rates": [(1, 2), (3, 3, 20), (None, 4.5, 20)],
             "night_rate": 1
         },
         "Bahnhof": {
             "free_minutes": 10,
-            "rates": [(0.5, 1.5), (1, 3), (None, 2, 30)]
+            "rates": [(0.5, 1.5), (1, 3), (None, 4, 30)]
         },
         "Neumarkt": {
             "flat_rate": 1
@@ -337,9 +337,7 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
             "night_rate": 1.5
         },
         "Raiffeisen": {
-            "flat_rate": 2,
-            "extended_rate": 1.5,
-            "extended_after_hours": 3
+            "rates": [(3, 2), (None, 1.5, 60)]
         },
         "Einstein": {
             "flat_rate": 2.5
@@ -350,39 +348,29 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
         "Burggraben": {
             "daytime": (7, 24),
             "nighttime": (24, 7),
-            "day_rate": 2,
-            "extended_rate": 1,
-            "extended_after_hours": 3,
+            "extended_rate": [(3, 2), (None, 1, 60)],
             "night_rate": 0.6
         },
         "Brühltor": {
             "daytime": (7, 24),
             "nighttime": (24, 7),
-            "day_rate": 2,
-            "extended_rate": 1,
-            "extended_after_hours": 3,
+            "extended_rate": [(3, 2), (None, 1, 60)],
             "night_rate": 0.6
         },
         "Stadtpark/AZSG": {
             "daytime": (7, 24),
             "nighttime": (24, 7),
-            "day_rate": 1.6,
-            "extended_rate": 0.8,
-            "extended_after_hours": 3,
+            "extended_rate": [(3, 1.6), (None, 0.8, 60)],
             "night_rate": 0.6
         },
         "Spelterini": {
             "daytime": (7, 24),
             "nighttime": (24, 7),
-            "day_rate": 2,
-            "extended_rate": 1.5,
-            "extended_after_hours": 3,
+            "extended_rate": [(3, 2), (None, 1.5, 60)],
             "night_rate": 0.6
         },
         "Olma fairs": {
-            "flat_rate": 2,
-            "extended_rate": 1.5,
-            "extended_after_hours": 3
+            "rates": [(3, 2), (None, 1.5, 60)]
         },
         "Unterer Graben": {
             "flat_rate": 2
@@ -395,42 +383,52 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
         }
     }
 
+    return calculate_fee_based_on_rates(rates, parking_name, arrival_datetime, duration_hours)
+
+def calculate_fee_based_on_rates(rates, parking_name, arrival_datetime, duration_hours):
     park_info = rates.get(parking_name)
     if not park_info:
         return "Parking rate information not available."
 
-    total_fee = 0
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
+    total_fee = 0
+    hours_left = duration_hours
 
-    # Handle flat rate parking
     if "flat_rate" in park_info:
         return f"Total parking fee at {parking_name}: {duration_hours * park_info['flat_rate']:.2f} CHF"
 
-    # Check free minutes
-    if "free_minutes" in park_info and duration_hours * 60 <= park_info["free_minutes"]:
-        return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
-
-    hours_left = duration_hours
-
-    # Calculate daytime and nighttime fees
     while hours_left > 0:
         day_hours = 0
         night_hours = 0
-        if park_info['daytime'][0] <= current_time < park_info['daytime'][1]:
-            # Daytime rate calculation
+        if 'daytime' in park_info and park_info['daytime'][0] <= current_time < park_info['daytime'][1]:
             day_hours = min(hours_left, park_info['daytime'][1] - current_time)
             total_fee += day_hours * park_info.get('day_rate', 0)
-        else:
-            # Calculate the end of the nighttime period which is either midnight or the start of the daytime
+        elif 'nighttime' in park_info:
             end_of_night = park_info['daytime'][0] if current_time >= park_info['nighttime'][0] else 24
             night_hours = min(hours_left, end_of_night - current_time)
             total_fee += night_hours * park_info.get('night_rate', 0)
+        else:
+            # Process extended rates or free minutes
+            total_fee += process_extended_rates(park_info, hours_left)
 
-        # Update the time and remaining hours
         current_time = (current_time + night_hours + day_hours) % 24
         hours_left -= (night_hours + day_hours)
 
     return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
+
+def process_extended_rates(park_info, hours_left):
+    # Implement logic based on `extended_rate` if exists
+    fee = 0
+    if "extended_rate" in park_info:
+        for limit, rate, period in park_info['extended_rate']:
+            if limit is None or hours_left <= limit:
+                fee += (hours_left * rate)
+                break
+            else:
+                fee += (limit * rate)
+                hours_left -= limit
+    return fee
+
 
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")

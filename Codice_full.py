@@ -8,6 +8,7 @@ import requests
 from geopy.distance import geodesic
 import random
 import re
+from clock import clock_main  
 
 
 
@@ -431,6 +432,8 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
+
+    clock_main() 
 
        # Setup the top row with title and optional image
     top_row = st.container()

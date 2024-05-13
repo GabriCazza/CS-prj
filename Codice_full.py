@@ -476,27 +476,25 @@ def main():
         filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
 
         map_folium = create_map()
-        blue_count, white_count, handicapped_count = add_markers_to_map(
-            map_folium, original_data, additional_data, location_point, destination_point, radius, 
-            show_parkhaus, show_extended_blue, show_white, show_handicapped, address
-        )
+        blue_count, white_count, handicapped_count = add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
         folium_static(map_folium)
 
         nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
-        if nearest_parkhaus:
-            info_column, extra_info_column = st.columns(2)  
+        info_column, extra_info_column = st.columns(2)
+        if nearest_parkhaus is not None:
             with info_column:
                 st.markdown(f"""
-                <div style="background-color: #ADD8E6; padding: 10px; border-radius: 10px;">
+                <div style="background-color:#adebad; padding:10px; border-radius:5px;">
                     <h4>Nearest Parkhaus Information</h4>
                     <p>Name: {nearest_parkhaus['phname']}</p>
                     <p>Estimated Walking Time: {nearest_parkhaus['Estimated Walking Time']} minutes</p>
+                    <p>Description: {nearest_parkhaus['description']}</p>
                     <p>Spaces: {nearest_parkhaus['shortfree']}/{nearest_parkhaus['shortmax']}</p>
                 </div>
                 """, unsafe_allow_html=True)
             with extra_info_column:
                 st.markdown(f"""
-                <div style="background-color: #F70C7E; padding: 10px; border-radius: 10px;">
+                <div style="background-color:#add8e6; padding:10px; border-radius:5px;">
                     <h4>Additional Information</h4>
                     <p>Blue parking spots: {blue_count}</p>
                     <p>White parking spots: {white_count}</p>
@@ -513,4 +511,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

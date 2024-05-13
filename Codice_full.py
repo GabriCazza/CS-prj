@@ -480,7 +480,7 @@ def main():
             with info_column:
                 st.subheader("Nearest Parkhaus Information")
                 st.write(f"Name: {nearest_parkhaus['phname']}")
-                st.write(f"Description: {nearest_parkhaus['description']}")
+                st.write(f"Estimated Walking Time: {nearest_parkhaus['Estimated Walking Time']}")
                 st.write(f"Spaces: {nearest_parkhaus['shortfree']}/{nearest_parkhaus['shortmax']}")
             with extra_info_column:
                 st.subheader("Additional Information")

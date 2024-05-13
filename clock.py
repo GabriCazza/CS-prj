@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import pytz
 import time
 
-def clock_main():
+def main():
     # Set the timezone to Zurich
     timezone = pytz.timezone("Europe/Zurich")
 
@@ -24,5 +24,5 @@ def clock_main():
 
 if __name__ == "__main__":
     st.experimental_singleton()  # Ensures the app does not restart every time
-    clock_main()
+    main()
 

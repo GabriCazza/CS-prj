@@ -306,8 +306,8 @@ def calculate_duration(arrival_datetime, departure_datetime):
 def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     rates = {
         "Manor": {
-            "daytime": (05.30, 21),  # Active hours start, end
-            "nighttime": (21, 00.30),  # Night hours start, end
+            "daytime": (5.5, 21),  # Active hours start, end
+            "nighttime": (21, 0.5),  # Night hours start, end
             "rates": [(1, 2), (3, 1, 20), (None, 1.5, 20)],
             "night_rate": 1
         },

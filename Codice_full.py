@@ -454,7 +454,7 @@ def main():
         with col2:
             st.title("Parking in St. Gallen")
         with col1:
-            logo_path = r"image-removebg-preview (1).png"
+            logo_path = "image-removebg-preview (1).png"
             st.image(logo_path, width=100)
 
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
@@ -468,6 +468,7 @@ def main():
     days, hours, minutes = calculate_duration(arrival_datetime, departure_datetime)
     total_hours = days * 24 + hours + minutes / 60
     st.sidebar.write(f"Duration: {days} days, {hours} hours, {minutes} minutes")
+    
     location_point = geocode_address(address) if address else None
     destination_point = geocode_address(destination) if destination else None
 
@@ -492,8 +493,10 @@ def main():
 
         if nearest_parkhaus is not None:
             st.markdown(f"### Nearest Parkhaus: **{nearest_parkhaus['name']}**")
-            st.markdown(f"**Walking time:** {int(walking_time_to_parking)} minutes")
+            st.markdown(f"**Location:** {nearest_parkhaus['address']}")
+            st.markdown(f"**Description:** {nearest_parkhaus['description']}")
             st.markdown(f"**Available Spaces:** {nearest_parkhaus.get('shortfree', 'N/A')}")
+            st.markdown(f"**Estimated Walking Time:** {int(walking_time_to_parking)} minutes")
         else:
             st.error("No nearest parking found or data is incorrect.")
 
@@ -502,3 +505,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

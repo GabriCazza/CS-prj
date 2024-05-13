@@ -483,22 +483,16 @@ def main():
         filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
 
         map_folium = create_map()
-        add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
-
-        folium_static(map_folium)
+        # Only include parking spots that are 'open' and have 'shortfree' > 1
+        open_parking_data = original_data[(original_data['phstate'] == 'offen') & (original_data['shortfree'] > 1)]
+        # Ensure add_markers_to_map function is called with all necessary parameters including address
+        add_markers_to_map(map_folium, open_parking_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
         
-        # Display nearest parking information
         nearest_parking, _ = find_nearest_parking_place(filtered_data, destination_point)
         if nearest_parking is not None:
-            parking_name = nearest_parking.get('name', 'No Name Provided')  # Ensure this matches your DataFrame
-            if parking_name != 'No Name Provided':
-                parking_fee = calculate_parking_fees(parking_name, arrival_datetime, total_hours)
-                st.markdown(f"### Nearest Parkhaus Information\nName: {parking_name}\nEstimated Walking Time: {nearest_parking.get('estimated_walking_time', 'N/A')} minutes\nDescription: {nearest_parking.get('description', 'No Description Provided')}\nSpaces: {nearest_parking.get('spaces', 'N/A')}")
-            else:
-                st.error("Failed to find a valid parking name.")
-        else:
-            st.error("No nearby valid Parkhaus found.")
+            calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parking)
 
+        folium_static(map_folium)
     # Display legend for map markers
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")

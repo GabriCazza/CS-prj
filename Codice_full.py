@@ -10,9 +10,6 @@ import random
 import re
 
 
-
-
-
 def safe_request(url, params):
     """Make a request with exponential backoff."""
     attempts = 0

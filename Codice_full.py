@@ -499,7 +499,7 @@ def main():
 
     if st.sidebar.button("Calculate Fees"):
         original_data = fetch_parking_data()
-        filtered_data = filter_parking_by_radius(original_data, destination_point, 500, True, bool(address))
+        filtered_data = filter_parking_by_radius(original_data, destination_point, 1000, True, bool(address))
         nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
         if nearest_parkhaus is not None and 'phname' in nearest_parkhaus:
             parking_fee = calculate_parking_fees(nearest_parkhaus['phname'], arrival_datetime, total_hours)

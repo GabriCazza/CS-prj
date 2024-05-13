@@ -1,6 +1,6 @@
 import streamlit as st
 
-def main():
+def clock_main():
     st.title('Orologio in Tempo Reale')
     
     # Embed a publicly available JavaScript clock
@@ -13,5 +13,5 @@ def main():
     st.markdown(clock_html, unsafe_allow_html=True)
 
 if __name__ == "__main__":
-    main()
+    clock_main()
 

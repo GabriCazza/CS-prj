@@ -249,7 +249,7 @@ def find_nearest_parking_place(data, destination_point):
         return None, None
 
 
-def display_time(time_container):
+def display_clock(time_container):
     current_time = datetime.now().strftime("%H:%M:%S")
     placeholder = st.empty()
     placeholder.subheader(f'Ora corrente: {current_time}')
@@ -451,6 +451,18 @@ def main():
     if time.time() - st.session_state.last_update >= 1:
         st.session_state.last_update = time.time()
         st.experimental_rerun()
+
+     st.markdown("""
+        <div id="real-time-clock"></div>
+        <script>
+            function updateTime() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString();
+                document.getElementById('real-time-clock').innerText = 'Ora corrente: ' + timeString;
+            }
+            setInterval(updateTime, 1000);
+        </script>
+    """, unsafe_allow_html=True)
         
     # Setup the top row with title and optional image
     top_row = st.container()

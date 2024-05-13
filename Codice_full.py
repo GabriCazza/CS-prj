@@ -248,22 +248,21 @@ def find_nearest_parking_place(data, destination_point):
 
 
 def display_time(time_container):
-    # Define a custom style for the clock
+    """Display current time updated every second in a designated Streamlit container."""
     clock_style = """
     <style>
     .clock {
-        font-size: 60px; /* Large font size for visibility */
-        font-family: 'Arial', sans-serif; /* Modern sans-serif font */
-        color: #333; /* Dark grey color for the text */
+        font-size: 20px;
+        color: #333;
+        text-align: right;
+        padding-right: 10px;
     }
     </style>
     """
-    
     while True:
         current_time = datetime.now().strftime("%H:%M:%S")
-        # Use custom styling and update the clock display
         time_container.markdown(clock_style + f"<div class='clock'>{current_time}</div>", unsafe_allow_html=True)
-        time.sleep(1)  # Update every second
+        time.sleep(1)
 
 def calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parking):
     if destination_point:
@@ -448,6 +447,13 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
+
+    header = st.columns([8, 2])
+    with header[1]:
+        time_container = st.empty()
+
+    # Display time in the upper right corner
+    display_time(time_container)
     
     # Setup the top row with title and optional image
     top_row = st.container()

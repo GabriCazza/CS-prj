@@ -1,35 +1,17 @@
 import streamlit as st
-from datetime import datetime
-import pytz
-import time
-
-def clock_main():
-    timezone = pytz.timezone("Europe/Zurich")
-
-    if 'auto_refresh' not in st.session_state:
-        # Initialize auto refresh state
-        st.session_state.auto_refresh = 0
-
-    current_time = datetime.now(timezone).strftime("%H:%M:%S")
-    
-    st.title('Orologio in Tempo Reale')
-    st.subheader(f"Ora corrente: {current_time}")
-
-    # Trigger an auto-refresh every second
-    if st.button("Refresh", key="1"):
-        # This block won't actually execute because the script reruns first
-        pass
-
-    if st.session_state.auto_refresh == 0:
-        # First load, no delay
-        st.session_state.auto_refresh = 1
-    else:
-        # Wait a second then trigger the button click
-        time.sleep(1)
-        st.experimental_rerun()
 
 def main():
-    clock_main()
+    st.title('Orologio in Tempo Reale')
+    
+    # Embed a publicly available JavaScript clock
+    # This example uses a generic clock URL which you should replace with the actual URL of the clock you want to embed
+    clock_html = """
+    <iframe src='https://free.timeanddate.com/clock/i8ifsfw7/n268/szw160/szh160/hbw0/hbh0/hbc000/cf100/hgr0/fav0/fiv0/mqcfff/mqs2/mql3/mqw1/mqd78/mhcfff/mhs2/mhl3/mhw1/mhd78/mmv0/hwm2/hhcbbb/hhs2/hmcbbb/hms2/hscbbb' frameborder='0' width='160' height='160'></iframe>
+    """
+    
+    # Display the HTML iframe in Streamlit
+    st.markdown(clock_html, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
+

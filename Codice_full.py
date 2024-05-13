@@ -498,24 +498,19 @@ def main():
     if st.sidebar.button("Show Parking"):
         original_data = fetch_parking_data()
         additional_data = fetch_additional_data()
-        combined_data = pd.concat([original_data, additional_data], ignore_index=True)
+        filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
 
-        if not combined_data.empty:
-            nearest_parkhaus, walking_time_to_parking = find_nearest_parking_place(combined_data, destination_point)
-            if nearest_parkhaus is not None:
-                map_folium = create_map()
-                add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
-                folium_static(map_folium)
-                st.markdown(f"### Nearest Parkhaus: **{nearest_parkhaus['name']}**")
-                st.markdown(f"**Location:** {nearest_parkhaus['address']}")
-                st.markdown(f"**Description:** {nearest_parkhaus['description']}")
-                st.markdown(f"**Available Spaces:** {nearest_parkhaus.get('shortfree', 'N/A')}")
-                st.markdown(f"**Estimated Walking Time:** {int(walking_time_to_parking)} minutes")
-            else:
-                st.error("No nearest parking found or data is incorrect.")
-        else:
-            st.error("Failed to load parking data. Please check data sources or API calls.")
+        map_folium = create_map()
+        # Only include parking spots that are 'open' and have 'shortfree' > 1
+        open_parking_data = original_data[(original_data['phstate'] == 'offen') & (original_data['shortfree'] > 1)]
+        # Ensure add_markers_to_map function is called with all necessary parameters including address
+        add_markers_to_map(map_folium, open_parking_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
+        
+        nearest_parking, _ = find_nearest_parking_place(filtered_data, destination_point)
+        if nearest_parking is not None:
+            calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parking)
 
+        folium_static(map_folium)
     # Display legend for map markers
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")

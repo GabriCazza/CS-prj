@@ -477,16 +477,17 @@ def main():
         filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
 
         map_folium = create_map()
-        add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
+        blue_count, white_count, handicapped_count = add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
         folium_static(map_folium)
 
         nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
-        info_column, extra_info_column = st.columns(2)  
-        if nearest_parkhaus is not None:
-            with info_column:
-                calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parkhaus)
+        if nearest_parkhaus:
+            # Code to display nearest parkhaus information
             with extra_info_column:
                 st.subheader("Additional Information")
+                st.write(f"Blue parking spots: {blue_count}")
+                st.write(f"White parking spots: {white_count}")
+                st.write(f"Handicapped parking spots: {handicapped_count}")
                 parking_fee = calculate_parking_fees(nearest_parkhaus['phname'], arrival_datetime, total_hours)
                 st.write(f"Estimated parking fee at {nearest_parkhaus['phname']}: {parking_fee}")
         else:

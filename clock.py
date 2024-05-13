@@ -1,20 +1,21 @@
 import streamlit as st
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 
 def clock_main():
-    # Set the timezone to Zurich
     timezone = pytz.timezone("Europe/Zurich")
     
-    # Check the last update or initialize it
-    if 'last_update' not in st.session_state or (datetime.now(timezone) - st.session_state.last_update).total_seconds() >= 1:
-        # Update the current time in the correct timezone
-        st.session_state.current_time = datetime.now(timezone).strftime("%H:%M:%S")
-        st.session_state.last_update = datetime.now(timezone)
+    # Initialize session state variables if they do not exist
+    if 'last_update' not in st.session_state:
+        st.session_state.last_update = datetime.now(timezone) - timedelta(seconds=1)  # Ensures immediate update
     
+    # Check if more than one second has passed
+    current_time = datetime.now(timezone)
+    if (current_time - st.session_state.last_update).total_seconds() >= 1:
+        # Update the stored time and last update timestamp
+        st.session_state.current_time = current_time.strftime("%H:%M:%S")
+        st.session_state.last_update = current_time
+
+    # Display the title and the time
     st.title('Orologio in Tempo Reale')
-    placeholder = st.empty()
-    placeholder.subheader(f"Ora corrente: {st.session_state.current_time}")
-    
-    # Trigger a rerun of the app approximately every second
-    st.experimental_rerun()
+    st.subheader(f"Ora corrente: {st.session_state.current_time}")

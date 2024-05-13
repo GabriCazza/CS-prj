@@ -138,6 +138,7 @@ def add_markers_to_map(map_folium, original_data, additional_data, location_poin
 
 
 
+
 def add_marker(map_folium, row, icon, destination_point):
     latitude = row.get('latitude')
     longitude = row.get('longitude')

@@ -475,10 +475,15 @@ def main():
         folium_static(map_folium)
 
         nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
+        info_column, extra_info_column = st.columns(2)  # Create two columns for different types of information
         if nearest_parkhaus is not None:
-            calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parkhaus)
-            parking_fee = calculate_parking_fees(nearest_parkhaus['phname'], arrival_datetime, total_hours)
-            st.write(f"Estimated parking fee at {nearest_parkhaus['phname']}: {parking_fee}")
+            with info_column:
+                st.subheader("Nearest Parkhaus Information")
+                calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parkhaus)
+            with extra_info_column:
+                st.subheader("Additional Information")
+                parking_fee = calculate_parking_fees(nearest_parkhaus['phname'], arrival_datetime, total_hours)
+                st.write(f"Estimated parking fee at {nearest_parkhaus['phname']}: {parking_fee}")
         else:
             st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
 

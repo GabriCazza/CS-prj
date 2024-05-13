@@ -137,8 +137,6 @@ def add_markers_to_map(map_folium, original_data, additional_data, location_poin
     return blue_count, white_count, handicapped_count
 
 
-
-
 def add_marker(map_folium, row, icon, destination_point):
     latitude = row.get('latitude')
     longitude = row.get('longitude')
@@ -437,7 +435,7 @@ def main():
             st.image(logo_path, width=100)
 
     # Setup sidebar
-    st.sidebar.image(logo_path, width=120)
+    picture = st.sidebar.image(logo_path, width=120)
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
@@ -478,21 +476,21 @@ def main():
         filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
 
         map_folium = create_map()
-        blue_count, white_count, handicapped_count = add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
+        blue_count, white_count, handicapped_count = add_markers_to_map(
+            map_folium, original_data, additional_data, location_point, destination_point, radius, 
+            show_parkhaus, show_extended_blue, show_white, show_handicapped, address
+        )
         folium_static(map_folium)
 
-        nearest_parkhaus, estimated_walking_time = find_nearest_parking_place(filtered_data, destination_point)
+        nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
         info_column, extra_info_column = st.columns(2)  
-        if nearest_parkhaus is not None:
+        if nearest_parkhaus:
             with info_column:
                 st.subheader("Nearest Parkhaus Information")
+                # Display any necessary details from nearest_parkhaus
                 st.write(f"Name: {nearest_parkhaus['phname']}")
-                st.write(f"Estimated Walking Time: {int(estimated_walking_time)} minutes")
-                st.write(f"Spaces: {nearest_parkhaus['shortfree']}/{nearest_parkhaus['shortmax']}")
-
             with extra_info_column:
                 st.subheader("Additional Information")
-                st.write(f"Estimated walking time from your location to destination: {int(estimated_walking_time)} minutes")
                 st.write(f"Blue parking spots: {blue_count}")
                 st.write(f"White parking spots: {white_count}")
                 st.write(f"Handicapped parking spots: {handicapped_count}")
@@ -507,3 +505,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

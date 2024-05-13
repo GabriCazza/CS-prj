@@ -249,10 +249,22 @@ def find_nearest_parking_place(data, destination_point):
         return None, None
 
 
-def display_clock(time_container):
-    current_time = datetime.now().strftime("%H:%M:%S")
-    placeholder = st.empty()
-    placeholder.subheader(f'Ora corrente: {current_time}')
+def display_time(time_container):
+    """Display current time updated every second in a designated Streamlit container."""
+    clock_style = """
+    <style>
+    .clock {
+        font-size: 20px;
+        color: #333;
+        text-align: right;
+        padding-right: 10px;
+    }
+    </style>
+    """
+    while True:
+        current_time = datetime.now().strftime("%H:%M:%S")
+        time_container.markdown(clock_style + f"<div class='clock'>{current_time}</div>", unsafe_allow_html=True)
+        time.sleep(1)
 
 def calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parking):
     if destination_point:
@@ -438,31 +450,19 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
-    placeholder = st.empty()
+    if 'auto_refresh' not in st.session_state:
+        st.session_state.auto_refresh = time.time()
 
-    # Initialize or update the last checked time in session state
-    if 'last_update' not in st.session_state:
-        st.session_state.last_update = time.time()
+    header = st.columns([8, 2])
+    with header[1]:
+        current_time = datetime.now().strftime("%H:%M:%S")
+        time_container = st.empty()
+        time_container.markdown(f"<div style='text-align: right;'>{current_time}</div>", unsafe_allow_html=True)
 
-    # Display the clock in the placeholder
-    display_clock()
-
-    # Check if a second has passed; if so, rerun the script
-    if time.time() - st.session_state.last_update >= 1:
-        st.session_state.last_update = time.time()
+    # Trigger an automatic rerun every second
+    if time.time() - st.session_state.auto_refresh > 1:
+        st.session_state.auto_refresh = time.time()
         st.experimental_rerun()
-
-     st.markdown("""
-        <div id="real-time-clock"></div>
-        <script>
-            function updateTime() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString();
-                document.getElementById('real-time-clock').innerText = 'Ora corrente: ' + timeString;
-            }
-            setInterval(updateTime, 1000);
-        </script>
-    """, unsafe_allow_html=True)
         
     # Setup the top row with title and optional image
     top_row = st.container()

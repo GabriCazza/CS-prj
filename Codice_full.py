@@ -479,10 +479,8 @@ def main():
             estimated_walking_time = calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parkhaus)
             info_column, extra_info_column = st.columns(2)
             with info_column:
-                st.subheader("Nearest Parkhaus Information")
-                st.write(f"Name: {nearest_parkhaus['phname']}")
-                st.write(f"Description: {nearest_parkhaus['description']}")
-                st.write(f"Spaces: {nearest_parkhaus['shortfree']}/{nearest_parkhaus['shortmax']}")
+                open_parking_data = original_data[(original_data['phstate'] == 'offen') & (original_data['shortfree'] > 1)]
+                
             with extra_info_column:
                 st.subheader("Additional Information")
                 st.write(f"Estimated walking time from your location to destination: {estimated_walking_time} minutes")

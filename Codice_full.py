@@ -222,13 +222,12 @@ def find_nearest_parking_place(data, destination_point):
         st.error("Destination not specified or no parking data available.")
         return None, None
 
-    # Filtra solo i Parkhaus
     parkhaus_data = data[data['category'] == 'Parkhaus']
     if parkhaus_data.empty:
         st.error("No Parkhaus available in the data.")
         return None, None
 
-    # Calcola la distanza di ogni Parkhaus dalla destinazione e non dalla posizione corrente dell'utente
+    # Calcola la distanza per ogni Parkhaus dalla destinazione
     parkhaus_data['distance_to_destination'] = parkhaus_data.apply(
         lambda row: geodesic(
             (row['latitude'], row['longitude']),
@@ -236,7 +235,6 @@ def find_nearest_parking_place(data, destination_point):
         ).meters, axis=1
     )
 
-    # Trova il Parkhaus più vicino
     nearest_parkhaus = parkhaus_data.loc[parkhaus_data['distance_to_destination'].idxmin()] if not parkhaus_data.empty else None
     if nearest_parkhaus is not None:
         estimated_walking_time = nearest_parkhaus['distance_to_destination'] / 1000 / 1.1 * 60  # Converti i metri in minuti

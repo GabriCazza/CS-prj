@@ -490,12 +490,16 @@ def main():
     # Date and Time Selection
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())
-    arrival_time = st.sidebar.time_input("Arrival Time", time(8, 0))
-    departure_time = st.sidebar.time_input("Departure Time", time(18, 0))
+    arrival_time_str = st.sidebar.text_input("Enter arrival time (HHMM or HH.MM):", key="arrival_time")
+    departure_time_str = st.sidebar.text_input("Enter departure time (HHMM or HH.MM):", key="departure_time")
 
-    # Calculate duration
-    arrival_datetime = datetime.combine(arrival_date, arrival_time)
-    departure_datetime = datetime.combine(departure_date, departure_time)
+    # Parse datetime using custom function for flexibility
+    arrival_datetime = parse_datetime(arrival_date.strftime("%Y-%m-%d"), arrival_time_str)
+    departure_datetime = parse_datetime(departure_date.strftime("%Y-%m-%d"), departure_time_str)
+    if arrival_datetime is None or departure_datetime is None:
+        st.sidebar.error("Invalid time format. Please use HHMM or HH.MM.")
+        return
+    
     total_hours = (departure_datetime - arrival_datetime).total_seconds() / 3600
 
     # Geocode addresses
@@ -506,6 +510,7 @@ def main():
     if not destination_point:
         st.sidebar.error("Please provide a valid destination.")
         return
+
 
     # Slider and parking options
     radius = st.sidebar.slider("Select search radius (in meters):", min_value=50, max_value=1000, value=500, step=50)

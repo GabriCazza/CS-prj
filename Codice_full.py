@@ -534,7 +534,7 @@ def main():
             st.markdown("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
             
             nearest_parkhaus, estimated_walking_time = find_nearest_parking_place(filtered_data, destination_point)
-            if nearest_parkhaus is not None and not nearest_parkhaus.empty and estimated_walking_time is not None:
+            if nearest_parkhaus is not None and not nearest_parkhaus.empty:
                 parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, (departure_datetime - arrival_datetime).total_seconds() / 3600)
                 if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
                     st.error(parking_fee)

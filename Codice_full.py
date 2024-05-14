@@ -444,7 +444,7 @@ def main():
             logo_path = "image-removebg-preview (1).png"  # Assicurati che il percorso dell'immagine sia corretto
             st.image(logo_path, width=100)
         with col2:
-            st.title("arkGallen")
+            st.title("arkGalle")
 
     # Input per indirizzo e destinazione
     st.sidebar.image(logo_path, width=120)
@@ -494,13 +494,15 @@ def main():
         nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
         if nearest_parkhaus:
             parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, total_hours)
-            display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count)  # Always display information if available
             if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
                 st.error(parking_fee)
+            else:
+                display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count)
         else:
             st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
 
-    
+
+    # Legenda dei marker sulla mappa
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
 

@@ -400,8 +400,8 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     if not park_info:
         return f"Information not available for {parking_name}."
 
-    total_fee = 0
-    hours_left = math.floor(duration_hours)  # Floors the duration to handle whole hours only
+    # Arrotonda per difetto le ore di parcheggio
+    hours_left = math.floor(duration_hours)  # Rounds down the total hours
 
     if 'free_minutes' in park_info:
         # Convert free minutes to hours and subtract from hours_left if applicable
@@ -409,9 +409,10 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
         hours_left = max(0, hours_left - free_hours)
 
     if 'flat_rate' in park_info:
-        total_fee += park_info['flat_rate'] * hours_left
+        total_fee = park_info['flat_rate'] * hours_left
         return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
 
+    total_fee = 0
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
 
     # Handle parking fees with extended and night/day rates

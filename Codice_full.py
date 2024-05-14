@@ -29,6 +29,7 @@ def safe_request(url, params):
     return None  
 
 #Call of the first API (Parkhaus platzte)
+
 def fetch_parking_data():
     """Fetch parking data from an API."""
     API_ENDPOINT = "https://daten.stadt.sg.ch/api/explore/v2.1/catalog/datasets/freie-parkplatze-in-der-stadt-stgallen-pls/records?limit=20"
@@ -48,7 +49,8 @@ def fetch_parking_data():
         st.error(f'Failed to retrieve data: HTTP Status Code {response.status_code}')
         return pd.DataFrame()
     
-    
+# Call of the second API (all the Parkings)   
+ 
 def fetch_additional_data():
     base_url = "https://daten.stadt.sg.ch/api/explore/v2.1/catalog/datasets/points-of-interest-/records"
     params = {
@@ -85,7 +87,7 @@ def fetch_additional_data():
 
 
 
-
+# Used to convert a textual address into geographical coordinates (latitude and longitude) using the Nominatim geocoding API
 
 def geocode_address(location):
     """Converts an address to a point (latitude, longitude) using the Nominatim API."""
@@ -101,6 +103,8 @@ def geocode_address(location):
         except Exception as e:
             st.error(f"Geocoding error: {e}")
     return None
+
+
 
 def add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address):
     address_provided = bool(address)
@@ -134,10 +138,10 @@ def add_markers_to_map(map_folium, original_data, additional_data, location_poin
             if "invalidenparkplatz" in row.get('info', '').lower():
                 add_marker(map_folium, row, "♿", None)
                 handicapped_count += 1
-
-    # Ritorna i conteggi per poterli visualizzare successivamente
+    
     return blue_count, white_count, handicapped_count
 
+# Function used to add various types of parking markers to a map created with Folium
 
 
 def add_marker(map_folium, row, icon, destination_point):
@@ -171,7 +175,7 @@ def add_marker(map_folium, row, icon, destination_point):
         )
     ).add_to(map_folium)
 
-
+# Function is used  to add visual markers for the user's location and destination on a Folium map
 
 def add_user_markers(map_folium, location_point, destination_point):
     if location_point:
@@ -187,6 +191,8 @@ def add_user_markers(map_folium, location_point, destination_point):
             icon=folium.DivIcon(html='<div style="font-size: 30pt;">📍</div>')
         ).add_to(map_folium)
 
+
+# Function used to display the radius on the map
 
 def add_search_radius(map_folium, destination_point, radius):
     if destination_point and radius:
@@ -437,6 +443,31 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 
     return f"Fee at: {parking_name}: {total_fee:.2f} CHF"
 
+
+       
+# Funzione ausiliaria per visualizzare le informazioni del parcheggio
+def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count):
+    info_column, extra_info_column = st.columns(2)
+    with info_column:
+        st.markdown(f"""
+        <div style="background-color:#86B97A ; padding:10px; border-radius:5px;">
+            <h4>Nearest Parkhaus Information</h4>
+            <p>Name: {nearest_parkhaus.get('phname', 'Unknown')}</p>
+            <p>Estimated Walking Time: {nearest_parkhaus.get('estimated_walking_time', 'N/A')} minutes</p>
+            <p>Description: {nearest_parkhaus.get('phstate', 'No Description')}</p>
+            <p>Spaces: {nearest_parkhaus.get('shortfree', 'N/A')}/{nearest_parkhaus.get('shortmax', 'N/A')}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with extra_info_column:
+        st.markdown(f"""
+        <div style="background-color:#ADF09E; padding:10px; border-radius:5px;">
+            <h4>Additional Information</h4>
+            <p>Blue parking spots: {blue_count}</p>
+            <p>White parking spots: {white_count}</p>
+            <p>Handicapped parking spots: {handicapped_count}</p>
+            <p>Estimated parking fee: {parking_fee}</p>
+        </div>
+        """, unsafe_allow_html=True)
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
@@ -448,7 +479,7 @@ def main():
             logo_path = "image-removebg-preview (1).png"  # Ensure the image path is correct
             st.image(logo_path, width=100)
         with col2:
-            st.title("Parking in St. Gallen")
+            st.title("arkGallen")
 
     # Address and Destination Input
     st.sidebar.image(logo_path, width=120)
@@ -456,16 +487,24 @@ def main():
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
 
-    # Date and Time Selection
-    arrival_date = st.sidebar.date_input("Arrival Date", date.today())
-    departure_date = st.sidebar.date_input("Departure Date", date.today())
-    arrival_time = st.sidebar.time_input("Arrival Time", time(8, 0))
-    departure_time = st.sidebar.time_input("Departure Time", time(18, 0))
+    # Custom Date and Time Input
+    date_str = st.sidebar.text_input("Enter arrival date (YYYY-MM-DD):", key="arrival_date")
+    time_str = st.sidebar.text_input("Enter arrival time (HHMM or HH.MM):", key="arrival_time")
+    arrival_datetime = parse_datetime(date_str, time_str)
+    if arrival_datetime is None:
+        st.sidebar.error("Invalid date or time format.")
+        return  # Stop execution if the datetime parsing fails
 
-    # Calculate duration
-    arrival_datetime = datetime.combine(arrival_date, arrival_time)
-    departure_datetime = datetime.combine(departure_date, departure_time)
+    # Similar inputs for departure datetime if needed
+    departure_date_str = st.sidebar.text_input("Enter departure date (YYYY-MM-DD):", key="departure_date")
+    departure_time_str = st.sidebar.text_input("Enter departure time (HHMM or HH.MM):", key="departure_time")
+    departure_datetime = parse_datetime(departure_date_str, departure_time_str)
+    if departure_datetime is None:
+        st.sidebar.error("Invalid date or time format.")
+        return  # Stop execution if the datetime parsing fails
+
     total_hours = (departure_datetime - arrival_datetime).total_seconds() / 3600
+    st.sidebar.write(f"Duration: {total_hours:.2f} hours")
 
     # Geocode addresses
     location_point = geocode_address(address) if address else None
@@ -509,31 +548,6 @@ def main():
                     display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count)
             else:
                 st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
-
-       
-# Funzione ausiliaria per visualizzare le informazioni del parcheggio
-def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count):
-    info_column, extra_info_column = st.columns(2)
-    with info_column:
-        st.markdown(f"""
-        <div style="background-color:#86B97A ; padding:10px; border-radius:5px;">
-            <h4>Nearest Parkhaus Information</h4>
-            <p>Name: {nearest_parkhaus.get('phname', 'Unknown')}</p>
-            <p>Estimated Walking Time: {nearest_parkhaus.get('estimated_walking_time', 'N/A')} minutes</p>
-            <p>Description: {nearest_parkhaus.get('phstate', 'No Description')}</p>
-            <p>Spaces: {nearest_parkhaus.get('shortfree', 'N/A')}/{nearest_parkhaus.get('shortmax', 'N/A')}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with extra_info_column:
-        st.markdown(f"""
-        <div style="background-color:#ADF09E; padding:10px; border-radius:5px;">
-            <h4>Additional Information</h4>
-            <p>Blue parking spots: {blue_count}</p>
-            <p>White parking spots: {white_count}</p>
-            <p>Handicapped parking spots: {handicapped_count}</p>
-            <p>Estimated parking fee: {parking_fee}</p>
-        </div>
-        """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()

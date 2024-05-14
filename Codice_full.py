@@ -420,14 +420,14 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 
        
 # Funzione ausiliaria per visualizzare le informazioni del parcheggio
-def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count):
+def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time):
     info_column, extra_info_column = st.columns(2)
     with info_column:
         st.markdown(f"""
-        <div style="background-color:#540358 ; padding:10px; border-radius:5px;">
+        <div style="background-color:#86B97A; padding:10px; border-radius:5px;">
             <h4>Nearest Parkhaus Information</h4>
             <p>Name: {nearest_parkhaus.get('phname', 'Unknown')}</p>
-            <p>Estimated Walking Time: {nearest_parkhaus.get('estimated_walking_time', 'N/A')} minutes</p>
+            <p>Estimated Walking Time: {estimated_walking_time} minutes</p>
             <p>Description: {nearest_parkhaus.get('phstate', 'No Description')}</p>
             <p>Spaces: {nearest_parkhaus.get('shortfree', 'N/A')}/{nearest_parkhaus.get('shortmax', 'N/A')}</p>
         </div>
@@ -442,6 +442,7 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
             <p>Estimated parking fee: {parking_fee}</p>
         </div>
         """, unsafe_allow_html=True)
+
 
 
 #The Whole MAIN function 

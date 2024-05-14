@@ -10,7 +10,7 @@ import random
 import re
 
 
-
+#Used to handale the API with a rate limit (unrelible conditions)
 def safe_request(url, params):
     """Make a request with exponential backoff."""
     attempts = 0
@@ -26,8 +26,29 @@ def safe_request(url, params):
             attempts += 1
         else:
             break
-    return None  # Return None if all attempts fail
+    return None  
 
+#Call of the first API (Parkhaus platzte)
+def fetch_parking_data():
+    """Fetch parking data from an API."""
+    API_ENDPOINT = "https://daten.stadt.sg.ch/api/explore/v2.1/catalog/datasets/freie-parkplatze-in-der-stadt-stgallen-pls/records?limit=20"
+    response = requests.get(API_ENDPOINT)
+    if response.status_code == 200:
+        data = response.json()['results']
+        if data:
+            parking_data = pd.DataFrame(data)
+            parking_data['latitude'] = parking_data['standort'].apply(lambda x: x.get('lat'))
+            parking_data['longitude'] = parking_data['standort'].apply(lambda x: x.get('lon'))
+            parking_data['category'] = parking_data.apply(lambda x: 'Parkhaus' if x['phstate'] == 'offen' else 'Closed', axis=1)
+            return parking_data
+        else:
+            st.error("No data available from the API.")
+            return pd.DataFrame()
+    else:
+        st.error(f'Failed to retrieve data: HTTP Status Code {response.status_code}')
+        return pd.DataFrame()
+    
+    
 def fetch_additional_data():
     base_url = "https://daten.stadt.sg.ch/api/explore/v2.1/catalog/datasets/points-of-interest-/records"
     params = {
@@ -62,24 +83,7 @@ def fetch_additional_data():
 
     return pd.DataFrame(parking_data)  # Assicurati di restituire sempre un DataFrame
 
-def fetch_parking_data():
-    """Fetch parking data from an API."""
-    API_ENDPOINT = "https://daten.stadt.sg.ch/api/explore/v2.1/catalog/datasets/freie-parkplatze-in-der-stadt-stgallen-pls/records?limit=20"
-    response = requests.get(API_ENDPOINT)
-    if response.status_code == 200:
-        data = response.json()['results']
-        if data:
-            parking_data = pd.DataFrame(data)
-            parking_data['latitude'] = parking_data['standort'].apply(lambda x: x.get('lat'))
-            parking_data['longitude'] = parking_data['standort'].apply(lambda x: x.get('lon'))
-            parking_data['category'] = parking_data.apply(lambda x: 'Parkhaus' if x['phstate'] == 'offen' else 'Closed', axis=1)
-            return parking_data
-        else:
-            st.error("No data available from the API.")
-            return pd.DataFrame()
-    else:
-        st.error(f'Failed to retrieve data: HTTP Status Code {response.status_code}')
-        return pd.DataFrame()
+
 
 
 

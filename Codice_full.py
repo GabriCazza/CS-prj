@@ -431,7 +431,7 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 
         current_time = (current_time + day_hours + night_hours) % 24  # Adjust day crossover
 
-    return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
+    return f"Fee at: {parking_name}: {total_fee:.2f} CHF"
 
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
@@ -451,7 +451,7 @@ def main():
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
-
+    
     # Selezione delle date e degli orari
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())
@@ -488,12 +488,14 @@ def main():
         filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
 
         map_folium = create_map()
+        
+        # Aggiungi cerchio di ricerca
+        add_search_radius(map_folium, destination_point, radius)
+        
         blue_count, white_count, handicapped_count = add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
         folium_static(map_folium)
-
-        nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
         
-        # Correctly use the .empty attribute to check if the DataFrame is not empty
+        nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
         if nearest_parkhaus is not None and not nearest_parkhaus.empty:
             parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, total_hours)
             if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
@@ -512,17 +514,17 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
     info_column, extra_info_column = st.columns(2)
     with info_column:
         st.markdown(f"""
-        <div style="background-color:#adebad; padding:10px; border-radius:5px;">
+        <div style="background-color:#86B97A ; padding:10px; border-radius:5px;">
             <h4>Nearest Parkhaus Information</h4>
             <p>Name: {nearest_parkhaus.get('phname', 'Unknown')}</p>
-            <p>Estimated Walking Time: {nearest_parkhaus.get('Estimated Walking Time', 'N/A')} minutes</p>
-            <p>Description: {nearest_parkhaus.get('description', 'No Description')}</p>
+            <p>Estimated Walking Time: {nearest_parkhaus.get('estimated_walking_time', 'N/A')} minutes</p>
+            <p>Description: {nearest_parkhaus.get('phstate', 'No Description')}</p>
             <p>Spaces: {nearest_parkhaus.get('shortfree', 'N/A')}/{nearest_parkhaus.get('shortmax', 'N/A')}</p>
         </div>
         """, unsafe_allow_html=True)
     with extra_info_column:
         st.markdown(f"""
-        <div style="background-color:#add8e6; padding:10px; border-radius:5px;">
+        <div style="background-color:#ADF09E; padding:10px; border-radius:5px;">
             <h4>Additional Information</h4>
             <p>Blue parking spots: {blue_count}</p>
             <p>White parking spots: {white_count}</p>
@@ -533,5 +535,3 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
 
 if __name__ == "__main__":
     main()
-
-

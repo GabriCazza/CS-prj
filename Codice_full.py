@@ -8,7 +8,7 @@ import requests
 from geopy.distance import geodesic
 import random
 import re
-
+import math 
 
 #Used to handale the API with a rate limit (unrelible conditions)
 def safe_request(url, params):

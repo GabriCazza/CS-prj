@@ -429,45 +429,52 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
+    # Configurazione dell'interfaccia utente
     top_row = st.container()
     with top_row:
         col1, col2 = st.columns([0.4, 4])
+        with col1:
+            logo_path = "image-removebg-preview (1).png"  # Assicurati che il percorso dell'immagine sia corretto
+            st.image(logo_path, width=100)
         with col2:
             st.title("Parking in St. Gallen")
-        with col1:
-            logo_path = "image-removebg-preview (1).png"
-            st.image(logo_path, width=100)
 
+    # Input per indirizzo e destinazione
     st.sidebar.image(logo_path, width=120)
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
 
+    # Selezione delle date e degli orari
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())
     arrival_time = st.sidebar.time_input("Arrival Time", time(8, 0))
     departure_time = st.sidebar.time_input("Departure Time", time(18, 0))
 
+    # Calcolo delle durate
     arrival_datetime = datetime.combine(arrival_date, arrival_time)
     departure_datetime = datetime.combine(departure_date, departure_time)
-
     days, hours, minutes = calculate_duration(arrival_datetime, departure_datetime)
     total_hours = days * 24 + hours + minutes / 60
     st.sidebar.write(f"Duration: {days} days, {hours} hours, {minutes} minutes")
 
+    # Geocoding degli indirizzi
     location_point = geocode_address(address) if address else None
     destination_point = geocode_address(destination) if destination else None
 
+    # Verifica della validità della destinazione
     if not destination_point:
         st.error("Please provide a valid destination.")
         return
 
+    # Slider per il raggio di ricerca e opzioni di visualizzazione
     radius = st.sidebar.slider("Select search radius (in meters):", min_value=50, max_value=1000, value=500, step=50)
     show_parkhaus = st.sidebar.checkbox("🅿️ Parkhaus (Free & Limited)", True)
     show_extended_blue = st.sidebar.checkbox("🔵 Extended Blue Zone", True)
     show_white = st.sidebar.checkbox("⚪ White Parking", True)
     show_handicapped = st.sidebar.checkbox("♿ Handicapped Parking", True)
 
+    # Pulsante per visualizzare i parcheggi e calcolare le tariffe
     if st.sidebar.button("Show Parking and Calculate Fees"):
         original_data = fetch_parking_data()
         additional_data = fetch_additional_data()
@@ -477,36 +484,40 @@ def main():
         blue_count, white_count, handicapped_count = add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
         folium_static(map_folium)
 
-    
         nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
-        info_column, extra_info_column = st.columns(2)
-        if nearest_parkhaus is not None:
-            with info_column:
-                st.markdown("""
-                <div style="background-color:#adebad; padding:10px; border-radius:5px;">
-                    <h4>Nearest Parkhaus Information</h4>
-                    <p>Name: {}</p>
-                    <p>Estimated Walking Time: {} minutes</p>
-                    <p>Description: {}</p>
-                    <p>Spaces: {}/{}<p>
-                </div>
-                """.format(nearest_parkhaus['phname'], nearest_parkhaus['Estimated Walking Time'], nearest_parkhaus['description'], nearest_parkhaus['shortfree'], nearest_parkhaus['shortmax']), unsafe_allow_html=True)
-            
-            with extra_info_column:
-                st.markdown(f"""
-                <div style="background-color:#add8e6; padding:10px; border-radius:5px;">
-                    <h4>Additional Information</h4>
-                    <p>Blue parking spots: {blue_count}</p>
-                    <p>White parking spots: {white_count}</p>
-                    <p>Handicapped parking spots: {handicapped_count}</p>
-                    <p>Estimated parking fee: {parking_fee}</p>
-                </div>
-                """, unsafe_allow_html=True)
+        if nearest_parkhaus:
+            parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, total_hours)
+            display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count)
         else:
-            st.error("No valid parking data found.")
-    # Display legend for map markers
+            st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
+
+    # Legenda dei marker sulla mappa
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
+
+# Funzione ausiliaria per visualizzare le informazioni del parcheggio
+def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count):
+    info_column, extra_info_column = st.columns(2)
+    with info_column:
+        st.markdown(f"""
+        <div style="background-color:#adebad; padding:10px; border-radius:5px;">
+            <h4>Nearest Parkhaus Information</h4>
+            <p>Name: {nearest_parkhaus.get('phname', 'Unknown')}</p>
+            <p>Estimated Walking Time: {nearest_parkhaus.get('Estimated Walking Time', 'N/A')} minutes</p>
+            <p>Description: {nearest_parkhaus.get('description', 'No Description')}</p>
+            <p>Spaces: {nearest_parkhaus.get('shortfree', 'N/A')}/{nearest_parkhaus.get('shortmax', 'N/A')}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with extra_info_column:
+        st.markdown(f"""
+        <div style="background-color:#add8e6; padding:10px; border-radius:5px;">
+            <h4>Additional Information</h4>
+            <p>Blue parking spots: {blue_count}</p>
+            <p>White parking spots: {white_count}</p>
+            <p>Handicapped parking spots: {handicapped_count}</p>
+            <p>Estimated parking fee: {parking_fee}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()

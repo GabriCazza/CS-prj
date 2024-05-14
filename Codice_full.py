@@ -447,7 +447,7 @@ def main():
             st.title("arkGalle")
 
     # Input per indirizzo e destinazione
-    st.sidebar.image(logo_path, width=120)
+    st.sidebar.image("image-removebg-preview (1).png", width=120)
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
@@ -469,7 +469,6 @@ def main():
     location_point = geocode_address(address) if address else None
     destination_point = geocode_address(destination) if destination else None
 
-    # Verifica della validità della destinazione
     if not destination_point:
         st.error("Please provide a valid destination.")
         return
@@ -483,31 +482,29 @@ def main():
 
     # Pulsante per visualizzare i parcheggi e calcolare le tariffe
     if st.sidebar.button("Show Parking and Calculate Fees"):
-        original_data = fetch_parking_data()
-        additional_data = fetch_additional_data()
-        filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
+        with st.spinner("Loading map..."):
+            original_data = fetch_parking_data()
+            additional_data = fetch_additional_data()
+            filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
+            map_folium = create_map()
+            add_search_radius(map_folium, destination_point, radius)
+            add_user_markers(map_folium, location_point, destination_point)
+            blue_count, white_count, handicapped_count = add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
+            folium_static(map_folium)
 
-        map_folium = create_map()
-        
-        # Aggiungi cerchio di ricerca
-        add_search_radius(map_folium, destination_point, radius)
-        
-        blue_count, white_count, handicapped_count = add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
-        folium_static(map_folium)
-        
-        nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
-        if nearest_parkhaus is not None and not nearest_parkhaus.empty:
-            parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, total_hours)
-            if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
-                st.error(parking_fee)
+            nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
+            if nearest_parkhaus is not None and not nearest_parkhaus.empty:
+                parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, total_hours)
+                if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
+                    st.error(parking_fee)
+                else:
+                    display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count)
             else:
-                display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count)
-        else:
-            st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
+                st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
 
-    # Legenda dei marker sulla mappa
-    st.write("### Legend")
-    st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
+        # Legenda dei marker sulla mappa
+        st.markdown("### Legend")
+        st.markdown("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
 
 # Funzione ausiliaria per visualizzare le informazioni del parcheggio
 def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count):

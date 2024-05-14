@@ -400,49 +400,39 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     if not park_info:
         return f"Information not available for {parking_name}."
 
+    total_fee = 0
+    hours_left = math.floor(duration_hours)  # Floors the duration to handle whole hours only
+
+    if 'free_minutes' in park_info:
+        # Convert free minutes to hours and subtract from hours_left if applicable
+        free_hours = park_info['free_minutes'] / 60
+        hours_left = max(0, hours_left - free_hours)
+
     if 'flat_rate' in park_info:
-        total_fee = park_info['flat_rate'] * math.floor(duration_hours)
+        total_fee += park_info['flat_rate'] * hours_left
         return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
 
-    # Function to handle extended rate calculations
-    def calculate_extended_rates(extended_rates, hours_left):
-        total_fee = 0
-        for rate in extended_rates:
-            if rate[0] is None:  # Tariff continues till the end
-                total_fee += rate[1] * min(hours_left, rate[2])
-                hours_left -= rate[2]
-                if hours_left <= 0:
-                    break
-            else:
-                applicable_hours = min(hours_left, rate[0])
-                total_fee += applicable_hours * rate[1]
-                hours_left -= applicable_hours
-                if hours_left <= 0:
-                    break
-        return total_fee, hours_left
-
-    total_fee = 0
-    hours_left = math.floor(duration_hours)  # Rounds down the total hours to ensure charging for complete hours only
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
 
-    # Calculate extended rates if available
-    if 'extended_rate' in park_info:
-        fee, remaining_hours = calculate_extended_rates(park_info['extended_rate'], hours_left)
-        total_fee += fee
-        hours_left = remaining_hours
+    # Handle parking fees with extended and night/day rates
+    def calculate_rate(hours, rate):
+        nonlocal total_fee
+        total_fee += hours * rate
 
-    # Calculate fees based on day and night rates
     while hours_left > 0:
-        if 'daytime' in park_info and 'nighttime' in park_info and park_info['daytime'][0] <= current_time < park_info['daytime'][1]:
-            day_hours = min(hours_left, park_info['daytime'][1] - current_time)
-            total_fee += day_hours * park_info.get('day_rate', 0)
-            hours_left -= day_hours
-        else:
-            night_hours = min(hours_left, 24 - current_time) if current_time >= park_info['nighttime'][0] else min(hours_left, park_info['nighttime'][1] - current_time)
-            total_fee += night_hours * park_info.get('night_rate', 0)
-            hours_left -= night_hours
-
-        current_time = (current_time + day_hours + night_hours) % 24  # Adjust for day crossover
+        if 'rates' in park_info:
+            for rate in park_info['rates']:
+                if rate[0] is None:
+                    calculate_rate(min(hours_left, rate[2]), rate[1])
+                    hours_left -= rate[2]
+                    if hours_left <= 0:
+                        break
+                else:
+                    applicable_hours = min(hours_left, rate[0])
+                    calculate_rate(applicable_hours, rate[1])
+                    hours_left -= applicable_hours
+                    if hours_left <= 0:
+                        break
 
     return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
 
@@ -515,7 +505,6 @@ def main():
         minutes = remainder // 60
         st.sidebar.write(f"Duration of parking: {int(days)} days, {int(hours)} hours, {int(minutes)} minutes")
     else:
-        st.sidebar.error("Departure time must be after arrival time.")
         return
 
     # Geocode addresses
@@ -524,7 +513,6 @@ def main():
 
     # Check for valid destination
     if not destination_point:
-        st.sidebar.error("Please provide a valid destination.")
         return
     
     # Slider and parking options

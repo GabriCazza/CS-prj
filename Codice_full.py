@@ -513,14 +513,8 @@ def main():
         st.sidebar.write(f"Duration of parking: {int(days)} days, {int(hours)} hours, {int(minutes)} minutes")
     else:
         st.sidebar.error("Departure time must be after arrival time.")
-        
-    total_hours = (departure_datetime - arrival_datetime).total_seconds() / 3600
 
-    # Display the parking duration
-    if total_hours > 0:
-        st.sidebar.write(f"Duration of parking: {total_hours:.2f} hours")
-    else:
-        st.sidebar.error("Departure time must be after arrival time.")
+    total_hours = (departure_datetime - arrival_datetime).total_seconds() / 3600
 
     # Geocode addresses
     location_point = geocode_address(address) if address else None

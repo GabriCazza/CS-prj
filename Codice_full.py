@@ -391,7 +391,9 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     if not park_info:
         return f"Information not available for {parking_name}."
 
-    # Verifica la presenza delle chiavi 'daytime', 'nighttime', 'day_rate' e 'night_rate'
+    if 'flat_rate' in park_info:
+        return f"Total parking fee at {parking_name}: {park_info['flat_rate'] * duration_hours:.2f} CHF"
+
     if 'daytime' not in park_info or 'nighttime' not in park_info or 'day_rate' not in park_info or 'night_rate' not in park_info:
         return f"Rate information is incomplete for {parking_name}."
 
@@ -399,21 +401,19 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
     hours_left = duration_hours
 
-    while hours_left > 0: 
+    # Calculate fees based on daytime and nighttime rates
+    while hours_left > 0:
         if park_info['daytime'][0] <= current_time < park_info['daytime'][1]:
             day_hours = min(hours_left, park_info['daytime'][1] - current_time)
             total_fee += day_hours * park_info['day_rate']
-            current_time += day_hours
             hours_left -= day_hours
-        elif current_time >= park_info['nighttime'][0] or current_time < park_info['nighttime'][1]:
+        else:
             night_hours = min(hours_left, 24 - current_time) if current_time >= park_info['nighttime'][0] else min(hours_left, park_info['nighttime'][1] - current_time)
             total_fee += night_hours * park_info['night_rate']
-            current_time += night_hours
             hours_left -= night_hours
-        current_time = current_time % 24  # Gestisci il passaggio da un giorno all'altro
+        current_time = (current_time + day_hours + night_hours) % 24  # Gestisci il passaggio da un giorno all'altro
 
     return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
-
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 

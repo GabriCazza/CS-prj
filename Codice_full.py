@@ -387,11 +387,12 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
         }
     }
 
-    park_info = rates.get(parking_name, {})
+    park_info = rates.get(parking_name)
     if not park_info:
-        return f"Parking rate information not available for {parking_name}."
+        return f"Information not available for {parking_name}."
 
-    if 'daytime' not in park_info or 'nighttime' not in park_info or 'day_rate' not in park_info or 'night_rate' not in park_info:
+    # Verifica che tutte le chiavi necessarie siano presenti
+    if not all(key in park_info for key in ['daytime', 'nighttime', 'day_rate', 'night_rate']):
         return f"Incomplete rate information for {parking_name}."
 
     total_fee = 0
@@ -404,7 +405,7 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
             total_fee += day_hours * park_info['day_rate']
             current_time += day_hours
             hours_left -= day_hours
-        elif current_time >= park_info['nighttime'][0] or current_time < park_info['nighttime'][1]:
+        else:
             night_hours = min(hours_left, 24 - current_time) if current_time >= park_info['nighttime'][0] else min(hours_left, park_info['nighttime'][1] - current_time)
             total_fee += night_hours * park_info['night_rate']
             current_time += night_hours

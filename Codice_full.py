@@ -392,28 +392,47 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
         return f"Information not available for {parking_name}."
 
     if 'flat_rate' in park_info:
-        return f"Total parking fee at {parking_name}: {park_info['flat_rate'] * duration_hours:.2f} CHF"
+        total_fee = park_info['flat_rate'] * duration_hours
+        return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
 
-    if 'daytime' not in park_info or 'nighttime' not in park_info or 'day_rate' not in park_info or 'night_rate' not in park_info:
-        return f"Rate information is incomplete for {parking_name}."
+    # Implementazione della logica per le tariffe estese
+    def calculate_extended_rates(extended_rates, hours_left):
+        total_fee = 0
+        for rate in extended_rates:
+            if rate[0] is None:  # Tariffa continua fino alla fine
+                total_fee += rate[1] * min(hours_left, rate[2])
+                hours_left -= rate[2]
+                if hours_left <= 0:
+                    break
+            else:
+                applicable_hours = min(hours_left, rate[0])
+                total_fee += applicable_hours * rate[1]
+                hours_left -= applicable_hours
+                if hours_left <= 0:
+                    break
+        return total_fee, hours_left
 
     total_fee = 0
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
     hours_left = duration_hours
 
-    # Calculate fees based on daytime and nighttime rates
+    if 'extended_rate' in park_info:
+        total_fee, hours_left = calculate_extended_rates(park_info['extended_rate'], hours_left)
+
     while hours_left > 0:
-        if park_info['daytime'][0] <= current_time < park_info['daytime'][1]:
+        if 'daytime' in park_info and 'nighttime' in park_info and park_info['daytime'][0] <= current_time < park_info['daytime'][1]:
             day_hours = min(hours_left, park_info['daytime'][1] - current_time)
-            total_fee += day_hours * park_info['day_rate']
+            total_fee += day_hours * park_info.get('day_rate', 0)
             hours_left -= day_hours
         else:
             night_hours = min(hours_left, 24 - current_time) if current_time >= park_info['nighttime'][0] else min(hours_left, park_info['nighttime'][1] - current_time)
-            total_fee += night_hours * park_info['night_rate']
+            total_fee += night_hours * park_info.get('night_rate', 0)
             hours_left -= night_hours
-        current_time = (current_time + day_hours + night_hours) % 24  # Gestisci il passaggio da un giorno all'altro
+
+        current_time = (current_time + day_hours + night_hours) % 24  # Adjust day crossover
 
     return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
+
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 

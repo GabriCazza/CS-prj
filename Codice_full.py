@@ -279,18 +279,6 @@ def calculate_and_display_distances(map_folium, location_point, destination_poin
             description = f"Description: {nearest_parking.get('phstate', 'No State Provided')}"
             spaces_available = nearest_parking.get('shortfree', 'N/A')
             total_spaces = nearest_parking.get('shortmax', 'N/A')
-
-            # Display detailed parking information with HTML and CSS styling
-            info_html = f"""
-            <div style="background-color: #540358 ; padding: 10px; border-radius: 10px; margin: 10px 0;">
-                <h4><b>Nearest Parkhaus Information</b></h4>
-                <p><b>Name:</b> {name}</p>
-                <p><b>Estimated Walking Time:</b> {int(parking_time)} minutes</p>
-                <p><b>{description}</b></p>
-                <p><b>Spaces:</b> {spaces_available}/{total_spaces}</p>
-            </div>
-            """
-            st.markdown(info_html, unsafe_allow_html=True)
         else:
             st.error("No nearby Parkhaus found.")
 
@@ -436,7 +424,7 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
     info_column, extra_info_column = st.columns(2)
     with info_column:
         st.markdown(f"""
-        <div style="background-color:#86B97A ; padding:10px; border-radius:5px;">
+        <div style="background-color:#540358 ; padding:10px; border-radius:5px;">
             <h4>Nearest Parkhaus Information</h4>
             <p>Name: {nearest_parkhaus.get('phname', 'Unknown')}</p>
             <p>Estimated Walking Time: {nearest_parkhaus.get('estimated_walking_time', 'N/A')} minutes</p>

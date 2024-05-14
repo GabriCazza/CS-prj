@@ -445,6 +445,8 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
 
 
 
+
+
 #The Whole MAIN function 
         
 def main():

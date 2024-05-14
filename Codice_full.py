@@ -420,20 +420,23 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 
        
 # Funzione ausiliaria per visualizzare le informazioni del parcheggio
-def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count):
+def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time):
+    if nearest_parkhaus is None or nearest_parkhaus.empty:
+        st.error("No Parkhaus data available to display.")
+        return
+
     info_column, extra_info_column = st.columns(2)
     with info_column:
-        # Assuming estimated_walking_time is calculated earlier and passed correctly
-        estimated_walking_time = int(nearest_parkhaus['distance_to_destination'] / 1000 / 1.1 * 60)  # Rounded to nearest minute
         st.markdown(f"""
         <div style="background-color:#86B97A; padding:10px; border-radius:5px;">
             <h4>Nearest Parkhaus Information</h4>
             <p>Name: {nearest_parkhaus.get('phname', 'Unknown')}</p>
-            <p>Estimated Walking Time: {estimated_walking_time} minutes</p>
+            <p>Estimated Walking Time: {int(estimated_walking_time)} minutes</p>
             <p>Description: {nearest_parkhaus.get('phstate', 'No Description')}</p>
             <p>Spaces: {nearest_parkhaus.get('shortfree', 'N/A')}/{nearest_parkhaus.get('shortmax', 'N/A')}</p>
         </div>
         """, unsafe_allow_html=True)
+
     with extra_info_column:
         st.markdown(f"""
         <div style="background-color:#ADF09E; padding:10px; border-radius:5px;">

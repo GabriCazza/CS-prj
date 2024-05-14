@@ -481,12 +481,13 @@ def main():
         with col2:
             st.title("arkGallen")
 
+    # Address and Destination Input
     st.sidebar.image(logo_path, width=120)
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
 
-     # Date and Time Selection
+    # Date and Time Selection
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())
     arrival_time_str = st.sidebar.text_input("Enter arrival time (HHMM or HH.MM):", key="arrival_time")
@@ -499,9 +500,6 @@ def main():
         st.sidebar.error("Invalid time format. Please use HHMM or HH.MM.")
         return
     
-    
-    arrival_datetime = datetime.combine(arrival_date, arrival_time_str)
-    departure_datetime = datetime.combine(departure_date, departure_time_str)
     total_hours = (departure_datetime - arrival_datetime).total_seconds() / 3600
 
     # Geocode addresses
@@ -512,7 +510,7 @@ def main():
     if not destination_point:
         st.sidebar.error("Please provide a valid destination.")
         return
-
+    
     # Slider and parking options
     radius = st.sidebar.slider("Select search radius (in meters):", min_value=50, max_value=1000, value=500, step=50)
     show_parkhaus = st.sidebar.checkbox("🅿️ Parkhaus (Free & Limited)", True)

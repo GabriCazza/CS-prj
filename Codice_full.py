@@ -399,7 +399,7 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
     hours_left = duration_hours
 
-    while hours_left > 0:
+    while hours_left > 0: 
         if park_info['daytime'][0] <= current_time < park_info['daytime'][1]:
             day_hours = min(hours_left, park_info['daytime'][1] - current_time)
             total_fee += day_hours * park_info['day_rate']

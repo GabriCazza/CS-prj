@@ -424,7 +424,7 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
     info_column, extra_info_column = st.columns(2)
     with info_column:
         st.markdown(f"""
-        <div style="background-color:#540358 ; padding:10px; border-radius:5px;">
+        <div style="background-color:#580303  ; padding:10px; border-radius:5px;">
             <h4>Nearest Parkhaus Information</h4>
             <p>Name: {nearest_parkhaus.get('phname', 'Unknown')}</p>
             <p>Estimated Walking Time: {nearest_parkhaus.get('estimated_walking_time', 'N/A')} minutes</p>

@@ -302,13 +302,13 @@ def parse_datetime(date_str, time_str):
             time_str = time_str.replace('.', ':')
         return datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
     except ValueError:
-        st.sidebar.error("Please enter the correct format for date and time.")
+        st.sidebar.write("Please enter the correct format for date and time.")
         return None
 
 def calculate_duration(arrival_datetime, departure_datetime):
     """Calculates the duration between arrival and departure times and returns the duration in days, hours, and minutes."""
     if departure_datetime <= arrival_datetime:
-        st.sidebar.error("Departure datetime must be later than arrival datetime.")
+        st.sidebar.write("Departure datetime must be later than arrival datetime.")
         return 0, 0, 0  # Return zero days, hours, and minutes if invalid.
     duration_delta = departure_datetime - arrival_datetime
     days = duration_delta.days

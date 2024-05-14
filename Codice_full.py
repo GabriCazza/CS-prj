@@ -465,7 +465,7 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
             <p>Blue parking spots: {blue_count}</p>
             <p>White parking spots: {white_count}</p>
             <p>Handicapped parking spots: {handicapped_count}</p>
-            <p>Estimated parking fee: round({parking_fee})</p>
+            <p>Estimated parking fee: {round(parking_fee)}</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -501,7 +501,6 @@ def main():
     arrival_datetime = parse_datetime(arrival_date.strftime("%Y-%m-%d"), arrival_time_str)
     departure_datetime = parse_datetime(departure_date.strftime("%Y-%m-%d"), departure_time_str)
     if arrival_datetime is None or departure_datetime is None:
-        st.sidebar.error("Invalid time format. Please use HHMM or HH.MM.")
         return
     
     # Calculate duration and format it

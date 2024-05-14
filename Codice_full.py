@@ -395,6 +395,18 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     if not all(key in park_info for key in ['daytime', 'nighttime', 'day_rate', 'night_rate']):
         return f"Incomplete rate information for {parking_name}."
 
+    park_info = rates.get(parking_name)
+    if not park_info:
+        return f"Information not available for {parking_name}."
+
+    # Se il parcheggio ha una tariffa fissa
+    if 'flat_rate' in park_info:
+        return f"Total parking fee at {parking_name}: {park_info['flat_rate'] * duration_hours:.2f} CHF"
+
+    # Verifica che tutte le chiavi necessarie siano presenti
+    if 'daytime' not in park_info or 'nighttime' not in park_info or 'day_rate' not in park_info or 'night_rate' not in park_info:
+        return f"Incomplete rate information for {parking_name}."
+
     total_fee = 0
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
     hours_left = duration_hours
@@ -413,7 +425,6 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
         current_time = current_time % 24  # Gestisci il passaggio da un giorno all'altro
 
     return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
-
 
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")

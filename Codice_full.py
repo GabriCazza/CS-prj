@@ -404,6 +404,23 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
         total_fee = park_info['flat_rate'] * math.floor(duration_hours)
         return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
 
+    # Function to handle extended rate calculations
+    def calculate_extended_rates(extended_rates, hours_left):
+        total_fee = 0
+        for rate in extended_rates:
+            if rate[0] is None:  # Tariff continues till the end
+                total_fee += rate[1] * min(hours_left, rate[2])
+                hours_left -= rate[2]
+                if hours_left <= 0:
+                    break
+            else:
+                applicable_hours = min(hours_left, rate[0])
+                total_fee += applicable_hours * rate[1]
+                hours_left -= applicable_hours
+                if hours_left <= 0:
+                    break
+        return total_fee, hours_left
+
     total_fee = 0
     hours_left = math.floor(duration_hours)  # Rounds down the total hours to ensure charging for complete hours only
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
@@ -471,7 +488,7 @@ def main():
         with col2:
             st.title("arkGallen")
 
-# Address and Destination Input
+    # Address and Destination Input
     st.sidebar.image(logo_path, width=120)
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
@@ -487,8 +504,9 @@ def main():
     arrival_datetime = parse_datetime(arrival_date.strftime("%Y-%m-%d"), arrival_time_str)
     departure_datetime = parse_datetime(departure_date.strftime("%Y-%m-%d"), departure_time_str)
     if arrival_datetime is None or departure_datetime is None:
+        st.sidebar.error("Invalid time format. Please use HHMM or HH.MM.")
         return
-    
+
     # Calculate duration and format it
     if departure_datetime > arrival_datetime:
         duration_delta = departure_datetime - arrival_datetime
@@ -498,8 +516,7 @@ def main():
         st.sidebar.write(f"Duration of parking: {int(days)} days, {int(hours)} hours, {int(minutes)} minutes")
     else:
         st.sidebar.error("Departure time must be after arrival time.")
-
-    total_hours = (departure_datetime - arrival_datetime).total_seconds() / 3600
+        return
 
     # Geocode addresses
     location_point = geocode_address(address) if address else None
@@ -536,7 +553,7 @@ def main():
             
             nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
             if nearest_parkhaus is not None and not nearest_parkhaus.empty:
-                parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, total_hours)
+                parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, (departure_datetime - arrival_datetime).total_seconds() / 3600)
                 if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
                     st.error(parking_fee)
                 else:

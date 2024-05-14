@@ -302,7 +302,6 @@ def parse_datetime(date_str, time_str):
             time_str = time_str.replace('.', ':')
         return datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
     except ValueError:
-        st.sidebar.error("Please enter the correct format for date and time.")
         return None
 
 def calculate_duration(arrival_datetime, departure_datetime):

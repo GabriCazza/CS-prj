@@ -436,51 +436,50 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
-    # Configurazione dell'interfaccia utente
+    # User Interface Configuration
     top_row = st.container()
     with top_row:
         col1, col2 = st.columns([0.4, 4])
         with col1:
-            logo_path = "image-removebg-preview (1).png"  # Assicurati che il percorso dell'immagine sia corretto
+            logo_path = "image-removebg-preview (1).png"  # Ensure the image path is correct
             st.image(logo_path, width=100)
         with col2:
-            st.title("arkGalle")
+            st.title("Parking in St. Gallen")
 
-    # Input per indirizzo e destinazione
-    st.sidebar.image("image-removebg-preview (1).png", width=120)
+    # Address and Destination Input
+    st.sidebar.image(logo_path, width=120)
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
-    
-    # Selezione delle date e degli orari
+
+    # Date and Time Selection
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())
     arrival_time = st.sidebar.time_input("Arrival Time", time(8, 0))
     departure_time = st.sidebar.time_input("Departure Time", time(18, 0))
 
-    # Calcolo delle durate
+    # Calculate duration
     arrival_datetime = datetime.combine(arrival_date, arrival_time)
     departure_datetime = datetime.combine(departure_date, departure_time)
-    days, hours, minutes = calculate_duration(arrival_datetime, departure_datetime)
-    total_hours = days * 24 + hours + minutes / 60
-    st.sidebar.write(f"Duration: {days} days, {hours} hours, {minutes} minutes")
+    total_hours = (departure_datetime - arrival_datetime).total_seconds() / 3600
 
-    # Geocoding degli indirizzi
+    # Geocode addresses
     location_point = geocode_address(address) if address else None
     destination_point = geocode_address(destination) if destination else None
 
+    # Check for valid destination
     if not destination_point:
-        st.error("Please provide a valid destination.")
+        st.sidebar.error("Please provide a valid destination.")
         return
 
-    # Slider per il raggio di ricerca e opzioni di visualizzazione
+    # Slider and parking options
     radius = st.sidebar.slider("Select search radius (in meters):", min_value=50, max_value=1000, value=500, step=50)
     show_parkhaus = st.sidebar.checkbox("🅿️ Parkhaus (Free & Limited)", True)
     show_extended_blue = st.sidebar.checkbox("🔵 Extended Blue Zone", True)
     show_white = st.sidebar.checkbox("⚪ White Parking", True)
     show_handicapped = st.sidebar.checkbox("♿ Handicapped Parking", True)
 
-    # Pulsante per visualizzare i parcheggi e calcolare le tariffe
+    # Display parking and calculate fees
     if st.sidebar.button("Show Parking and Calculate Fees"):
         with st.spinner("Loading information for you"):
             original_data = fetch_parking_data()
@@ -490,6 +489,11 @@ def main():
             add_search_radius(map_folium, destination_point, radius)
             add_user_markers(map_folium, location_point, destination_point)
             blue_count, white_count, handicapped_count = add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
+            
+            # Display the legend above the map
+            st.markdown("### Legend")
+            st.markdown("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
+            
             folium_static(map_folium)
             
             nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)

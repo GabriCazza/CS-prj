@@ -461,7 +461,7 @@ def main():
             logo_path = "image-removebg-preview (1).png"  # Ensure the image path is correct
             st.image(logo_path, width=100)
         with col2:
-            st.title("arkGallen")
+            st.title("Parking in St. Gallen")
 
     # Address and Destination Input
     st.sidebar.image(logo_path, width=120)
@@ -483,14 +483,9 @@ def main():
         return
 
     # Calculate duration and format it
-    if departure_datetime > arrival_datetime:
-        duration_delta = departure_datetime - arrival_datetime
-        days, remainder = divmod(duration_delta.total_seconds(), 86400)
-        hours, remainder = divmod(remainder, 3600)
-        minutes = remainder // 60
-        st.sidebar.write(f"Duration of parking: {int(days)} days, {int(hours)} hours, {int(minutes)} minutes")
-    else:
-        return
+    total_seconds = (departure_datetime - arrival_datetime).total_seconds()
+    total_hours = total_seconds / 3600
+    rounded_total_hours = math.floor(total_hours)  # Round down the total hours
 
     # Geocode addresses
     location_point = geocode_address(address) if address else None
@@ -498,8 +493,9 @@ def main():
 
     # Check for valid destination
     if not destination_point:
+        st.sidebar.error("Please provide a valid destination.")
         return
-    
+
     # Slider and parking options
     radius = st.sidebar.slider("Select search radius (in meters):", min_value=50, max_value=1000, value=500, step=50)
     show_parkhaus = st.sidebar.checkbox("🅿️ Parkhaus (Free & Limited)", True)
@@ -517,7 +513,7 @@ def main():
             add_search_radius(map_folium, destination_point, radius)
             add_user_markers(map_folium, location_point, destination_point)
             blue_count, white_count, handicapped_count = add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
-            
+
             folium_static(map_folium)
             
             # Display the legend above the map
@@ -525,12 +521,11 @@ def main():
             st.markdown("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
             
             nearest_parkhaus, estimated_walking_time = find_nearest_parking_place(filtered_data, destination_point)
-            if nearest_parkhaus is not None and not nearest_parkhaus.empty:
-                parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, (departure_datetime - arrival_datetime).total_seconds() / 3600)
-                if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
+            if nearest_parkhaus and not nearest_parkhaus.empty:
+                parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, rounded_total_hours)
+                if "Information not available" in parking_fee:
                     st.error(parking_fee)
                 else:
-                    # Include the estimated walking time in the display function
                     display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time)
             else:
                 st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")

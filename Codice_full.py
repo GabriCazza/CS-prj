@@ -506,30 +506,39 @@ def main():
 
     # Display parking and calculate fees
     if st.sidebar.button("Show Parking and Calculate Fees"):
-        with st.spinner("Loading information for you"):
-            original_data = fetch_parking_data()
-            additional_data = fetch_additional_data()
-            filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
-            map_folium = create_map()
-            add_search_radius(map_folium, destination_point, radius)
-            add_user_markers(map_folium, location_point, destination_point)
-            blue_count, white_count, handicapped_count = add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
-            
-            # Display the legend above the map
-            st.markdown("### Legend")
-            st.markdown("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
-            
-            folium_static(map_folium)
-            
-            nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
-            if nearest_parkhaus is not None and not nearest_parkhaus.empty:
-                parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, (departure_datetime - arrival_datetime).total_seconds() / 3600)
-                if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
-                    st.error(parking_fee)
-                else:
-                    display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count)
-            else:
-                st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
+    with st.spinner("Loading information for you"):
+        # Fetching parking data from two separate APIs
+        original_data = fetch_parking_data()
+        additional_data = fetch_additional_data()
 
-if __name__ == "__main__":
-    main()
+        # Filtering data based on the selected radius and conditions
+        filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
+
+        # Creating the map centered at St. Gallen
+        map_folium = create_map()
+        add_search_radius(map_folium, destination_point, radius)
+        add_user_markers(map_folium, location_point, destination_point)
+
+        # Adding parking spot markers to the map
+        blue_count, white_count, handicapped_count = add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
+        
+        # Displaying the map with all markers and zones
+        folium_static(map_folium)
+        
+        # Display the legend above the map for clarity
+        st.markdown("### Legend")
+        st.markdown("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
+        
+        # Finding the nearest parking house and calculating the walking time
+        nearest_parkhaus, estimated_walking_time = find_nearest_parking_place(filtered_data, destination_point)
+        if nearest_parkhaus is not None and not nearest_parkhaus.empty:
+            # Calculating parking fees based on the nearest parkhaus information
+            parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, (departure_datetime - arrival_datetime).total_seconds() / 3600)
+            if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
+                st.error(parking_fee)
+            else:
+                # Displaying parking information if data is correctly retrieved and calculated
+                display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time)
+        else:
+            # Handling cases where no valid parkhaus could be found
+            st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")

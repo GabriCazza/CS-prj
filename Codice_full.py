@@ -492,7 +492,9 @@ def main():
         folium_static(map_folium)
 
         nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
-        if nearest_parkhaus:
+        
+        # Correctly use the .empty attribute to check if the DataFrame is not empty
+        if nearest_parkhaus is not None and not nearest_parkhaus.empty:
             parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, total_hours)
             if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
                 st.error(parking_fee)
@@ -500,7 +502,6 @@ def main():
                 display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count)
         else:
             st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
-
 
     # Legenda dei marker sulla mappa
     st.write("### Legend")

@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import datetime, timedelta  
+from datetime import datetime, date, time
 from geopy import geocoders, exc
 import pandas as pd
 import folium
@@ -9,8 +9,6 @@ from geopy.distance import geodesic
 import random
 import re
 import math 
-import time 
-
 
 #Used to handale the API with a rate limit (unrelible conditions)
 def safe_request(url, params):
@@ -468,15 +466,33 @@ def main():
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
 
-    # Duration Selection
-    parking_hours = st.sidebar.selectbox("Select parking duration (hours):", [1, 2, 3, 4, 5, 6, 7, 8, 24], index=0)
+    # Date and Time Selection
+    arrival_date = st.sidebar.date_input("Arrival Date", date.today())
+    departure_date = st.sidebar.date_input("Departure Date", date.today())
+    arrival_time_str = st.sidebar.text_input("Enter arrival time (HHMM or HH.MM):", key="arrival_time")
+    departure_time_str = st.sidebar.text_input("Enter departure time (HHMM or HH.MM):", key="departure_time")
 
-    # Current datetime used as arrival; duration added to compute departure
-    arrival_datetime = datetime.now()
-    departure_datetime = arrival_datetime + timedelta(hours=parking_hours)
-    
-    # Display selected duration
-    st.sidebar.write(f"Duration of parking: {parking_hours} hours")
+    # Parse datetime using custom function for flexibility
+    arrival_datetime = parse_datetime(arrival_date.strftime("%Y-%m-%d"), arrival_time_str)
+    departure_datetime = parse_datetime(departure_date.strftime("%Y-%m-%d"), departure_time_str)
+    if arrival_datetime is None or departure_datetime is None:
+        st.sidebar.error("Invalid time format. Please use HHMM or HH.MM.")
+        return
+
+    # Calculate duration and format it
+    if departure_datetime > arrival_datetime:
+        duration_delta = departure_datetime - arrival_datetime
+        days, remainder = divmod(duration_delta.total_seconds(), 86400)
+        hours, remainder = divmod(remainder, 3600)
+        minutes = remainder // 60
+        st.sidebar.write(f"Duration of parking: {int(days)} days, {int(hours)} hours, {int(minutes)} minutes")
+    else:
+        st.sidebar.error("Departure time must be after arrival time.")
+        return
+
+    total_seconds = (departure_datetime - arrival_datetime).total_seconds()
+    total_hours = total_seconds / 3600
+    rounded_total_hours = math.floor(total_hours)  # Ensure charges are for complete hours only
 
     # Geocode addresses
     location_point = geocode_address(address) if address else None
@@ -486,7 +502,7 @@ def main():
     if not destination_point:
         st.sidebar.error("Please provide a valid destination.")
         return
-    
+
     # Slider and parking options
     radius = st.sidebar.slider("Select search radius (in meters):", min_value=50, max_value=1000, value=500, step=50)
     show_parkhaus = st.sidebar.checkbox("🅿️ Parkhaus (Free & Limited)", True)
@@ -513,13 +529,15 @@ def main():
             
             nearest_parkhaus, estimated_walking_time = find_nearest_parking_place(filtered_data, destination_point)
             if nearest_parkhaus is not None and not nearest_parkhaus.empty:
-                parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, parking_hours)
-                if "Information not available" in parking_fee:
+                parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, (departure_datetime - arrival_datetime).total_seconds() / 3600)
+                if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
                     st.error(parking_fee)
                 else:
+                    # Include the estimated walking time in the display function
                     display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time)
             else:
                 st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
+
 
 if __name__ == "__main__":
     main()

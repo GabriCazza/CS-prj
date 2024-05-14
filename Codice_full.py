@@ -481,11 +481,23 @@ def main():
     show_handicapped = st.sidebar.checkbox("♿ Handicapped Parking", True)
 
     # Pulsante per visualizzare i parcheggi e calcolare le tariffe
+    radius = st.sidebar.slider("Select search radius (in meters):", min_value=50, max_value=1000, value=500, step=50)
+    show_parkhaus = st.sidebar.checkbox("🅿️ Parkhaus (Free & Limited)", True)
+    show_extended_blue = st.sidebar.checkbox("🔵 Extended Blue Zone", True)
+    show_white = st.sidebar.checkbox("⚪ White Parking", True)
+    show_handicapped = st.sidebar.checkbox("♿ Handicapped Parking", True)
+
+    # Button to Display Parking and Calculate Fees
     if st.sidebar.button("Show Parking and Calculate Fees"):
-        with st.spinner("Loading map..."):
+        with st.spinner("Loading information for you"):
             original_data = fetch_parking_data()
             additional_data = fetch_additional_data()
             filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
+
+            # Legend for the markers on the map
+            st.markdown("### Legend")
+            st.markdown("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
+
             map_folium = create_map()
             add_search_radius(map_folium, destination_point, radius)
             add_user_markers(map_folium, location_point, destination_point)
@@ -501,10 +513,6 @@ def main():
                     display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count)
             else:
                 st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
-
-        # Legenda dei marker sulla mappa
-        st.markdown("### Legend")
-        st.markdown("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
 
 # Funzione ausiliaria per visualizzare le informazioni del parcheggio
 def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count):

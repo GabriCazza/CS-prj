@@ -487,24 +487,16 @@ def main():
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
 
-    # Custom Date and Time Input
-    date_str = st.sidebar.text_input("Enter arrival date (YYYY-MM-DD):", key="arrival_date")
-    time_str = st.sidebar.text_input("Enter arrival time (HHMM or HH.MM):", key="arrival_time")
-    arrival_datetime = parse_datetime(date_str, time_str)
-    if arrival_datetime is None:
-        st.sidebar.error("Invalid date or time format.")
-        return  # Stop execution if the datetime parsing fails
+    # Date and Time Selection
+    arrival_date = st.sidebar.date_input("Arrival Date", date.today())
+    departure_date = st.sidebar.date_input("Departure Date", date.today())
+    arrival_time = st.sidebar.time_input("Arrival Time", time(8, 0))
+    departure_time = st.sidebar.time_input("Departure Time", time(18, 0))
 
-    # Similar inputs for departure datetime if needed
-    departure_date_str = st.sidebar.text_input("Enter departure date (YYYY-MM-DD):", key="departure_date")
-    departure_time_str = st.sidebar.text_input("Enter departure time (HHMM or HH.MM):", key="departure_time")
-    departure_datetime = parse_datetime(departure_date_str, departure_time_str)
-    if departure_datetime is None:
-        st.sidebar.error("Invalid date or time format.")
-        return  # Stop execution if the datetime parsing fails
-
+    # Calculate duration
+    arrival_datetime = datetime.combine(arrival_date, arrival_time)
+    departure_datetime = datetime.combine(departure_date, departure_time)
     total_hours = (departure_datetime - arrival_datetime).total_seconds() / 3600
-    st.sidebar.write(f"Duration: {total_hours:.2f} hours")
 
     # Geocode addresses
     location_point = geocode_address(address) if address else None

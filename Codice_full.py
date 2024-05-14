@@ -98,17 +98,12 @@ def geocode_address(location):
             st.error(f"Geocoding error: {e}")
     return None
 
-
-
-
 def add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address):
     address_provided = bool(address)
     filtered_original_data = filter_parking_by_radius(original_data, destination_point, radius, show_parkhaus, address_provided)
     filtered_additional_data = filter_parking_by_radius(additional_data, destination_point, radius, False, address_provided)
-    blue_count = sum(1 for _ in additional_data if "erweiterte blaue zone" in _.get('info', '').lower())
-    white_count = sum(1 for _ in additional_data if "weiss" in _.get('info', '').lower())
-    handicapped_count = sum(1 for _ in additional_data if "invalidenparkplatz" in _.get('info', '').lower())
 
+    # Inizializza i conteggi a zero
     blue_count = 0
     white_count = 0
     handicapped_count = 0
@@ -116,7 +111,7 @@ def add_markers_to_map(map_folium, original_data, additional_data, location_poin
     if show_parkhaus:
         for _, row in filtered_original_data.iterrows():
             if row.get('category', '') == 'Parkhaus':
-                add_marker(map_folium, row, "🅿️", destination_point)  # Parkhaus markers
+                add_marker(map_folium, row, "🅿️", destination_point)
 
     if show_extended_blue:
         for _, row in filtered_additional_data.iterrows():
@@ -136,8 +131,9 @@ def add_markers_to_map(map_folium, original_data, additional_data, location_poin
                 add_marker(map_folium, row, "♿", None)
                 handicapped_count += 1
 
-    # Return counts
+    # Ritorna i conteggi per poterli visualizzare successivamente
     return blue_count, white_count, handicapped_count
+
 
 
 def add_marker(map_folium, row, icon, destination_point):
@@ -390,10 +386,6 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
             "night_rate": 1.5
         }
     }
-
-    park_info = rates.get(parking_name)
-    if not park_info:
-        return "Parking rate information not available for this parking."
 
     park_info = rates.get(parking_name, {})
     if not park_info:

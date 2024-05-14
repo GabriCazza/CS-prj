@@ -515,19 +515,20 @@ def main():
             add_user_markers(map_folium, location_point, destination_point)
             blue_count, white_count, handicapped_count = add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
             
+            folium_static(map_folium)
+            
             # Display the legend above the map
             st.markdown("### Legend")
             st.markdown("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
             
-            folium_static(map_folium)
-            
-            nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
+            nearest_parkhaus, estimated_walking_time = find_nearest_parking_place(filtered_data, destination_point)
             if nearest_parkhaus is not None and not nearest_parkhaus.empty:
                 parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, (departure_datetime - arrival_datetime).total_seconds() / 3600)
                 if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
                     st.error(parking_fee)
                 else:
-                    display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count)
+                    # Include the estimated walking time in the display function
+                    display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time)
             else:
                 st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
 

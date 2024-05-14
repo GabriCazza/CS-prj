@@ -468,6 +468,10 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
             <p>Estimated parking fee: {parking_fee}</p>
         </div>
         """, unsafe_allow_html=True)
+
+
+#The Whole MAIN function 
+        
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
@@ -501,6 +505,12 @@ def main():
         return
     
     total_hours = (departure_datetime - arrival_datetime).total_seconds() / 3600
+
+    # Display the parking duration
+    if total_hours > 0:
+        st.sidebar.write(f"Duration of parking: {total_hours:.2f} hours")
+    else:
+        st.sidebar.error("Departure time must be after arrival time.")
 
     # Geocode addresses
     location_point = geocode_address(address) if address else None

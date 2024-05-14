@@ -444,7 +444,7 @@ def main():
             logo_path = "image-removebg-preview (1).png"  # Assicurati che il percorso dell'immagine sia corretto
             st.image(logo_path, width=100)
         with col2:
-            st.title("Parking in St. Gallen")
+            st.title("arkGallen")
 
     # Input per indirizzo e destinazione
     st.sidebar.image(logo_path, width=120)

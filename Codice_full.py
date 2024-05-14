@@ -298,11 +298,11 @@ def parse_datetime(date_str, time_str):
     try:
         if re.match(r'^\d{4}$', time_str):  # HHMM
             time_str = f"{time_str[:2]}:{time_str[2:]}"
-        elif re.match(r'^\d{2}.\d{2}$', time_str):  # HH.MM
+        elif re.match(r'^\d{2}\.\d{2}$', time_str):  # HH.MM
             time_str = time_str.replace('.', ':')
         return datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
     except ValueError:
-        st.sidebar.write("Please enter the correct format for date and time.")
+        st.sidebar.error("Please enter the correct format for date and time.")
         return None
 
 def calculate_duration(arrival_datetime, departure_datetime):
@@ -485,7 +485,7 @@ def main():
         with col2:
             st.title("arkGallen")
 
-    # Address and Destination Input
+# Address and Destination Input
     st.sidebar.image(logo_path, width=120)
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
@@ -504,6 +504,16 @@ def main():
         st.sidebar.error("Invalid time format. Please use HHMM or HH.MM.")
         return
     
+    # Calculate duration and format it
+    if departure_datetime > arrival_datetime:
+        duration_delta = departure_datetime - arrival_datetime
+        days, remainder = divmod(duration_delta.total_seconds(), 86400)
+        hours, remainder = divmod(remainder, 3600)
+        minutes = remainder // 60
+        st.sidebar.write(f"Duration of parking: {int(days)} days, {int(hours)} hours, {int(minutes)} minutes")
+    else:
+        st.sidebar.error("Departure time must be after arrival time.")
+        
     total_hours = (departure_datetime - arrival_datetime).total_seconds() / 3600
 
     # Display the parking duration

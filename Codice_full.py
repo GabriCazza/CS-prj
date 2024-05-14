@@ -389,21 +389,24 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 
     park_info = rates.get(parking_name, {})
     if not park_info:
-        return "Parking rate information not available for this parking."
+        return f"Parking rate information not available for {parking_name}."
+
+    if 'daytime' not in park_info or 'nighttime' not in park_info or 'day_rate' not in park_info or 'night_rate' not in park_info:
+        return f"Incomplete rate information for {parking_name}."
 
     total_fee = 0
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
     hours_left = duration_hours
 
     while hours_left > 0:
-        if 'daytime' in park_info and park_info['daytime'][0] <= current_time < park_info['daytime'][1]:
+        if park_info['daytime'][0] <= current_time < park_info['daytime'][1]:
             day_hours = min(hours_left, park_info['daytime'][1] - current_time)
-            total_fee += day_hours * park_info.get('day_rate', 0)
+            total_fee += day_hours * park_info['day_rate']
             current_time += day_hours
             hours_left -= day_hours
-        elif 'nighttime' in park_info and (current_time >= park_info['nighttime'][0] or current_time < park_info['nighttime'][1]):
-            night_hours = min(hours_left, 24 - current_time) if current_time >= park_info['nighttime'][0] else park_info['nighttime'][1] - current_time
-            total_fee += night_hours * park_info.get('night_rate', 0)
+        elif current_time >= park_info['nighttime'][0] or current_time < park_info['nighttime'][1]:
+            night_hours = min(hours_left, 24 - current_time) if current_time >= park_info['nighttime'][0] else min(hours_left, park_info['nighttime'][1] - current_time)
+            total_fee += night_hours * park_info['night_rate']
             current_time += night_hours
             hours_left -= night_hours
         current_time = current_time % 24  # Gestisci il passaggio da un giorno all'altro

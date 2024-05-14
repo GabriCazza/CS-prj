@@ -465,7 +465,7 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
             <p>Blue parking spots: {blue_count}</p>
             <p>White parking spots: {white_count}</p>
             <p>Handicapped parking spots: {handicapped_count}</p>
-            <p>Estimated parking fee: {parking_fee}</p>
+            <p>Estimated parking fee: round({parking_fee})</p>
         </div>
         """, unsafe_allow_html=True)
 

@@ -466,6 +466,7 @@ def main():
         blue_count, white_count, handicapped_count = add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address)
         folium_static(map_folium)
 
+    
         nearest_parkhaus, _ = find_nearest_parking_place(filtered_data, destination_point)
         info_column, extra_info_column = st.columns(2)
         if nearest_parkhaus is not None:
@@ -481,18 +482,17 @@ def main():
                 """.format(nearest_parkhaus['phname'], nearest_parkhaus['Estimated Walking Time'], nearest_parkhaus['description'], nearest_parkhaus['shortfree'], nearest_parkhaus['shortmax']), unsafe_allow_html=True)
             
             with extra_info_column:
-                st.markdown("""
+                st.markdown(f"""
                 <div style="background-color:#add8e6; padding:10px; border-radius:5px;">
                     <h4>Additional Information</h4>
-                    <p>Blue parking spots: {}</p>
-                    <p>White parking spots: {}</p>
-                    <p>Handicapped parking spots: {}</p>
-                    <p>Estimated parking fee at {}: {} CHF</p>
+                    <p>Blue parking spots: {blue_count}</p>
+                    <p>White parking spots: {white_count}</p>
+                    <p>Handicapped parking spots: {handicapped_count}</p>
+                    <p>Estimated parking fee: {parking_fee}</p>
                 </div>
-                """.format(blue_count, white_count, handicapped_count, nearest_parkhaus['phname'], calculate_parking_fees(nearest_parkhaus['phname'], arrival_datetime, total_hours)), unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
         else:
-            st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
-
+            st.error("No valid parking data found.")
     # Display legend for map markers
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")

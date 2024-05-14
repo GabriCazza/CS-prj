@@ -466,27 +466,29 @@ def main():
         info_column, extra_info_column = st.columns(2)
         if nearest_parkhaus is not None:
             with info_column:
-                st.markdown(f"""
+                st.markdown("""
                 <div style="background-color:#adebad; padding:10px; border-radius:5px;">
                     <h4>Nearest Parkhaus Information</h4>
-                    <p>Name: {nearest_parkhaus['phname']}</p>
-                    <p>Estimated Walking Time: {nearest_parkhaus['Estimated Walking Time']} minutes</p>
-                    <p>Description: {nearest_parkhaus['description']}</p>
-                    <p>Spaces: {nearest_parkhaus['shortfree']}/{nearest_parkhaus['shortmax']}</p>
+                    <p>Name: {}</p>
+                    <p>Estimated Walking Time: {} minutes</p>
+                    <p>Description: {}</p>
+                    <p>Spaces: {}/{}<p>
                 </div>
-                """, unsafe_allow_html=True)
+                """.format(nearest_parkhaus['phname'], nearest_parkhaus['Estimated Walking Time'], nearest_parkhaus['description'], nearest_parkhaus['shortfree'], nearest_parkhaus['shortmax']), unsafe_allow_html=True)
+            
             with extra_info_column:
-                st.markdown(f"""
+                st.markdown("""
                 <div style="background-color:#add8e6; padding:10px; border-radius:5px;">
                     <h4>Additional Information</h4>
-                    <p>Blue parking spots: {blue_count}</p>
-                    <p>White parking spots: {white_count}</p>
-                    <p>Handicapped parking spots: {handicapped_count}</p>
-                    <p>Estimated parking fee at {nearest_parkhaus['phname']}: {calculate_parking_fees(nearest_parkhaus['phname'], arrival_datetime, total_hours)}</p>
+                    <p>Blue parking spots: {}</p>
+                    <p>White parking spots: {}</p>
+                    <p>Handicapped parking spots: {}</p>
+                    <p>Estimated parking fee at {}: {} CHF</p>
                 </div>
-                """, unsafe_allow_html=True)
+                """.format(blue_count, white_count, handicapped_count, nearest_parkhaus['phname'], calculate_parking_fees(nearest_parkhaus['phname'], arrival_datetime, total_hours)), unsafe_allow_html=True)
         else:
             st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
+
     # Display legend for map markers
     st.write("### Legend")
     st.write("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")

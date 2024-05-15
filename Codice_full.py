@@ -53,7 +53,7 @@ def fetch_parking_data():
 # Call of the second API (all the Parkings)   
  
 def fetch_additional_data():
-    base_url = "https://daten.stadt.sg.ch/api/explore/v2.1/catalog/datasets/points-of-interest-/records"
+    base_url = "https://daten.stadt.sg.ch/api/explore/v2.1/catalog/datasets/points-of-interest-/records?refine=kategorie%3A%22Parkpl%C3%A4tze%2C%20Parkh%C3%A4user%22"
     params = {
         "refine": 'kategorie:"Parkplätze, Parkhäuser"',
         "limit": 100,

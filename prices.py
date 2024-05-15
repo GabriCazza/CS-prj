@@ -140,37 +140,37 @@ def calculate_fee_brühltor(arrival_datetime, duration_hours):
         "day": [(1, 2.00, 1), (None, 1.00, 0.5)],  # After 1st hour, charge per 30 minutes
         "night": [(1, 1.20, 1), (None, 0.60, 0.5)]  # Night rates
     }
-    daily_rate = 25  # Daily flat rate
     valid_hours = {"day": (7, 24), "night": (0, 7)}  # Operating hours
 
     total_fee = 0
     current_time = arrival_datetime
+    hours_left = duration_hours
 
-    # Process hourly rates based on current time
-    while duration_hours > 0:
+    while hours_left > 0:
         current_hour = current_time.hour + current_time.minute / 60
+
+        # Determine if it's day or night for rate application
         if valid_hours["day"][0] <= current_hour < valid_hours["day"][1]:
-            # Apply daytime rates
             rate_info = rates["day"]
         else:
-            # Apply nighttime rates
             rate_info = rates["night"]
 
+        # Apply rates based on the current time period
         for hours, rate, interval in rate_info:
             if hours is None or duration_hours < hours:
                 hours_to_charge = min(duration_hours, interval)
                 total_fee += (hours_to_charge / interval) * rate
                 duration_hours -= hours_to_charge
                 current_time += timedelta(hours=hours_to_charge)
-                break
             elif duration_hours >= hours:
                 total_fee += rate
                 duration_hours -= hours
                 current_time += timedelta(hours=hours)
 
-        # Adjust for day-night transition
-        current_time = (current_time + timedelta(hours=0.1)) % 24  # Ensure looping through day/night cycle
+        # Handle day-night transition and ensure time updates correctly
+        current_time = (current_time.hour % 24) + timedelta(minutes=current_time.minute)
 
+    # Return total fee, rounding up to the nearest franc
     return f"Total parking fee at Brühltor: {math.ceil(total_fee):.2f} CHF"
 
 

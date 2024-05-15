@@ -465,6 +465,6 @@ def main():
                     display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time)
             else:
                 st.write("""### No nearby valid Parkhaus found or the Parkhaus name is missing 😔""")
-                st.write("""Try to make the radius bigger""")
+                st.write("""## Try to make the radius bigger🔎""")
 if __name__ == "__main__":
     main()

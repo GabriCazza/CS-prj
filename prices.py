@@ -63,7 +63,7 @@ def calculate_fee_manor(arrival_datetime, rounded_total_hours):
         total_fee += remaining_time_in_segments * mid_hours_rate
     else:
         # Charges for the first three hours
-        total_fee += first_hour_rate + (2 * 3 * mid_hours_rate)  # 2 hours in 20-minute segments
+        total_fee += first_hour_rate + (2 * mid_hours_rate)  # 2 hours in 20-minute segments
         # Calculate time beyond three hours in 20-minute segments
         remaining_time_in_segments = math.ceil((rounded_total_hours - 3) * 3)
         total_fee += remaining_time_in_segments * beyond_hours_rate

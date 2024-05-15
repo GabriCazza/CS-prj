@@ -4,6 +4,3 @@ folium
 geopy
 requests
 streamlit_folium
-math
-
-

@@ -145,7 +145,7 @@ def calculate_fee_burggraben(arrival_datetime, rounded_total_hours):
             additional_hours = rounded_total_hours - 1
             total_fee += math.ceil(additional_hours * 2) * (night_subsequent_rate / 2)  # Subsequent rates per 30 minutes
 
-    return f" at Burggraben: {math.ceil(total_fee):.2f} CHF"
+    return f" at Burggraben: {(total_fee):.2f} CHF"
 
 
 def calculate_fee_stadtpark_azsg(arrival_datetime, duration_hours):

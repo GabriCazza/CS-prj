@@ -309,14 +309,57 @@ def calculate_duration(arrival_datetime, departure_datetime):
 def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     rates = {
         "Manor": {
-            "daytime": (5.5, 21),  # Daytime from 5:30 AM to 9 PM
-            "nighttime": (21, 24) + (0, 0.5),  # Nighttime from 9 PM to 12 AM and 12 AM to 0:30 AM
-            "rates": [(1, 2), (3, 3, 20), (None, 4.5, 20)],  # Rates for different hours
-            "night_rate": 1  # Night rate after 9 PM to 5:30 AM
+            "daytime": (5.5, 21),
+            "nighttime": (21, 0.5),
+            "rates": [(1, 2), (3, 3, 20), (None, 4.5, 20)],
+            "night_rate": 1
         },
         "Bahnhof": {
-            "free_minutes": 10,
-            "rates": [(0.5, 1.5), (1, 3), (None, 4, 30)]
+            "rates": [
+                (0.1667, 0),
+                (0.3333, 0.50),
+                (0.5, 1.50),
+                (1, 3.00),
+                (None, 2.00, 0.5)
+            ],
+            "daily_rates": [(1, 25), (2, 50), (3, 75)]
+        },
+        "Brühltor": {
+            "daily_rates": [(24, 25), (28, 50), (72, 75)],
+            "standard_rates": {
+                "weekend": [(1, 2.40), (None, 1.20, 0.5)],
+                "day": [(1, 2.00), (None, 1.00, 0.5)],
+                "night": [(1, 1.20), (None, 0.60, 0.5)]
+            },
+            "valid_hours": {
+                "day": (7, 24),
+                "night": (0, 7)
+            }
+        },
+        "Burggraben": {
+            "daily_rates": [(24, 25), (48, 50), (72, 75)],
+            "standard_rates": {
+                "weekend": [(1, 2.40), (None, 1.20, 0.5)],
+                "day": [(1, 2.00), (None, 1.00, 0.5)],
+                "night": [(1, 1.20), (None, 0.60, 0.5)]
+            },
+            "valid_hours": {
+                "day": (7, 24),
+                "night": (0, 7)
+            }
+        },
+        "Stadtpark AZSG": {
+            "daily_rates": [(24, 18), (48, 36), (72, 54)],
+            "standard_rates": {
+                "event": [(1, 2.40), (None, 1.20, 0.5)],
+                "day": [(1, 1.60), (None, 0.80, 0.5)],
+                "night": [(1, 0.80), (None, 0.40, 0.5)]
+            },
+            "valid_hours": {
+                "day": (7, 24),
+                "night": (0, 7)
+            },
+            "event_days": [5]  # Assuming events occur on Saturdays
         },
         "Neumarkt": {
             "flat_rate": 1
@@ -348,24 +391,6 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
         "Spisertor": {
             "flat_rate": 2.5
         },
-        "Burggraben": {
-            "daytime": (7, 24),
-            "nighttime": (24, 7),
-            "extended_rate": [(3, 2), (None, 1, 60)],
-            "night_rate": 0.6
-        },
-        "Brühltor": {
-            "daytime": (7, 24),
-            "nighttime": (24, 7),
-            "extended_rate": [(3, 2), (None, 1, 60)],
-            "night_rate": 0.6
-        },
-        "Stadtpark AZSG": {
-            "daytime": (7, 24),
-            "nighttime": (24, 7),
-            "extended_rate": [(3, 1.6), (None, 0.8, 60)],
-            "night_rate": 0.6
-        },
         "Spelterini": {
             "daytime": (7, 24),
             "nighttime": (24, 7),
@@ -386,36 +411,32 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
         }
     }
 
-    park_info = rates.get(parking_name)
-    if not park_info:
-        return f"Information not available for {parking_name}."
-
+    park_info = rates.get(parking_name, {})
     total_fee = 0
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
     hours_left = duration_hours
+    day_of_week = arrival_datetime.weekday()  # Monday is 0 and Sunday is 6
 
-    if 'flat_rate' in park_info:
-        total_fee = park_info['flat_rate'] * duration_hours
+    # Apply flat daily rates
+    for duration, rate in park_info.get("daily_rates", []):
+        if duration_hours <= duration:
+            return f"Total parking fee at {parking_name}: {rate:.2f} CHF"
+
+    # Determine which rates to apply based on day and time
+    if day_of_week == 6 or (day_of_week == 5 and current_time >= 8):  # Special rates for Saturdays and Sundays
+        applicable_rates = park_info["standard_rates"]["weekend"]
+    elif park_info["valid_hours"]["day"][0] <= current_time < park_info["valid_hours"]["day"][1]:
+        applicable_rates = park_info["standard_rates"]["day"]
     else:
-        while hours_left > 0:
-            if current_time >= park_info['daytime'][0] and current_time < park_info['daytime'][1]:
-                # Calculate daytime fees
-                next_boundary = park_info['daytime'][1]
-                hours_to_add = min(hours_left, next_boundary - current_time)
-                rate = next((r for h, r, *_ in park_info['rates'] if h is None or h >= hours_to_add), park_info['rates'][-1][1])
-                total_fee += rate * hours_to_add
-                hours_left -= hours_to_add
-                current_time += hours_to_add
-            else:
-                # Calculate nighttime fees
-                if current_time >= park_info['nighttime'][0] or current_time < park_info['nighttime'][1]:
-                    hours_to_night_end = 24 - current_time if current_time >= park_info['nighttime'][0] else park_info['nighttime'][1] - current_time
-                    night_hours = min(hours_left, hours_to_night_end)
-                    total_fee += night_hours * park_info['night_rate']
-                    hours_left -= night_hours
-                    current_time += night_hours
+        applicable_rates = park_info["standard_rates"]["night"]
 
-            current_time %= 24  # Reset time to the start of the next day if needed
+    # Calculate fees based on applicable rates
+    for hours, rate in applicable_rates:
+        if hours is None or hours_left >= hours:
+            periods = hours_left / (rate[2] if len(rate) > 2 else 1)
+            total_fee += math.ceil(periods) * rate[1] if len(rate) > 1 else rate
+            break
+        hours_left -= hours
 
     return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
 

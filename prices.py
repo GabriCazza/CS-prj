@@ -45,43 +45,42 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 
 def calculate_fee_manor(arrival_datetime, duration_hours):
     daytime_start = 5.5  # 5:30 AM
-    daytime_end = 21    # 9:00 PM
-    night_rate = 1      # CHF per hour at night
-    rates = [(1, 2, 60), (3, 1, 20), (None, 1.5, 20)]  # Rates as (hours, rate, interval in minutes)
+    daytime_end = 21     # 9:00 PM
+    night_rate = 1.00    # CHF per 30 minutes at night from 21:00 to 00:30
+    rates = [(1, 2), (3, 1.00 / 3), (None, 1.50 / 3)]  # Rates as (hours, rate per hour)
 
     total_fee = 0
+    hours_processed = 0
     current_time = arrival_datetime
 
-    while duration_hours > 0:
+    # Process daytime rates
+    while hours_processed < duration_hours:
         current_hour = current_time.hour + current_time.minute / 60
 
-        # Determine if current time is during day or night
-        if daytime_start <= current_hour < daytime_end:
-            for hours, rate, interval in rates:
-                if hours is None:  # For the continuous rate till the end of the duration
-                    interval_hours = interval / 60
-                    hours_to_charge = min(duration_hours, interval_hours)
-                    total_fee += rate * hours_to_charge
-                    duration_hours -= hours_to_charge
-                    current_time += timedelta(hours=hours_to_charge)
-                elif duration_hours >= hours:  # If the duration is greater than the rate hours
-                    total_fee += rate * hours
-                    duration_hours -= hours
-                    current_time += timedelta(hours=hours)
-                else:  # If the remaining hours are less than the block hours
-                    total_fee += rate * duration_hours
-                    current_time += timedelta(hours=duration_hours)
-                    duration_hours = 0
-        else:  # Night rate calculations
-            if current_hour >= daytime_end:
-                time_till_day = 24 - current_hour + daytime_start
-            else:
-                time_till_day = daytime_start - current_hour
+        if 21 <= current_hour < 24.5 or 0 <= current_hour < 0.5:  # Night rate condition from 21:00 to 00:30
+            time_in_night_hours = min(duration_hours - hours_processed, 0.5 - (current_hour - 21) if current_hour >= 21 else 0.5)
+            total_fee += (time_in_night_hours * 60 / 30) * night_rate
+            hours_processed += time_in_night_hours
+            current_time += timedelta(hours=time_in_night_hours)
+        elif daytime_start <= current_hour < daytime_end:
+            for hours, rate in rates:
+                if hours is None or hours_processed + hours > duration_hours:
+                    time_to_charge = duration_hours - hours_processed
+                else:
+                    time_to_charge = hours
 
-            hours_to_charge = min(duration_hours, time_till_day)
-            total_fee += hours_to_charge * night_rate
-            duration_hours -= hours_to_charge
-            current_time += timedelta(hours=hours_to_charge)
+                total_fee += (time_to_charge * 60 / 20) * rate  # Convert hour rate to 20 minutes rate
+                hours_processed += time_to_charge
+                current_time += timedelta(hours=time_to_charge)
+
+                if hours is None:  # Exit loop once we start using the unlimited hour rate
+                    break
+
+        else:  # Time before daytime start or after night rate end
+            hours_to_daytime_start = max(daytime_start - current_hour, 0)
+            time_to_charge = min(hours_to_daytime_start, duration_hours - hours_processed)
+            current_time += timedelta(hours=time_to_charge)
+            hours_processed += time_to_charge
 
     return math.ceil(total_fee)  # Round up the total fee to the nearest whole number
 

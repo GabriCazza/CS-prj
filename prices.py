@@ -10,7 +10,7 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     elif parking_name == "Bahnhof":
         return calculate_fee_bahnhof(arrival_datetime, duration_hours)
     elif parking_name == "Brühltor":
-        return calculate_fee_bruehltor(arrival_datetime, duration_hours)
+        return calculate_fee_brültor(arrival_datetime, duration_hours)
     elif parking_name == "Burggraben":
         return calculate_fee_burggraben(arrival_datetime, duration_hours)
     elif parking_name == "Stadtpark AZSG":
@@ -118,7 +118,7 @@ def calculate_fee_bahnhof(arrival_datetime, duration_hours):
 
     return math.ceil(total_fee) 
 
-def calculate_fee_bruehltor(arrival_datetime, duration_hours):
+def calculate_fee_brühltor(arrival_datetime, duration_hours):
     # Defining rate details for Brühltor
     rates = {
         "day": [(1, 2.00, 1), (None, 1.00, 0.5)],  # After 1st hour, charge per 30 minutes

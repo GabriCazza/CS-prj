@@ -43,11 +43,11 @@ def calculate_parking_fees(parking_name, arrival_datetime, rounded_total_hours):
 #Calculation for every single parking space
 #standard identification--> def "name parking"(arrival_datetime, duration_hours)
 
-def calculate_fee_manor(arrival_datetime, duration_hours):
+def calculate_fee_manor(arrival_datetime, rounded_total_hours):
     # Definizione dei limiti temporali per la tariffa notturna
     night_start = 21.5   # 21:30 PM
     night_end = 0.5      # 00:30 AM, tecnicamente il giorno seguente
-    
+
     # Tariffe diurne dettagliate
     rates = [
         (1, 2.00),                    # Tariffa per la prima ora
@@ -59,15 +59,15 @@ def calculate_fee_manor(arrival_datetime, duration_hours):
     current_time = arrival_datetime
     hours_processed = 0
 
-    while hours_processed < duration_hours:
+    while hours_processed < rounded_total_hours:
         current_hour = current_time.hour + current_time.minute / 60
 
         if night_start <= current_hour or current_hour < night_end:
             # Calcolo delle tariffe notturne
             if current_hour >= night_start:
-                hours_to_charge = min(duration_hours - hours_processed, 24 - current_hour + night_end)
+                hours_to_charge = min(rounded_total_hours - hours_processed, 24 - current_hour + night_end)
             else:
-                hours_to_charge = min(duration_hours - hours_processed, night_end - current_hour)
+                hours_to_charge = min(rounded_total_hours - hours_processed, night_end - current_hour)
 
             segments = hours_to_charge * 2  # Segmenti di 30 minuti
             total_fee += segments * 1.00  # 1 CHF ogni 30 minuti
@@ -76,8 +76,8 @@ def calculate_fee_manor(arrival_datetime, duration_hours):
         else:
             # Calcolo delle tariffe diurne
             for hours, rate in rates:
-                if hours is None or hours_processed + hours > duration_hours:
-                    hours = duration_hours - hours_processed
+                if hours is None or hours_processed + hours > rounded_total_hours:
+                    hours = rounded_total_hours - hours_processed
 
                 segments = hours * 3  # Segmenti di 20 minuti
                 total_fee += segments * rate
@@ -85,6 +85,7 @@ def calculate_fee_manor(arrival_datetime, duration_hours):
                 current_time += timedelta(hours=hours)
 
     return math.ceil(total_fee)  # Arrotonda per eccesso il costo totale
+
 
 
 def calculate_fee_bahnhof(arrival_datetime, duration_hours):

@@ -421,13 +421,17 @@ def main():
             nearest_parkhaus, estimated_walking_time = find_nearest_parking_place(filtered_data, destination_point)
             if nearest_parkhaus is not None and not nearest_parkhaus.empty:
                 parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, rounded_total_hours)
+
+                # Ensure parking_fee is a string to safely check its contents
+                if isinstance(parking_fee, (int, float)):
+                    parking_fee = f"{parking_fee:.2f} CHF"  # Format numerical fee as a string
+
                 if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
                     st.error(parking_fee)
                 else:
-                    # Include the estimated walking time in the display function
+                    # Process valid parking fee display
                     display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time)
             else:
                 st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
-
 if __name__ == "__main__":
     main()

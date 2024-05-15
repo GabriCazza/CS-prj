@@ -429,6 +429,7 @@ def main():
         return
 
     # Slider and parking options
+    st.sidebar.markdown("Apply the desired filters 📍")
     radius = st.sidebar.slider("Select search radius (in meters):", min_value=50, max_value=1000, value=500, step=50)
     show_parkhaus = st.sidebar.checkbox("🅿️ Parkhaus (Free & Limited)", True)
     show_extended_blue = st.sidebar.checkbox("🔵 Extended Blue Zone", True)

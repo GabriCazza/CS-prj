@@ -382,19 +382,28 @@ def calculate_fee_oberer_graben(arrival_datetime, duration_hours):
     return f"Total parking fee at Oberer Graben: {total_fee:.2f} CHF"
     
 def calculate_fee_raiffeisen(arrival_datetime, duration_hours):
-    initial_rate_hours = 3  # The first three hours have a different rate
-    subsequent_rate = 1.5  # CHF per each additional hour after the first three hours
-    initial_rate = 2  # CHF for the first three hours
+    initial_rate = 2.0  # CHF per hour for the first 3 hours
+    mid_rate = 1.5  # CHF per hour from 3 to 13 hours
+    long_term_rate = 1.0  # CHF per hour beyond 13 hours
+    first_rate_hours = 3  # Duration for the initial rate
+    mid_rate_hours = 10  # Duration from 3 to 13 hours (10 additional hours)
 
     total_fee = 0.0
-    if duration_hours <= initial_rate_hours:
-        total_fee = initial_rate * duration_hours
+
+    if duration_hours <= first_rate_hours:
+        total_fee = duration_hours * initial_rate
+    elif duration_hours <= first_rate_hours + mid_rate_hours:
+        total_fee = first_rate_hours * initial_rate
+        remaining_hours = duration_hours - first_rate_hours
+        total_fee += remaining_hours * mid_rate
     else:
-        total_fee += initial_rate_hours * initial_rate  # Charge for the first three hours
-        remaining_hours = duration_hours - initial_rate_hours
-        total_fee += remaining_hours * subsequent_rate  # Charge for the remaining hours
+        total_fee = first_rate_hours * initial_rate
+        total_fee += mid_rate_hours * mid_rate
+        remaining_hours = duration_hours - (first_rate_hours + mid_rate_hours)
+        total_fee += remaining_hours * long_term_rate
 
     return f"Total parking fee at Raiffeisen: {total_fee:.2f} CHF"
+
 
 def calculate_fee_einstein(arrival_datetime, duration_hours):
     flat_rate = 2.5  # CHF per hour regardless of duration

@@ -550,6 +550,5 @@ def main():
             else:
                 st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
 
-
 if __name__ == "__main__":
     main()

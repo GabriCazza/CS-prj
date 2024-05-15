@@ -112,7 +112,7 @@ def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):
         else:
             total_fee += nighttime_rate  # First hour
             additional_hours = rounded_total_hours - 1
-            total_fee += math.ceil(additional_hours * 2) * (night_subsequent_rate / 2)  # Subsequent rates per 30 minutes
+            total_fee += (additional_hours * 2) * (night_subsequent_rate / 2)  # Subsequent rates per 30 minutes
 
     # Return total fee, rounding up to the nearest franc
     return f"Total parking fee at Brühltor: {(total_fee):.2f} CHF"

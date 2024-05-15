@@ -90,7 +90,7 @@ def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
     return f"Total parking fee at Bahnhof: {(total_fee)} CHF"
 
 def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):
-    daytime_rate = 2  # CHF for the first hour
+    daytime_rate = 2.00  # CHF for the first hour
     day_subsequent_rate = 1.00  # CHF per 30 minutes after the first hour
     nighttime_rate = 1.20  # CHF for the first hour at night
     night_subsequent_rate = 0.60  # CHF per 30 minutes after the first hour at night
@@ -112,7 +112,7 @@ def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):
         else:
             total_fee += nighttime_rate  # First hour
             additional_hours = rounded_total_hours - 1
-            total_fee += (additional_hours * 2) * (night_subsequent_rate / 2)  # Subsequent rates per 30 minutes
+            total_fee += math.ceil(additional_hours * 2) * (night_subsequent_rate / 2)  # Subsequent rates per 30 minutes
 
     # Return total fee, rounding up to the nearest franc
     return f"Total parking fee at Brühltor: {(total_fee):.2f} CHF"

@@ -101,13 +101,13 @@ def validate_postal_code(location):
     return False
 
 def geocode_address(location):
-    """Converts an address to a point (latitude, longitude) assuming the location is in St. Gallen, Switzerland."""
+    """Attempt to geocode a location with error handling for HTTP status code 403."""
     if not location:
         st.error("Please enter an address.")
         return None
-    
+
     full_address = f"{location}, St. Gallen, Switzerland"
-    geolocator = geocoders.Nominatim(user_agent="geoapiExercises")
+    geolocator = Nominatim(user_agent="myGeocoderApp_v1")
     try:
         geocoded_location = geolocator.geocode(full_address)
         if geocoded_location:
@@ -116,10 +116,10 @@ def geocode_address(location):
         st.error("Geocoding service timed out. Please try again later.")
     except GeocoderQuotaExceeded:
         st.error("Geocoding quota exceeded. Please try again later.")
-    except GeocoderUnavailable:
-        st.error("Geocoding service is unavailable. Please check your internet connection.")
     except Exception as e:
-        st.error(f"An unexpected error occurred: {str(e)}")
+        st.error(f"An unexpected error occurred: {e}")
+        if e.status_code == 403:
+            st.error("Access forbidden. Check API key and request rate.")
     return None
 
 

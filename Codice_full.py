@@ -390,32 +390,27 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     if not park_info:
         return f"Information not available for {parking_name}."
 
-    if 'flat_rate' in park_info:
-        total_fee = park_info['flat_rate'] * duration_hours
-        return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
-
+    # Calculate the total parking fee
     total_fee = 0
-    hours_left = duration_hours  # Already rounded up
+    hours_left = math.ceil(duration_hours)  # Round up to account for any part of an hour
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
 
-    # Calculate fees based on day and night rates
+    # Apply day and night rates
     while hours_left > 0:
-        if 'daytime' in park_info and current_time < park_info['daytime'][1]:
-            if current_time < park_info['daytime'][0]:
-                current_time = park_info['daytime'][0]  # Jump to daytime start if before it
+        if 'daytime' in park_info and park_info['daytime'][0] <= current_time < park_info['daytime'][1]:
+            # Day rate
             day_hours = min(hours_left, park_info['daytime'][1] - current_time)
             total_fee += day_hours * park_info.get('day_rate', 0)
             hours_left -= day_hours
             current_time += day_hours
         elif 'nighttime' in park_info:
-            if current_time >= park_info['nighttime'][1] and current_time < 24:
-                current_time = 24  # Skip to end of day if after nighttime
-            else:
-                night_hours = min(hours_left, park_info['nighttime'][1] - current_time)
+            # Night rate
+            if current_time >= park_info['nighttime'][1] or current_time < park_info['nighttime'][0]:
+                night_hours = min(hours_left, 24 - current_time + park_info['nighttime'][0])
                 total_fee += night_hours * park_info.get('night_rate', 0)
                 hours_left -= night_hours
                 current_time += night_hours
-        current_time %= 24  # Reset time to start of the next day if needed
+        current_time %= 24  # Reset to the start of the day if over 24 hours
 
     return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
 

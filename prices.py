@@ -106,17 +106,17 @@ def calculate_fee_bahnhof(arrival_datetime, duration_hours):
         duration_hours -= 1
         hours_processed += 1
     
-    # Apply the rate beyond the first hour
+    # Apply the rate beyond the first hour, rounding duration to the nearest 30 minutes for billing
     while duration_hours > 0:
         if duration_hours >= 0.5:
             total_fee += 2.00  # Every 30 minutes at 2 CHF
             duration_hours -= 0.5
         else:
-            total_fee += (duration_hours / 0.5) * 2.00  # Remaining time less than 30 minutes
+            # Round up to the next 30 minutes if there's any remaining time less than 30 minutes
+            total_fee += 2.00
             break
 
-    return math.ceil(total_fee)  # Round up the total fee to the nearest whole number
-
+    return math.ceil(total_fee) 
 
 def calculate_fee_bruehltor(arrival_datetime, duration_hours):
     # Defining rate details for Brühltor

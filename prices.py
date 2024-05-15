@@ -390,8 +390,8 @@ def calculate_fee_spisertor(arrival_datetime, duration_hours):
 
 def calculate_fee_spelterini(arrival_datetime, rounded_total_hours):
     daytime_hours = (7, 24)  # Daytime from 6 AM to 11 PM
-    night_rate = 2.0  # CHF per hour during the night
-    day_rate = 1.5  # CHF per hour during the day
+    night_rate = 1.5  # CHF per hour during the night
+    day_rate = 2.0  # CHF per hour during the day
 
     total_fee = 0.0
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60

@@ -44,47 +44,55 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 #standard identification--> def "name parking"(arrival_datetime, duration_hours)
 
 def calculate_fee_manor(arrival_datetime, duration_hours):
+    # Definizione dei limiti temporali
     daytime_start = 5.5  # 5:30 AM
-    daytime_end = 21     # 9:00 PM
-    night_rate = 1.00    # CHF per 30 minutes from 21:00 to 00:30
-    rates = [
-        (1, 2.00),                    # Up to 1 hour
-        (2, 1.00 / 3),                # 1 to 3 hours at 1.00 CHF per 20 minutes
-        (None, 1.50 / 3)              # Beyond 3 hours at 1.50 CHF per 20 minutes
-    ]
-
+    daytime_end = 21.5   # 21:30 PM
+    night_start = 21.5   # 21:30 PM
+    night_end = 0.5      # 00:30 AM
+    
+    # Definizione delle tariffe
+    first_hour_rate = 2.00
+    hourly_rate_after_first = 1.00 / 3  # 1 CHF every 20 minutes
+    hourly_rate_after_three = 1.50 / 3  # 1.5 CHF every 20 minutes
+    night_rate = 1.00 / 2               # 1 CHF every 30 minutes
+    
     total_fee = 0
     current_time = arrival_datetime
     hours_processed = 0
 
+    # Calcolo delle tariffe in base alle ore di permanenza
     while hours_processed < duration_hours:
         current_hour = current_time.hour + current_time.minute / 60
-        
-        # Apply night rate if within night time hours
-        if 21 <= current_hour or current_hour < 0.5:
-            hours_to_charge = min(0.5, duration_hours - hours_processed)
-            total_fee += (hours_to_charge * 60 / 30) * night_rate
+
+        # Tariffe notturne
+        if night_start <= current_hour or current_hour < night_end:
+            hours_to_charge = min(duration_hours - hours_processed, night_end - current_hour)
+            segments = hours_to_charge * 2  # Convert hours to 30-minute segments for night rate
+            total_fee += segments * night_rate
             hours_processed += hours_to_charge
-            current_time += timedelta(hours=hours_to_charge)
         else:
-            # Apply the appropriate day time rates
-            for duration, rate in rates:
-                if duration is None:
-                    # Continue with the final rate for the remainder of the time
-                    segments = (duration_hours - hours_processed) * 3  # Convert hours to 20-minute segments
-                    total_fee += segments * rate
-                    hours_processed += duration_hours - hours_processed
-                    break
-                elif hours_processed + duration > duration_hours:
-                    duration = duration_hours - hours_processed
+            # Tariffe diurne
+            if hours_processed < 1:
+                # Tariffa per la prima ora
+                hours_to_charge = min(1 - hours_processed, duration_hours)
+                total_fee += first_hour_rate
+                hours_processed += hours_to_charge
+            elif hours_processed < 3:
+                # Tariffa da 1 a 3 ore
+                hours_to_charge = min(3 - hours_processed, duration_hours - hours_processed)
+                segments = hours_to_charge * 3  # Convert hours to 20-minute segments
+                total_fee += segments * hourly_rate_after_first
+                hours_processed += hours_to_charge
+            else:
+                # Tariffa oltre le 3 ore
+                hours_to_charge = duration_hours - hours_processed
+                segments = hours_to_charge * 3  # Convert hours to 20-minute segments
+                total_fee += segments * hourly_rate_after_three
+                hours_processed += hours_to_charge
 
-                segments = duration * 3  # Convert hours to 20-minute segments
-                total_fee += segments * rate
-                hours_processed += duration
+        current_time += timedelta(hours=hours_to_charge)
 
-        current_time += timedelta(hours=(hours_processed - current_time.hour - current_time.minute / 60))
-
-    return math.ceil(total_fee)  # Round up the total fee to the nearest whole number
+    return math.ceil(total_fee)  # Arrotonda per eccesso il costo totale
 
 
 def calculate_fee_bahnhof(arrival_datetime, duration_hours):

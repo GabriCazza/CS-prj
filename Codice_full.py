@@ -9,7 +9,7 @@ from geopy.distance import geodesic
 import random
 import re
 import math 
-from geopy.exc import GeocoderTimedOut, GeocoderQuotaExceeded
+from geopy.exc import GeocoderTimedOut, GeocoderQuotaExceeded, GeocoderUnavailable
 from geopy.geocoders import Nominatim
 
 #Used to handale the API with a rate limit (unrelible conditions)
@@ -112,8 +112,14 @@ def geocode_address(location):
         geocoded_location = geolocator.geocode(full_address)
         if geocoded_location:
             return (geocoded_location.longitude, geocoded_location.latitude)
-    except (GeocoderTimedOut, GeocoderQuotaExceeded) as e:
-        st.error(f"Geocoding error: {str(e)}")
+    except GeocoderTimedOut:
+        st.error("Geocoding service timed out. Please try again later.")
+    except GeocoderQuotaExceeded:
+        st.error("Geocoding quota exceeded. Please try again later.")
+    except GeocoderUnavailable:
+        st.error("Geocoding service is unavailable. Please check your internet connection.")
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {str(e)}")
     return None
 
 

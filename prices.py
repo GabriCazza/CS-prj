@@ -44,53 +44,45 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 #standard identification--> def "name parking"(arrival_datetime, duration_hours)
 
 def calculate_fee_manor(arrival_datetime, duration_hours):
-    # Definizione dei limiti temporali
-    daytime_start = 5.5  # 5:30 AM
-    daytime_end = 21.5   # 21:30 PM
+    # Definizione dei limiti temporali per la tariffa notturna
     night_start = 21.5   # 21:30 PM
-    night_end = 0.5      # 00:30 AM
+    night_end = 0.5      # 00:30 AM, tecnicamente il giorno seguente
     
-    # Definizione delle tariffe
-    first_hour_rate = 2.00
-    hourly_rate_after_first = 3 / 3  # 1 CHF every 20 minutes
-    hourly_rate_after_three = 4.50 / 3  # 1.5 CHF every 20 minutes
-    night_rate = 2.00 / 2               # 1 CHF every 30 minutes
-    
+    # Tariffe diurne dettagliate
+    rates = [
+        (1, 2.00),                    # Tariffa per la prima ora
+        (2, 1.00 / 3),                # Tariffa per da 1 a 3 ore
+        (None, 1.50 / 3)              # Tariffa oltre le 3 ore
+    ]
+
     total_fee = 0
     current_time = arrival_datetime
     hours_processed = 0
 
-    # Calcolo delle tariffe in base alle ore di permanenza
     while hours_processed < duration_hours:
         current_hour = current_time.hour + current_time.minute / 60
 
-        # Tariffe notturne
         if night_start <= current_hour or current_hour < night_end:
-            hours_to_charge = min(duration_hours - hours_processed, night_end - current_hour)
-            segments = hours_to_charge * 2  # Convert hours to 30-minute segments for night rate
-            total_fee += segments * night_rate
-            hours_processed += hours_to_charge
-        else:
-            # Tariffe diurne
-            if hours_processed < 1:
-                # Tariffa per la prima ora
-                hours_to_charge = min(1 - hours_processed, duration_hours)
-                total_fee += first_hour_rate
-                hours_processed += hours_to_charge
-            elif hours_processed < 3:
-                # Tariffa da 1 a 3 ore
-                hours_to_charge = min(3 - hours_processed, duration_hours - hours_processed)
-                segments = hours_to_charge * 3  # Convert hours to 20-minute segments
-                total_fee += segments * hourly_rate_after_first
-                hours_processed += hours_to_charge
+            # Calcolo delle tariffe notturne
+            if current_hour >= night_start:
+                hours_to_charge = min(duration_hours - hours_processed, 24 - current_hour + night_end)
             else:
-                # Tariffa oltre le 3 ore
-                hours_to_charge = duration_hours - hours_processed
-                segments = hours_to_charge * 3  # Convert hours to 20-minute segments
-                total_fee += segments * hourly_rate_after_three
-                hours_processed += hours_to_charge
+                hours_to_charge = min(duration_hours - hours_processed, night_end - current_hour)
 
-        current_time += timedelta(hours=hours_to_charge)
+            segments = hours_to_charge * 2  # Segmenti di 30 minuti
+            total_fee += segments * 1.00  # 1 CHF ogni 30 minuti
+            hours_processed += hours_to_charge
+            current_time += timedelta(hours=hours_to_charge)
+        else:
+            # Calcolo delle tariffe diurne
+            for hours, rate in rates:
+                if hours is None or hours_processed + hours > duration_hours:
+                    hours = duration_hours - hours_processed
+
+                segments = hours * 3  # Segmenti di 20 minuti
+                total_fee += segments * rate
+                hours_processed += hours
+                current_time += timedelta(hours=hours)
 
     return math.ceil(total_fee)  # Arrotonda per eccesso il costo totale
 

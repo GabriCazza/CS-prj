@@ -377,6 +377,7 @@ def calculate_fee_oberer_graben(arrival_datetime, duration_hours):
         current_time %= 24  # Reset time after midnight
 
     return f"Total parking fee at Oberer Graben: {total_fee:.2f} CHF"
+    
 def calculate_fee_raiffeisen(arrival_datetime, duration_hours):
     initial_rate_hours = 3  # The first three hours have a different rate
     subsequent_rate = 1.5  # CHF per each additional hour after the first three hours
@@ -391,5 +392,101 @@ def calculate_fee_raiffeisen(arrival_datetime, duration_hours):
         total_fee += remaining_hours * subsequent_rate  # Charge for the remaining hours
 
     return f"Total parking fee at Raiffeisen: {total_fee:.2f} CHF"
+
+def calculate_fee_einstein(arrival_datetime, duration_hours):
+    flat_rate = 2.5  # CHF per hour regardless of duration
+
+    total_fee = flat_rate * duration_hours  # Total fee is simply the hourly rate multiplied by hours parked
+
+    return f"Total parking fee at Einstein: {total_fee:.2f} CHF"
+
+def calculate_fee_spisertor(arrival_datetime, duration_hours):
+    flat_rate = 2.5  # CHF per hour regardless of duration
+
+    total_fee = flat_rate * duration_hours  # Total fee is simply the hourly rate multiplied by hours parked
+
+    return f"Total parking fee at Spisertor: {total_fee:.2f} CHF"
+
+def calculate_fee_spelterini(arrival_datetime, duration_hours):
+    total_fee = 0
+    current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
+
+    daytime_start = 7
+    daytime_end = 24
+    nighttime_end = 7  # Until 7 AM
+    extended_rate_hours = 3
+    extended_rate = 2
+    extended_increment = 1.5
+    extended_interval = 60 / 60  # Every hour
+
+    while duration_hours > 0:
+        if daytime_start <= current_hour < daytime_end:
+            if duration_hours <= extended_rate_hours:
+                rate = extended_rate
+                hours_to_charge = duration_hours
+            else:
+                rate = extended_rate
+                hours_to_charge = extended_rate_hours
+                duration_hours -= extended_rate_hours
+                extended_rate_hours = 0  # Consume the extended rate hours
+
+            total_fee += rate * hours_to_charge
+            current_hour += hours_to_charge
+            duration_hours -= hours_to_charge
+
+        elif nighttime_end <= current_hour or current_hour < daytime_start:
+            if duration_hours > 0:
+                rate = 0.6  # Night rate
+                hours_to_charge = duration_hours  # Charge the remaining hours at night rate
+                total_fee += rate * hours_to_charge
+                duration_hours -= hours_to_charge
+
+        current_hour %= 24  # Cycle the hours past midnight
+
+    return f"Total parking fee at Spelterini: {total_fee:.2f} CHF"
+
+def calculate_fee_olma_messe(arrival_datetime, duration_hours):
+    total_fee = 0
+    current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
+    base_hours = 3
+    base_rate = 2
+    incremental_rate = 1.5
+    rate_interval = 1  # Rate changes every hour after the first three hours
+
+    if duration_hours <= base_hours:
+        total_fee = base_rate * duration_hours
+    else:
+        total_fee = base_rate * base_hours
+        additional_hours = duration_hours - base_hours
+        while additional_hours > 0:
+            hours_to_charge = min(additional_hours, rate_interval)
+            total_fee += incremental_rate * hours_to_charge
+            additional_hours -= hours_to_charge
+
+    return f"Total parking fee at OLMA Messe: {total_fee:.2f} CHF"
+
+def calculate_fee_unterer_graben(arrival_datetime, duration_hours):
+    flat_rate = 2  # Flat rate per hour
+    total_fee = flat_rate * duration_hours
+
+    return f"Total parking fee at Unterer Graben: {total_fee:.2f} CHF"
+def calculate_fee_olma_parkplatz(arrival_datetime, duration_hours):
+    daytime_start = 6  # Daytime starts at 6 AM
+    nighttime_start = 23  # Nighttime starts at 11 PM
+    day_rate = 2  # Day rate per hour
+    night_rate = 1.5  # Night rate per hour
+    total_fee = 0
+    current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
+
+    for _ in range(int(duration_hours)):
+        if daytime_start <= current_hour < nighttime_start:
+            total_fee += day_rate
+        else:
+            total_fee += night_rate
+        current_hour = (current_hour + 1) % 24  # Wrap around to the next hour, mod 24 for midnight wrap-around
+
+    return f"Total parking fee at OLMA Parkplatz: {total_fee:.2f} CHF"
+
+
 
 

@@ -3,42 +3,42 @@ import math
 
 #This file is used to explain the prices calculation as every single parkhaus is different 
 
-#Function that return the parking, based on nearest parking space 
-def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
+def calculate_parking_fees(parking_name, arrival_datetime, rounded_total_hours):
     if parking_name == "Manor":
-        return calculate_fee_manor(arrival_datetime, duration_hours)
+        return calculate_fee_manor(arrival_datetime, rounded_total_hours)
     elif parking_name == "Bahnhof":
-        return calculate_fee_bahnhof(arrival_datetime, duration_hours)
+        return calculate_fee_bahnhof(arrival_datetime, rounded_total_hours)
     elif parking_name == "Brühltor":
-        return calculate_fee_brühltor(arrival_datetime, duration_hours)
+        return calculate_fee_brühltor(arrival_datetime, rounded_total_hours)
     elif parking_name == "Burggraben":
-        return calculate_fee_burggraben(arrival_datetime, duration_hours)
+        return calculate_fee_burggraben(arrival_datetime, rounded_total_hours)
     elif parking_name == "Stadtpark AZSG":
-        return calculate_fee_stadtpark_azsg(arrival_datetime, duration_hours)
+        return calculate_fee_stadtpark_azsg(arrival_datetime, rounded_total_hours)
     elif parking_name == "Neumarkt":
-        return calculate_fee_neumarkt(arrival_datetime, duration_hours)
+        return calculate_fee_neumarkt(arrival_datetime, rounded_total_hours)
     elif parking_name == "Rathaus":
-        return calculate_fee_rathaus(arrival_datetime, duration_hours)
+        return calculate_fee_rathaus(arrival_datetime, rounded_total_hours)
     elif parking_name == "Kreuzbleiche":
-        return calculate_fee_kreuzbleiche(arrival_datetime, duration_hours)
+        return calculate_fee_kreuzbleiche(arrival_datetime, rounded_total_hours)
     elif parking_name == "Oberer Graben":
-        return calculate_fee_oberer_graben(arrival_datetime, duration_hours)
+        return calculate_fee_oberer_graben(arrival_datetime, rounded_total_hours)
     elif parking_name == "Raiffeisen":
-        return calculate_fee_raiffeisen(arrival_datetime, duration_hours)
+        return calculate_fee_raiffeisen(arrival_datetime, rounded_total_hours)
     elif parking_name == "Einstein":
-        return calculate_fee_einstein(arrival_datetime, duration_hours)
+        return calculate_fee_einstein(arrival_datetime, rounded_total_hours)
     elif parking_name == "Spisertor":
-        return calculate_fee_spisertor(arrival_datetime, duration_hours)
+        return calculate_fee_spisertor(arrival_datetime, rounded_total_hours)
     elif parking_name == "Spelterini":
-        return calculate_fee_spelterini(arrival_datetime, duration_hours)
+        return calculate_fee_spelterini(arrival_datetime, rounded_total_hours)
     elif parking_name == "OLMA Messe":
-        return calculate_fee_olma_messe(arrival_datetime, duration_hours)
+        return calculate_fee_olma_messe(arrival_datetime, rounded_total_hours)
     elif parking_name == "Unterer Graben":
-        return calculate_fee_unterer_graben(arrival_datetime, duration_hours)
+        return calculate_fee_unterer_graben(arrival_datetime, rounded_total_hours)
     elif parking_name == "OLMA Parkplatz":
-        return calculate_fee_olma_parkplatz(arrival_datetime, duration_hours)       
+        return calculate_fee_olma_parkplatz(arrival_datetime, rounded_total_hours)
     else:
         return "Parking name not recognized. Please check the parking name."
+
     
 #Calculation for every single parking space
 #standard identification--> def "name parking"(arrival_datetime, duration_hours)
@@ -381,7 +381,7 @@ def calculate_fee_oberer_graben(arrival_datetime, duration_hours):
 
     return f"Total parking fee at Oberer Graben: {total_fee:.2f} CHF"
     
-def calculate_fee_raiffeisen(arrival_datetime, duration_hours):
+def calculate_fee_raiffeisen(arrival_datetime, rounded_total_hours):
     initial_rate = 2.0  # CHF per hour for the first 3 hours
     mid_rate = 1.5  # CHF per hour from 3 to 13 hours
     long_term_rate = 1.0  # CHF per hour beyond 13 hours
@@ -390,15 +390,16 @@ def calculate_fee_raiffeisen(arrival_datetime, duration_hours):
 
     total_fee = 0.0
 
-    # Apply the rate based on the duration_hours
-    if duration_hours <= first_rate_hours:
-        total_fee = duration_hours * initial_rate
-    elif duration_hours <= mid_rate_limit:
-        total_fee = duration_hours * mid_rate
+    # Apply the rate based on the rounded_total_hours
+    if rounded_total_hours <= first_rate_hours:
+        total_fee = rounded_total_hours * initial_rate
+    elif rounded_total_hours <= mid_rate_limit:
+        total_fee = rounded_total_hours * mid_rate
     else:
-        total_fee = duration_hours * long_term_rate
+        total_fee = rounded_total_hours * long_term_rate
 
     return f"Total parking fee at Raiffeisen: {total_fee:.2f} CHF"
+
 
 
 

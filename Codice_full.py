@@ -101,17 +101,19 @@ def validate_postal_code(location):
     return False
 
 def geocode_address(location):
-    """ Converte un indirizzo in coordinate geografiche. """
-    if validate_postal_code(location):
-        geolocator = Nominatim(user_agent="geoapiExercises")
-        try:
-            location = geolocator.geocode(location + ", St. Gallen, Switzerland")
-            if location:
-                return (location.longitude, location.latitude)
-        except (GeocoderTimedOut, GeocoderQuotaExceeded) as e:
-            st.error("Geocoding service timed out or quota exceeded.")
-    else:
-        st.error("Invalid postal code. Please enter a valid San Gallo postal code.")
+    """Converts an address to a point (latitude, longitude) assuming the location is in St. Gallen, Switzerland."""
+    if not location:
+        st.error("Please enter an address.")
+        return None
+    
+    full_address = f"{location}, St. Gallen, Switzerland"
+    geolocator = geocoders.Nominatim(user_agent="geoapiExercises")
+    try:
+        geocoded_location = geolocator.geocode(full_address)
+        if geocoded_location:
+            return (geocoded_location.longitude, geocoded_location.latitude)
+    except (GeocoderTimedOut, GeocoderQuotaExceeded) as e:
+        st.error(f"Geocoding error: {str(e)}")
     return None
 
 

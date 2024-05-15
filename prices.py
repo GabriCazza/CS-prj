@@ -317,6 +317,7 @@ def calculate_fee_rathaus(arrival_datetime, duration_hours):
         current_time %= 24  # Reset time after midnight
 
     return f"Total parking fee at Rathaus: {total_fee:.2f} CHF"
+
 def calculate_fee_kreuzbleiche(arrival_datetime, duration_hours):
     daytime_hours = (7, 22)  # Daytime from 7 AM to 10 PM
     night_rate = 1.0  # CHF per hour during the night
@@ -324,7 +325,6 @@ def calculate_fee_kreuzbleiche(arrival_datetime, duration_hours):
 
     total_fee = 0.0
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
-
     hours_left = duration_hours
 
     while hours_left > 0:
@@ -347,6 +347,9 @@ def calculate_fee_kreuzbleiche(arrival_datetime, duration_hours):
             current_time += night_hours_left
 
         current_time %= 24  # Reset time after midnight
+
+    # Round the total fee to the nearest whole number
+    total_fee = math.ceil(total_fee)
 
     return f"Total parking fee at Kreuzbleiche: {total_fee:.2f} CHF"
 

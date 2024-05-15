@@ -422,7 +422,7 @@ def calculate_fee_spelterini(arrival_datetime, duration_hours):
     extended_rate_hours = 3
     extended_rate = 2
     extended_increment = 1.5
-    extended_interval = 60 / 60  # Every hour
+    extended_interval = 1  # Every hour
 
     while duration_hours > 0:
         if daytime_start <= current_hour < daytime_end:
@@ -447,6 +447,9 @@ def calculate_fee_spelterini(arrival_datetime, duration_hours):
                 duration_hours -= hours_to_charge
 
         current_hour %= 24  # Cycle the hours past midnight
+
+    return f"Total parking fee at Spelterini: {total_fee:.2f} CHF"
+
 
     return f"Total parking fee at Spelterini: {total_fee:.2f} CHF"
 

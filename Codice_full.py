@@ -359,7 +359,6 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
                 "day": (7, 24),
                 "night": (0, 7)
             },
-            "event_days": [5]  # Assuming events occur on Saturdays
         },
         "Neumarkt": {
             "flat_rate": 1

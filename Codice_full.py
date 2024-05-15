@@ -53,7 +53,7 @@ def fetch_parking_data():
 # Call of the second API (all the Parkings)   
  
 def fetch_additional_data():
-    base_url = "https://daten.stadt.sg.ch/api/explore/v2.1/catalog/datasets/points-of-interest-/records"
+    base_url = "https://daten.stadt.sg.ch/api/explore/v2.1/catalog/datasets/points-of-interest-/records?refine=kategorie%3A%22Parkpl%C3%A4tze%2C%20Parkh%C3%A4user%22"
     params = {
         "refine": 'kategorie:"Parkplätze, Parkhäuser"',
         "limit": 100,
@@ -69,22 +69,22 @@ def fetch_additional_data():
             if not results:
                 break
 
-            # Directly use list comprehension to extract required fields if available
-            parking_data.extend([{
-                'latitude': item.get('geo_point_2d', {}).get('lat', 0),  # Default to 0 if no latitude
-                'longitude': item.get('geo_point_2d', {}).get('lon', 0),  # Default to 0 if no longitude
-                'name': item.get('name', 'No Name Provided'),
-                'description': item.get('description', 'No Description Provided'),
-                'address': item.get('adresse', 'No Address Provided'),
-                'info': item.get('informatio', 'No Information Provided')  # Additional info
-            } for item in results])
-
+            for item in results:
+                geo_point = item.get('geo_point_2d', {})
+                parking_data.append({
+                    'latitude': geo_point.get('lat', 0),  # Default to 0 if no latitude
+                    'longitude': geo_point.get('lon', 0),  # Default to 0 if no longitude
+                    'name': item.get('name', 'No Name Provided'),
+                    'description': item.get('description', 'No Description Provided'),
+                    'address': item.get('adresse', 'No Address Provided'),
+                    'info': item.get('informatio', 'No Information Provided')  # Additional info
+                })
             params['offset'] += params['limit']
         else:
             st.error("Failed to fetch additional data after multiple attempts.")
             break
 
-    return pd.DataFrame(parking_data)  # Always return a DataFrame
+    return pd.DataFrame(parking_data)  # Assicurati di restituire sempre un DataFrame
 
 
 
@@ -97,7 +97,7 @@ def geocode_address(location):
         full_location = f"{location}, St. Gallen, Switzerland"
         geolocator = geocoders.Nominatim(user_agent="geocoding_app", timeout=10)
         # Define the approximate bounding box of St. Gallen city
-        viewbox = [(47.403331, 9.328988), (447.451649, 9.396185)]  # (southwest_lat, southwest_lon), (northeast_lat, northeast_lon)
+        viewbox = [(47.404229, 9.324815), (47.2711, 9.23305)]  # (southwest_lat, southwest_lon), (northeast_lat, northeast_lon)
         try:
             geocoded_location = geolocator.geocode(full_location, viewbox=viewbox, bounded=True)
             if geocoded_location:

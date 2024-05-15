@@ -46,8 +46,8 @@ def calculate_parking_fees(parking_name, arrival_datetime, rounded_total_hours):
 def calculate_fee_manor(arrival_datetime, rounded_total_hours):
     # Define the rates and hour thresholds
     first_hour_rate = 2.00  # CHF for the first hour
-    mid_hours_rate = 1.00 / 3  # CHF per 20 minutes between 1 and 3 hours
-    beyond_hours_rate = 1.50 / 3  # CHF per 20 minutes beyond 3 hours
+    mid_hours_rate = 3.00 / 3  # CHF per 20 minutes between 1 and 3 hours
+    beyond_hours_rate = 4.50 / 3  # CHF per 20 minutes beyond 3 hours
 
     # Initialize the total fee
     total_fee = 0.0

@@ -9,6 +9,7 @@ from geopy.distance import geodesic
 import random
 import re
 import math 
+import prices
 
 #Used to handale the API with a rate limit (unrelible conditions)
 def safe_request(url, params):
@@ -332,7 +333,11 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
         """, unsafe_allow_html=True)
 
 
-
+def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
+    parking_fee_function = getattr(prices, f"calculate_fee_{parking_name.lower().replace(' ', '_')}", None)
+    if parking_fee_function:
+        return parking_fee_function(arrival_datetime, duration_hours)
+    return "Parking name not recognized. Please check the parking name."
 
 
 

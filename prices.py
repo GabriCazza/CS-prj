@@ -420,7 +420,7 @@ def calculate_fee_spelterini(arrival_datetime, rounded_total_hours):
 
     # Round the total fee to the nearest whole number
     total_fee = (total_fee)
-    return f"Total parking fee at Spelterini: {total_fee:.2f} CHF"
+    return f" at Spelterini: {total_fee:.2f} CHF"
 
 
 def calculate_fee_olma_messe(arrival_datetime, duration_hours):
@@ -448,7 +448,8 @@ def calculate_fee_unterer_graben(arrival_datetime, duration_hours):
     total_fee = flat_rate * duration_hours
 
     return f"Total parking fee at Unterer Graben: {total_fee:.2f} CHF"
-def calculate_fee_olma_parkplatz(arrival_datetime, duration_hours):
+
+def calculate_fee_olma_parkplatz(arrival_datetime, rounded_total_hours):
     daytime_start = 6  # Daytime starts at 6 AM
     nighttime_start = 23  # Nighttime starts at 11 PM
     day_rate = 2  # Day rate per hour
@@ -456,7 +457,7 @@ def calculate_fee_olma_parkplatz(arrival_datetime, duration_hours):
     total_fee = 0
     current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
 
-    for _ in range(int(duration_hours)):
+    for _ in range(int(rounded_total_hours)):  # Adjust to use rounded_total_hours
         if daytime_start <= current_hour < nighttime_start:
             total_fee += day_rate
         else:

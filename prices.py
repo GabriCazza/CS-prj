@@ -225,13 +225,47 @@ def calculate_fee_stadtpark_azsg(arrival_datetime, duration_hours):
 
     return f"Total parking fee at Stadtpark AZSG: {total_fee:.2f} CHF"
 
-def calculate_fee_neumarkt(arrival_datetime, duration_hours):
-    flat_rate = 1  # CHF per hour
+import math
+from datetime import timedelta
 
-    # Total fee is simply the flat rate multiplied by the duration in hours, rounded up
-    total_fee = math.ceil(duration_hours) * flat_rate
+def calculate_fee_neumarkt(arrival_datetime, rounded_total_hours):
+    daytime_rate = 3.0 / 3  # CHF per 20 minutes during the day, equivalent to 3 CHF per hour
+    nighttime_rate = 2.0 / 2  # CHF per 30 minutes during the night, equivalent to 2 CHF per hour
+    daytime_hours = (6, 22)  # Active hours from 6 AM to 10 PM
+
+    total_fee = 0.0
+    current_time = arrival_datetime
+    hours_left = rounded_total_hours
+
+    while hours_left > 0:
+        current_hour = current_time.hour + current_time.minute / 60
+
+        if daytime_hours[0] <= current_hour < daytime_hours[1]:
+            # Daytime pricing
+            time_till_end_of_day = min(daytime_hours[1] - current_hour, hours_left)
+            # Calculate segments based on 20 minute intervals
+            segments = math.ceil(time_till_end_of_day * 3)  # Convert hours to number of 20 minute segments
+            total_fee += segments * daytime_rate
+            hours_left -= time_till_end_of_day
+            current_time += timedelta(hours=time_till_end_of_day)
+        else:
+            # Nighttime pricing
+            if current_hour >= daytime_hours[1]:
+                time_till_next_day = 24 - current_hour
+            else:
+                time_till_next_day = daytime_hours[0] - current_hour
+
+            time_till_next_day = min(time_till_next_day, hours_left)
+            # Calculate segments based on 30 minute intervals
+            segments = math.ceil(time_till_next_day * 2)  # Convert hours to number of 30 minute segments
+            total_fee += segments * nighttime_rate
+            hours_left -= time_till_next_day
+            current_time += timedelta(hours=time_till_next_day)
+
+        current_time = (current_time.hour % 24) + current_time.minute / 60  # Reset time after midnight
 
     return f"Total parking fee at Neumarkt: {total_fee:.2f} CHF"
+
 
 def calculate_fee_rathaus(arrival_datetime, rounded_total_hours):
     daytime_hours = (7, 22)  # From 7 AM to 10 PM

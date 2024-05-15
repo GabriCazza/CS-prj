@@ -176,58 +176,49 @@ def calculate_fee_brühltor(arrival_datetime, duration_hours):
 
 def calculate_fee_burggraben(arrival_datetime, duration_hours):
     # Rates and times definitions
-    standard_rates = {
-        "day": [(1, 2.00), (None, 1.00, 0.5)],  # Day rates from 7 AM to midnight
-        "night": [(1, 1.20), (None, 0.60, 0.5)]  # Night rates from midnight to 7 AM
-    }
-    weekend_rates = [(1, 2.40), (None, 1.20, 0.5)]  # Special weekend rates
+    daytime_rates = [
+        (1, 2.00),  # First hour at 2.00 CHF
+        (None, 1.00, 0.5)  # Beyond first hour, 1.00 CHF per 30 minutes
+    ]
+    nighttime_rates = [
+        (1, 1.20),  # First hour at 1.20 CHF
+        (None, 0.60, 0.5)  # Beyond first hour, 0.60 CHF per 30 minutes
+    ]
+    weekend_rates = [
+        (1, 2.40),  # First hour at 2.40 CHF
+        (None, 1.20, 0.5)  # Beyond first hour, 1.20 CHF per 30 minutes
+    ]
     valid_hours = {"day": (7, 24), "night": (0, 7)}
-    daily_rates = [(24, 25), (48, 50), (72, 75)]  # Flat rates for up to 3 days
 
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
     total_fee = 0
     hours_left = duration_hours
-
-    # Check if it's a weekend day for special rates
     is_weekend = arrival_datetime.weekday() >= 5  # 5 for Saturday, 6 for Sunday
 
-    # Apply daily flat rates if parking duration is long enough
-    for duration, rate in daily_rates:
-        if hours_left >= duration:
-            total_fee += rate
-            hours_left -= duration
+    # Determine rate details based on weekend
+    rate_details = weekend_rates if is_weekend else daytime_rates if 7 <= current_time < 24 else nighttime_rates
 
-    # Calculate hourly rates based on remaining hours
     while hours_left > 0:
-        if valid_hours["day"][0] <= current_time < valid_hours["day"][1]:
-            # Daytime rates
-            rate_details = weekend_rates if is_weekend else standard_rates["day"]
-            for (hours, rate, interval) in rate_details:
-                if hours is None or hours_left < hours:
-                    hours_to_charge = min(hours_left, interval)
-                    total_fee += math.ceil(hours_to_charge / interval) * rate  # Round up to the nearest half-hour
-                    hours_left -= hours_to_charge
-                    current_time += hours_to_charge
-                    break
-                elif hours_left >= hours:
-                    total_fee += rate
-                    hours_left -= hours
-        else:
-            # Nighttime rates
-            for (hours, rate, interval) in standard_rates["night"]:
-                if hours is None or hours_left < hours:
-                    hours_to_charge = min(hours_left, interval)
-                    total_fee += math.ceil(hours_to_charge / interval) * rate  # Round up to the nearest half-hour
-                    hours_left -= hours_to_charge
-                    current_time += hours_to_charge
-                    break
-                elif hours_left >= hours:
-                    total_fee += rate
-                    hours_left -= hours
+        for (hours, rate, interval) in rate_details:
+            if hours is None or hours_left < hours:
+                hours_to_charge = min(hours_left, interval if interval else hours)
+                total_fee += (hours_to_charge / interval if interval else hours_to_charge) * rate
+                hours_left -= hours_to_charge
+                current_time += hours_to_charge
+                break
+            else:
+                total_fee += rate
+                hours_left -= hours
 
+        # Update rate details based on time after processing current rates
         current_time = (current_time % 24)  # Reset the time after midnight
+        if 7 <= current_time < 24:
+            rate_details = weekend_rates if is_weekend else daytime_rates
+        else:
+            rate_details = nighttime_rates
 
     return f"Total parking fee at Burggraben: {total_fee:.2f} CHF"
+
 
 def calculate_fee_stadtpark_azsg(arrival_datetime, duration_hours):
     # Define the parking rates and hours

@@ -389,46 +389,40 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     park_info = rates.get(parking_name)
     if not park_info:
         return f"Information not available for {parking_name}."
-    
-    total_fee = 0.0
-    hours_left = math.ceil(duration_hours)  # Round up to the nearest hour
+
+    if 'flat_rate' in park_info:
+        total_fee = park_info['flat_rate'] * duration_hours
+        return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
+
+    total_fee = 0
+    hours_left = duration_hours  # Already rounded up
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
 
-    # Handling rates calculations
+    # Calculate fees based on day and night rates
     while hours_left > 0:
-        if 'daytime' in park_info and park_info['daytime'][0] <= current_time < park_info['daytime'][1]:
-            # Calculate daytime fees
-            if current_time + hours_left > park_info['daytime'][1]:
-                hours_at_rate = park_info['daytime'][1] - current_time
-            else:
-                hours_at_rate = hours_left
-            total_fee += hours_at_rate * park_info.get('day_rate', 0)
-            hours_left -= hours_at_rate
-            current_time += hours_at_rate
+        if 'daytime' in park_info and current_time < park_info['daytime'][1]:
+            if current_time < park_info['daytime'][0]:
+                current_time = park_info['daytime'][0]  # Jump to daytime start if before it
+            day_hours = min(hours_left, park_info['daytime'][1] - current_time)
+            total_fee += day_hours * park_info.get('day_rate', 0)
+            hours_left -= day_hours
+            current_time += day_hours
         elif 'nighttime' in park_info:
-            # Calculate nighttime fees
-            if current_time < park_info['nighttime'][0]:
-                # Before nighttime starts
-                if current_time + hours_left >= park_info['nighttime'][0]:
-                    hours_at_rate = park_info['nighttime'][0] - current_time
-                else:
-                    hours_at_rate = hours_left
-                current_time += hours_at_rate
-                hours_left -= hours_at_rate
+            if current_time >= park_info['nighttime'][1] and current_time < 24:
+                current_time = 24  # Skip to end of day if after nighttime
             else:
-                # During nighttime
-                if current_time + hours_left > 24:
-                    hours_at_rate = 24 - current_time
-                else:
-                    hours_at_rate = hours_left
-                total_fee += hours_at_rate * park_info.get('night_rate', 0)
-                hours_left -= hours_at_rate
-                current_time = (current_time + hours_at_rate) % 24  # Reset to next day if goes past midnight
+                night_hours = min(hours_left, park_info['nighttime'][1] - current_time)
+                total_fee += night_hours * park_info.get('night_rate', 0)
+                hours_left -= night_hours
+                current_time += night_hours
+        current_time %= 24  # Reset time to start of the next day if needed
 
     return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
 
 
 
+
+       
 # Funzione ausiliaria per visualizzare le informazioni del parcheggio
 def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time):
     info_column, extra_info_column = st.columns(2)
@@ -468,17 +462,15 @@ def main():
     with top_row:
         col1, col2 = st.columns([0.4, 4])
         with col1:
-            logo_path = "image-removebg-preview (1).png"  # Ensure the image path is correct
-            st.image(logo_path, width=100)
+            st.write('h)')
         with col2:
             st.title("arkGallen")
 
     # Address and Destination Input
-    st.sidebar.image(logo_path, width=120)
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
-    
+
     # Date and Time Selection
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())
@@ -549,6 +541,7 @@ def main():
                     display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time)
             else:
                 st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
+
 
 if __name__ == "__main__":
     main()

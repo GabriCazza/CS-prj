@@ -89,48 +89,30 @@ def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
 
     return f"Total parking fee at Bahnhof: {(total_fee)} CHF"
 
-def calculate_fee_brühltor(arrival_datetime, duration_hours):
-    daytime_rate = 2.40  # CHF for the first hour during special events
-    day_subsequent_rate = 1.20 / 2  # CHF per 30 minutes after the first hour during special events
-    nighttime_rate = 2.40  # CHF for the first hour during special events (same as daytime rate)
-    night_subsequent_rate = 1.20 / 2  # CHF per 30 minutes after the first hour during special events
+def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):
+    daytime_rate = 2  # CHF for the first hour
+    day_subsequent_rate = 1.00  # CHF per 30 minutes after the first hour
+    nighttime_rate = 1.20  # CHF for the first hour at night
+    night_subsequent_rate = 0.60  # CHF per 30 minutes after the first hour at night
 
     total_fee = 0.0
     current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
 
-    # Check if it's a special event time
-    if (arrival_datetime.weekday() == 5 and arrival_datetime.hour >= 8) or \
-       (arrival_datetime.weekday() == 6) or \
-       (arrival_datetime.weekday() == 0 and arrival_datetime.hour < 18):
-        if 6 <= current_hour < 22:  # Special event during daytime
-            if duration_hours <= 1:
-                total_fee += daytime_rate
-            else:
-                total_fee += daytime_rate  # First hour
-                additional_hours = duration_hours - 1
-                total_fee += additional_hours * day_subsequent_rate  # Subsequent rates per 30 minutes
-        else:  # Special event during nighttime
-            if duration_hours <= 1:
-                total_fee += nighttime_rate
-            else:
-                total_fee += nighttime_rate  # First hour
-                additional_hours = duration_hours - 1
-                total_fee += additional_hours * night_subsequent_rate  # Subsequent rates per 30 minutes
-    else:  # Regular parking fee calculation
-        if 6 <= current_hour < 22:
-            if duration_hours <= 1:
-                total_fee += 2.00  # CHF for the first hour
-            else:
-                total_fee += 2.00  # First hour
-                additional_hours = duration_hours - 1
-                total_fee += math.ceil(additional_hours * 2) * 1.00 / 2  # Subsequent rates per 30 minutes
+    # Calculate daytime fees if within daytime hours
+    if 6 <= current_hour < 22:
+        if rounded_total_hours <= 1:
+            total_fee += daytime_rate
         else:
-            if duration_hours <= 1:
-                total_fee += 2.40  # CHF for the first hour at night
-            else:
-                total_fee += 2.40  # First hour
-                additional_hours = duration_hours - 1
-                total_fee += math.ceil(additional_hours * 2) * 1.20 / 2  # Subsequent rates per 30 minutes
+            total_fee += daytime_rate  # First hour
+            additional_hours = rounded_total_hours - 1
+            total_fee += (additional_hours * 2) * (day_subsequent_rate / 2)  # Subsequent rates per 30 minutes
+    else:  # Calculate nighttime fees
+        if rounded_total_hours <= 1:
+            total_fee += nighttime_rate
+        else:
+            total_fee += nighttime_rate  # First hour
+            additional_hours = rounded_total_hours - 1
+            total_fee += math.ceil(additional_hours * 2) * (night_subsequent_rate / 2)  # Subsequent rates per 30 minutes
 
     # Return total fee, rounding up to the nearest franc
     return f"Total parking fee at Brühltor: {math.ceil(total_fee):.2f} CHF"

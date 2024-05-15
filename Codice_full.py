@@ -97,7 +97,7 @@ def geocode_address(location):
         full_location = f"{location}, St. Gallen, Switzerland"
         geolocator = geocoders.Nominatim(user_agent="geocoding_app", timeout=10)
         # Define the approximate bounding box of St. Gallen city
-        viewbox = [(47.404229, 9.324815), (47.2711, 9.23305)]  # (southwest_lat, southwest_lon), (northeast_lat, northeast_lon)
+        viewbox = [(47.403331, 9.328988), (447.451649, 9.396185)]  # (southwest_lat, southwest_lon), (northeast_lat, northeast_lon)
         try:
             geocoded_location = geolocator.geocode(full_location, viewbox=viewbox, bounded=True)
             if geocoded_location:

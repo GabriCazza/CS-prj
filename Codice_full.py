@@ -488,17 +488,13 @@ def main():
     # Calculate duration and format it
     if departure_datetime > arrival_datetime:
         duration_delta = departure_datetime - arrival_datetime
-        days, remainder = divmod(duration_delta.total_seconds(), 86400)
-        hours, remainder = divmod(remainder, 3600)
-        minutes = remainder // 60
-        st.sidebar.write(f"Duration of parking: {int(days)} days, {int(hours)} hours, {int(minutes)} minutes")
+        total_seconds = duration_delta.total_seconds()
+        total_hours = total_seconds / 3600
+        rounded_total_hours = math.ceil(total_hours)  # Ensure charges are for complete hours only
+        st.sidebar.write(f"Duration of parking: {int(duration_delta.days)} days, {int(duration_delta.seconds // 3600)} hours, {int((duration_delta.seconds % 3600) // 60)} minutes (Rounded up to {rounded_total_hours} hours for fee calculation)")
     else:
         st.sidebar.error("Departure time must be after arrival time.")
         return
-
-    total_seconds = (departure_datetime - arrival_datetime).total_seconds()
-    total_hours = total_seconds / 3600
-    rounded_total_hours = math.ceil(total_hours)  # Ensure charges are for complete hours only
 
     # Geocode addresses
     location_point = geocode_address(address) if address else None
@@ -535,7 +531,7 @@ def main():
             
             nearest_parkhaus, estimated_walking_time = find_nearest_parking_place(filtered_data, destination_point)
             if nearest_parkhaus is not None and not nearest_parkhaus.empty:
-                parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, (departure_datetime - arrival_datetime).total_seconds() / 3600)
+                parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, rounded_total_hours)
                 if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
                     st.error(parking_fee)
                 else:
@@ -543,7 +539,6 @@ def main():
                     display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time)
             else:
                 st.error("No nearby valid Parkhaus found or the Parkhaus name is missing.")
-
 
 if __name__ == "__main__":
     main()

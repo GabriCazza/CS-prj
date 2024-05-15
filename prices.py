@@ -62,50 +62,30 @@ def calculate_fee_manor(arrival_datetime, rounded_total_hours):
     return f"Total parking fee at Manor: {total_fee:.2f} CHF"
 
 
-def calculate_fee_bahnhof(arrival_datetime, duration_hours):
-    daytime_rates = [
-        (1, 2.40),  # First hour at 2.40 CHF from 6 AM to 10 PM
-        (None, 1.20, 0.5)  # Beyond the first hour, 1.20 CHF per 30 minutes
-    ]
-    nighttime_rates = [
-        (1, 1.20),  # First hour at 1.20 CHF from 10 PM to 6 AM
-        (None, 0.60, 0.5)  # Beyond the first hour, 0.60 CHF per 30 minutes
-    ]
+def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
+    daytime_rate = 2.40  # CHF for the first hour
+    day_subsequent_rate = 1.20  # CHF per 30 minutes after the first hour
+    nighttime_rate = 1.20  # CHF for the first hour at night
+    night_subsequent_rate = 0.60  # CHF per 30 minutes after the first hour at night
 
-    total_fee = 0
+    total_fee = 0.0
     current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
-    hours_left = duration_hours
 
-    while hours_left > 0:
-        # Determine if current hour is during day or night rates
-        if 6 <= current_hour < 22:
-            # Daytime rates
-            for duration, rate, interval in daytime_rates:
-                if duration is None or hours_left < duration:
-                    hours_to_charge = min(hours_left, interval)
-                    total_fee += math.ceil(hours_to_charge / interval) * rate
-                    hours_left -= hours_to_charge
-                    current_hour += hours_to_charge
-                    break
-                else:
-                    total_fee += rate
-                    hours_left -= duration
-                    current_hour += duration
+    # Calculate daytime fees if within daytime hours
+    if 6 <= current_hour < 22:
+        if rounded_total_hours <= 1:
+            total_fee += daytime_rate
         else:
-            # Nighttime rates
-            for duration, rate, interval in nighttime_rates:
-                if duration is None or hours_left < duration:
-                    hours_to_charge = min(hours_left, interval)
-                    total_fee += math.ceil(hours_to_charge / interval) * rate
-                    hours_left -= hours_to_charge
-                    current_hour += hours_to_charge
-                    break
-                else:
-                    total_fee += rate
-                    hours_left -= duration
-                    current_hour += duration
-
-        current_hour = current_hour % 24  # Reset the hour after midnight
+            total_fee += daytime_rate  # First hour
+            additional_hours = rounded_total_hours - 1
+            total_fee += math.ceil(additional_hours * 2) * (day_subsequent_rate / 2)  # Subsequent rates per 30 minutes
+    else:  # Calculate nighttime fees
+        if rounded_total_hours <= 1:
+            total_fee += nighttime_rate
+        else:
+            total_fee += nighttime_rate  # First hour
+            additional_hours = rounded_total_hours - 1
+            total_fee += math.ceil(additional_hours * 2) * (night_subsequent_rate / 2)  # Subsequent rates per 30 minutes
 
     return f"Total parking fee at Bahnhof: {math.ceil(total_fee)} CHF"
 

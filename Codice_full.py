@@ -10,8 +10,6 @@ import random
 import re
 import math 
 import prices
-from time import sleep
-import random
 
 #Used to handale the API with a rate limit (unrelible conditions)
 def safe_request(url, params):
@@ -30,29 +28,6 @@ def safe_request(url, params):
         else:
             break
     return None  
-
-def safe_geocode(address):
-    attempts = 0
-    max_attempts = 5
-    backoff_factor = 1.5
-    url = f"https://nominatim.openstreetmap.org/search"
-    params = {
-        "q": address + ", St. Gallen, Switzerland",
-        "format": "json",
-        "limit": 1
-    }
-    while attempts < max_attempts:
-        try:
-            response = requests.get(url, params=params)
-            if response.status_code == 200:
-                return response.json()
-            sleep((backoff_factor ** attempts) + random.uniform(0, 1))  # Backoff delay
-            attempts += 1
-        except requests.exceptions.RequestException as e:
-            print(f"Attempt {attempts + 1}: {e}")
-            sleep((backoff_factor ** attempts) + random.uniform(0, 1))
-            attempts += 1
-    return None
 
 #Call of the first API (Parkhaus platzte)
 

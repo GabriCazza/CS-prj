@@ -119,7 +119,6 @@ def calculate_fee_bahnhof(arrival_datetime, duration_hours):
 
 
 def calculate_fee_bruehltor(arrival_datetime, duration_hours):
-    # Defining rate details for Brühltor
     rates = {
         "day": [(1, 2.00), (None, 1.00, 0.5)],  # After 1st hour, charge per 30 minutes
         "night": [(1, 1.20), (None, 0.60, 0.5)]  # Night rates
@@ -127,40 +126,33 @@ def calculate_fee_bruehltor(arrival_datetime, duration_hours):
     daily_rate = 25  # Daily flat rate
     valid_hours = {"day": (7, 24), "night": (0, 7)}  # Operating hours
 
-    current_time = arrival_datetime.hour + arrival_datetime.minute / 60
+    current_time = arrival_datetime
     total_fee = 0
     hours_left = duration_hours
 
-    # Apply daily flat rate if applicable
-    if hours_left >= 24:
-        days = int(hours_left // 24)
-        total_fee += days * daily_rate
-        hours_left -= days * 24
-
-    # Process hourly rates based on current time
     while hours_left > 0:
-        if valid_hours["day"][0] <= current_time < valid_hours["day"][1]:
-            # Apply daytime rates
-            for (hours, rate, interval) in rates["day"]:
-                if hours is None or hours_left <= hours:
-                    hours_to_charge = min(hours_left, interval)
-                    total_fee += hours_to_charge * rate
-                    hours_left -= hours_to_charge
-                    current_time += hours_to_charge
-                    break
-        else:
-            # Apply nighttime rates
-            for (hours, rate, interval) in rates["night"]:
-                if hours is None or hours_left <= hours:
-                    hours_to_charge = min(hours_left, interval)
-                    total_fee += hours_to_charge * rate
-                    hours_left -= hours_to_charge
-                    current_time += hours_to_charge
-                    break
+        current_hour = current_time.hour + current_time.minute / 60
+        if 7 <= current_hour < 24:  # Day time rates
+            rate_info = rates["day"]
+        else:  # Night time rates
+            rate_info = rates["night"]
 
-        current_time = (current_time % 24)  # Reset time after midnight
+        for hours, rate, interval in rate_info:
+            if hours is None:  # Non-specific hour block, apply until hours_left exhausted
+                hours_to_charge = min(hours_left, interval)
+                total_fee += hours_to_charge * rate / interval
+                hours_left -= hours_to_charge
+            elif hours_left >= hours:
+                total_fee += rate
+                hours_left -= hours
+            else:
+                total_fee += hours_left * (rate / hours)
+                hours_left = 0
+            
+            current_time += timedelta(hours=hours_to_charge)
 
-    return f"Total parking fee at Brühltor: {total_fee:.2f} CHF"
+    return f"Total parking fee at Brühltor: {math.ceil(total_fee):.2f} CHF"
+
 
 def calculate_fee_burggraben(arrival_datetime, duration_hours):
     # Rates and times definitions

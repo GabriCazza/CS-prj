@@ -46,44 +46,45 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 def calculate_fee_manor(arrival_datetime, duration_hours):
     daytime_start = 5.5  # 5:30 AM
     daytime_end = 21     # 9:00 PM
-    night_rate = 1.00    # CHF per 30 minutes at night from 21:00 to 00:30
-    rates = [(1, 2), (3, 1.00 / 3), (None, 1.50 / 3)]  # Rates as (hours, rate per hour)
+    night_rate = 1.00    # CHF per 30 minutes from 21:00 to 00:30
+    rates = [
+        (1, 2.00),                    # Up to 1 hour
+        (2, 1.00 / 3),                # 1 to 3 hours at 1.00 CHF per 20 minutes
+        (None, 1.50 / 3)              # Beyond 3 hours at 1.50 CHF per 20 minutes
+    ]
 
     total_fee = 0
-    hours_processed = 0
     current_time = arrival_datetime
+    hours_processed = 0
 
-    # Process daytime rates
     while hours_processed < duration_hours:
         current_hour = current_time.hour + current_time.minute / 60
-
-        if 21 <= current_hour < 24.5 or 0 <= current_hour < 0.5:  # Night rate condition from 21:00 to 00:30
-            time_in_night_hours = min(duration_hours - hours_processed, 0.5 - (current_hour - 21) if current_hour >= 21 else 0.5)
-            total_fee += (time_in_night_hours * 60 / 30) * night_rate
-            hours_processed += time_in_night_hours
-            current_time += timedelta(hours=time_in_night_hours)
-        elif daytime_start <= current_hour < daytime_end:
-            for hours, rate in rates:
-                if hours is None or hours_processed + hours > duration_hours:
-                    time_to_charge = duration_hours - hours_processed
-                else:
-                    time_to_charge = hours
-
-                total_fee += (time_to_charge * 60 / 20) * rate  # Convert hour rate to 20 minutes rate
-                hours_processed += time_to_charge
-                current_time += timedelta(hours=time_to_charge)
-
-                if hours is None:  # Exit loop once we start using the unlimited hour rate
+        
+        # Apply night rate if within night time hours
+        if 21 <= current_hour or current_hour < 0.5:
+            hours_to_charge = min(0.5, duration_hours - hours_processed)
+            total_fee += (hours_to_charge * 60 / 30) * night_rate
+            hours_processed += hours_to_charge
+            current_time += timedelta(hours=hours_to_charge)
+        else:
+            # Apply the appropriate day time rates
+            for duration, rate in rates:
+                if duration is None:
+                    # Continue with the final rate for the remainder of the time
+                    segments = (duration_hours - hours_processed) * 3  # Convert hours to 20-minute segments
+                    total_fee += segments * rate
+                    hours_processed += duration_hours - hours_processed
                     break
+                elif hours_processed + duration > duration_hours:
+                    duration = duration_hours - hours_processed
 
-        else:  # Time before daytime start or after night rate end
-            hours_to_daytime_start = max(daytime_start - current_hour, 0)
-            time_to_charge = min(hours_to_daytime_start, duration_hours - hours_processed)
-            current_time += timedelta(hours=time_to_charge)
-            hours_processed += time_to_charge
+                segments = duration * 3  # Convert hours to 20-minute segments
+                total_fee += segments * rate
+                hours_processed += duration
+
+        current_time += timedelta(hours=(hours_processed - current_time.hour - current_time.minute / 60))
 
     return math.ceil(total_fee)  # Round up the total fee to the nearest whole number
-
 
 
 def calculate_fee_bahnhof(arrival_datetime, duration_hours):

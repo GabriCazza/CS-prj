@@ -381,10 +381,10 @@ def calculate_fee_einstein(arrival_datetime, rounded_total_hours):
 
     return f" at Einstein: {total_fee:.2f} CHF"
 
-def calculate_fee_spisertor(arrival_datetime, duration_hours):
+def calculate_fee_spisertor(arrival_datetime, rounded_total_hours):
     flat_rate = 2.5  # CHF per hour regardless of duration
 
-    total_fee = flat_rate * duration_hours  # Total fee is simply the hourly rate multiplied by hours parked
+    total_fee = flat_rate * rounded_total_hours  # Total fee is simply the hourly rate multiplied by hours parked
 
     return f"Total parking fee at Spisertor: {total_fee:.2f} CHF"
 

@@ -119,37 +119,41 @@ def calculate_fee_bahnhof(arrival_datetime, duration_hours):
 
 
 def calculate_fee_bruehltor(arrival_datetime, duration_hours):
+    # Defining rate details for Brühltor
     rates = {
-        "day": [(1, 2.00), (None, 1.00, 0.5)],  # After 1st hour, charge per 30 minutes
-        "night": [(1, 1.20), (None, 0.60, 0.5)]  # Night rates
+        "day": [(1, 2.00, 1), (None, 1.00, 0.5)],  # After 1st hour, charge per 30 minutes
+        "night": [(1, 1.20, 1), (None, 0.60, 0.5)]  # Night rates
     }
     daily_rate = 25  # Daily flat rate
     valid_hours = {"day": (7, 24), "night": (0, 7)}  # Operating hours
 
-    current_time = arrival_datetime
     total_fee = 0
-    hours_left = duration_hours
+    current_time = arrival_datetime
 
-    while hours_left > 0:
+    # Process hourly rates based on current time
+    while duration_hours > 0:
         current_hour = current_time.hour + current_time.minute / 60
-        if 7 <= current_hour < 24:  # Day time rates
+        if valid_hours["day"][0] <= current_hour < valid_hours["day"][1]:
+            # Apply daytime rates
             rate_info = rates["day"]
-        else:  # Night time rates
+        else:
+            # Apply nighttime rates
             rate_info = rates["night"]
 
         for hours, rate, interval in rate_info:
-            if hours is None:  # Non-specific hour block, apply until hours_left exhausted
-                hours_to_charge = min(hours_left, interval)
-                total_fee += hours_to_charge * rate / interval
-                hours_left -= hours_to_charge
-            elif hours_left >= hours:
+            if hours is None or duration_hours < hours:
+                hours_to_charge = min(duration_hours, interval)
+                total_fee += (hours_to_charge / interval) * rate
+                duration_hours -= hours_to_charge
+                current_time += timedelta(hours=hours_to_charge)
+                break
+            elif duration_hours >= hours:
                 total_fee += rate
-                hours_left -= hours
-            else:
-                total_fee += hours_left * (rate / hours)
-                hours_left = 0
-            
-            current_time += timedelta(hours=hours_to_charge)
+                duration_hours -= hours
+                current_time += timedelta(hours=hours)
+
+        # Adjust for day-night transition
+        current_time = (current_time + timedelta(hours=0.1)) % 24  # Ensure looping through day/night cycle
 
     return f"Total parking fee at Brühltor: {math.ceil(total_fee):.2f} CHF"
 

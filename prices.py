@@ -78,7 +78,7 @@ def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
         else:
             total_fee += daytime_rate  # First hour
             additional_hours = rounded_total_hours - 1
-            total_fee += (additional_hours * 2) * (day_subsequent_rate / 2)  # Subsequent rates per 30 minutes
+            total_fee += math.ceil(additional_hours * 2) * (day_subsequent_rate / 2)  # Subsequent rates per 30 minutes
     else:  # Calculate nighttime fees
         if rounded_total_hours <= 1:
             total_fee += nighttime_rate
@@ -158,7 +158,7 @@ def calculate_fee_stadtpark_azsg(arrival_datetime, rounded_total_hours):
     current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
 
     # Determine if the parking time is during the day or night
-    if  7 <= current_hour < 24:
+    if  7<= current_hour < 24:
         if rounded_total_hours <= 1:
             total_fee += daytime_rate
         else:

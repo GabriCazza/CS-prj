@@ -140,7 +140,7 @@ def calculate_fee_burggraben(arrival_datetime, rounded_total_hours):
         else:
             total_fee += daytime_rate  # First hour
             # Calculate subsequent hours rounded to 30 minutes
-            additional_half_hours = math.ceil((rounded_total_hours - 1) * 2)
+            additional_half_hours = math.floor((rounded_total_hours - 1) * 2)
             total_fee += additional_half_hours * (day_subsequent_rate / 2)
     else:  # Nighttime calculation
         if rounded_total_hours <= 1:
@@ -148,7 +148,7 @@ def calculate_fee_burggraben(arrival_datetime, rounded_total_hours):
         else:
             total_fee += nighttime_rate  # First hour
             # Calculate subsequent hours rounded to 30 minutes
-            additional_half_hours = math.ceil((rounded_total_hours - 1) * 2)
+            additional_half_hours = math.floor((rounded_total_hours - 1) * 2)
             total_fee += additional_half_hours * (night_subsequent_rate / 2)
 
 

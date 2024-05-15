@@ -98,7 +98,8 @@ def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):
     total_fee = 0.0
     current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
 
-    if 6 <= current_hour < 22:  # Calculate daytime fees
+    # Correct time ranges for day and night
+    if 7 <= current_hour < 22:  # Daytime fees calculation
         if rounded_total_hours <= 1:
             total_fee += daytime_rate
         else:
@@ -106,7 +107,7 @@ def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):
             additional_hours = rounded_total_hours - 1
             # Calculate for each 30 minutes interval after the first hour
             total_fee += math.ceil(additional_hours * 2) * day_subsequent_rate / 2
-    else:  # Calculate nighttime fees
+    else:  # Nighttime fees calculation
         if rounded_total_hours <= 1:
             total_fee += nighttime_rate
         else:

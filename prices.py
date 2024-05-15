@@ -43,21 +43,18 @@ def calculate_parking_fees(parking_name, arrival_datetime, rounded_total_hours):
 #Calculation for every single parking space
 #standard identification--> def "name parking"(arrival_datetime, duration_hours)
 
-import math
-
 def calculate_fee_manor(arrival_datetime, rounded_total_hours):
     # Calculate total parking fee at Manor based on different time blocks
     if rounded_total_hours <= 1:
         total_fee = 2.00  # If less than or equal to 1 hour
     elif rounded_total_hours <= 3:
         # From 1 hour to 3 hours
-        total_fee = 2.00 + ((rounded_total_hours - 1) * 3 * (1.00 / 3))
+        total_fee = 2.00 + (math.ceil((rounded_total_hours - 1) * 3) * 1.00)
     else:
         # Beyond 3 hours
-        total_fee = (3 * 3 * (1.00 / 3)) + ((rounded_total_hours - 3) * 3 * (1.50 / 3))
+        total_fee = (3 * 3 * 1.00) + (math.ceil((rounded_total_hours - 3) * 3) * 1.50)
 
-    return f"Total parking fee at Manor: {math.ceil(total_fee):.2f} CHF"
-
+    return f"Total parking fee at Manor: {total_fee:.2f} CHF"
 
 
 def calculate_fee_bahnhof(arrival_datetime, duration_hours):

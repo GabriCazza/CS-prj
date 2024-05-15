@@ -390,7 +390,7 @@ def main():
 
     # Address and Destination Input
     st.sidebar.image(logo_path, width=120)
-    st.sidebar.markdown("### Enter a valid destination in St. Gallen")
+    st.sidebar.markdown("### Enter your necessities 🚗")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
     
@@ -464,7 +464,7 @@ def main():
                     # Process valid parking fee display
                     display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time)
             else:
-                st.write("""# No nearby valid Parkhaus found or the Parkhaus name is missing 😔""")
+                st.write("""## No Parkhaus within the Radius😔""")
                 st.write("""### Try to make the radius bigger🔎""")
 if __name__ == "__main__":
     main()

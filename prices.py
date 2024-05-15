@@ -121,8 +121,8 @@ def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):
 
 
 def calculate_fee_burggraben(arrival_datetime, rounded_total_hours):
-    daytime_rate = 2.40  # CHF for the first hour
-    day_subsequent_rate = 1.20  # CHF per 30 minutes after the first hour
+    daytime_rate = 2.00  # CHF for the first hour
+    day_subsequent_rate = 1.00  # CHF per 30 minutes after the first hour
     nighttime_rate = 1.20  # CHF for the first hour at night
     night_subsequent_rate = 0.60  # CHF per 30 minutes after the first hour at night
 

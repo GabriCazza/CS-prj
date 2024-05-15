@@ -292,7 +292,7 @@ def calculate_fee_rathaus(arrival_datetime, duration_hours):
         if daytime_hours[0] <= current_time < daytime_hours[1]:
             # Calculate daytime fee
             day_hours_left = min(daytime_hours[1] - current_time, hours_left)
-            total_fee += day_hours_left * day_rate
+            total_fee += math.ceil(day_hours_left) * day_rate  # Round up the hours to charge
             hours_left -= day_hours_left
             current_time += day_hours_left
         else:
@@ -303,7 +303,7 @@ def calculate_fee_rathaus(arrival_datetime, duration_hours):
                 night_hours_left = daytime_hours[0] - current_time
 
             night_hours_left = min(night_hours_left, hours_left)
-            total_fee += night_hours_left * night_rate
+            total_fee += math.ceil(night_hours_left) * night_rate  # Round up the hours to charge
             hours_left -= night_hours_left
             current_time += night_hours_left
 

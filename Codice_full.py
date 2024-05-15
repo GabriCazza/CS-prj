@@ -308,83 +308,83 @@ def calculate_duration(arrival_datetime, departure_datetime):
 
 def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     rates = {
-        "Manor": {
-            "daytime": (5.5, 21),
-            "nighttime": (21, 0.5),
-            "rates": [(1, 2), (3, 3, 20), (None, 4.5, 20)],
-            "night_rate": 1
-        },
-        "Bahnhof": {
-            "free_minutes": 10,
-            "rates": [(0.5, 1.5), (1, 3), (None, 4, 30)]
-        },
-        "Neumarkt": {
-            "flat_rate": 1
-        },
-        "Rathaus": {
-            "daytime": (7, 22),
-            "nighttime": (22, 7),
-            "day_rate": 2.4,
-            "night_rate": 1.2
-        },
-        "Kreuzbleiche": {
-            "daytime": (7, 22),
-            "nighttime": (22, 7),
-            "day_rate": 1.5,
-            "night_rate": 1
-        },
-        "Oberer Graben": {
-            "daytime": (6, 23),
-            "nighttime": (23, 6),
-            "day_rate": 2,
-            "night_rate": 1.5
-        },
-        "Raiffeisen": {
-            "rates": [(3, 2), (None, 1.5, 60)]
-        },
-        "Einstein": {
-            "flat_rate": 2.5
-        },
-        "Spisertor": {
-            "flat_rate": 2.5
-        },
-        "Burggraben": {
-            "daytime": (7, 24),
-            "nighttime": (24, 7),
-            "extended_rate": [(3, 2), (None, 1, 60)],
-            "night_rate": 0.6
-        },
-        "Brühltor": {
-            "daytime": (7, 24),
-            "nighttime": (24, 7),
-            "extended_rate": [(3, 2), (None, 1, 60)],
-            "night_rate": 0.6
-        },
-        "Stadtpark AZSG": {
-            "daytime": (7, 24),
-            "nighttime": (24, 7),
-            "extended_rate": [(3, 1.6), (None, 0.8, 60)],
-            "night_rate": 0.6
-        },
-        "Spelterini": {
-            "daytime": (7, 24),
-            "nighttime": (24, 7),
-            "extended_rate": [(3, 2), (None, 1.5, 60)],
-            "night_rate": 0.6
-        },
-        "OLMA Messe": {
-            "rates": [(3, 2), (None, 1.5, 60)]
-        },
-        "Unterer Graben": {
-            "flat_rate": 2
-        },
-        "OLMA Parkplatz": {
-            "daytime": (6, 23),
-            "nighttime": (23, 6),
-            "day_rate": 2,
-            "night_rate": 1.5
-        }
+    "Manor": {
+        "daytime": (5.5, 21),
+        "nighttime": (21, 0.5),
+        "rates": [(1, 2), (3, 3, 20), (None, 4.5, 20)],
+        "night_rate": 1
+    },
+    "Bahnhof": {
+        "free_minutes": 10,
+        "rates": [(0.5, 1.5), (1, 3), (None, 4, 30)]
+    },
+    "Neumarkt": {
+        "flat_rate": 1
+    },
+    "Rathaus": {
+        "daytime": (7, 22),
+        "nighttime": (22, 7),
+        "day_rate": 2.4,
+        "night_rate": 1.2
+    },
+    "Kreuzbleiche": {
+        "daytime": (7, 22),
+        "nighttime": (22, 7),
+        "day_rate": 1.5,
+        "night_rate": 1
+    },
+    "Oberer Graben": {
+        "daytime": (6, 23),
+        "nighttime": (23, 6),
+        "day_rate": 2,
+        "night_rate": 1.5
+    },
+    "Raiffeisen": {
+        "rates": [(3, 2), (None, 1.5, 60)]
+    },
+    "Einstein": {
+        "flat_rate": 2.5
+    },
+    "Spisertor": {
+        "flat_rate": 2.5
+    },
+    "Burggraben": {
+        "daytime": (7, 24),
+        "nighttime": (24, 7),
+        "extended_rate": [(3, 2), (None, 1, 60)],
+        "night_rate": 0.6
+    },
+    "Brühltor": {
+        "daytime": (7, 24),
+        "nighttime": (24, 7),
+        "extended_rate": [(3, 2), (None, 1, 60)],
+        "night_rate": 0.6
+    },
+    "Stadtpark AZSG": {
+        "daytime": (7, 24),
+        "nighttime": (24, 7),
+        "extended_rate": [(3, 1.6), (None, 0.8, 60)],
+        "night_rate": 0.6
+    },
+    "Spelterini": {
+        "daytime": (7, 24),
+        "nighttime": (24, 7),
+        "extended_rate": [(3, 2), (None, 1.5, 60)],
+        "night_rate": 0.6
+    },
+    "OLMA Messe": {
+        "rates": [(3, 2), (None, 1.5, 60)]
+    },
+    "Unterer Graben": {
+        "flat_rate": 2
+    },
+    "OLMA Parkplatz": {
+        "daytime": (6, 23),
+        "nighttime": (23, 6),
+        "day_rate": 2,
+        "night_rate": 1.5
     }
+}
 
     park_info = rates.get(parking_name)
     if not park_info:

@@ -106,35 +106,36 @@ def geocode_address(location):
     return None
 
 
+#Fucntion used to picture the parking spaces on the map based on the different categories + count of the catgories within map 
 
 def add_markers_to_map(map_folium, original_data, additional_data, location_point, destination_point, radius, show_parkhaus, show_extended_blue, show_white, show_handicapped, address):
     address_provided = bool(address)
     filtered_original_data = filter_parking_by_radius(original_data, destination_point, radius, show_parkhaus, address_provided)
     filtered_additional_data = filter_parking_by_radius(additional_data, destination_point, radius, False, address_provided)
 
-    # Inizializza i conteggi a zero
+    #USed to count the marks within radius 
     blue_count = 0
     white_count = 0
     handicapped_count = 0
 
-    if show_parkhaus:
+    if show_parkhaus: #Parkhaus picture 
         for _, row in filtered_original_data.iterrows():
             if row.get('category', '') == 'Parkhaus':
                 add_marker(map_folium, row, "🅿️", destination_point)
 
-    if show_extended_blue:
+    if show_extended_blue: #Blue zone 
         for _, row in filtered_additional_data.iterrows():
             if "erweiterte blaue zone" in row.get('info', '').lower():
                 add_marker(map_folium, row, "🔵", None)
                 blue_count += 1
 
-    if show_white:
+    if show_white:#White Zone
         for _, row in filtered_additional_data.iterrows():
             if "weiss (bewirtschaftet)" in row.get('info', '').lower() or "weisse zone" in row.get('info', '').lower():
                 add_marker(map_folium, row, "⚪", None)
                 white_count += 1
 
-    if show_handicapped:
+    if show_handicapped: #Handicap parking spaces
         for _, row in filtered_additional_data.iterrows():
             if "invalidenparkplatz" in row.get('info', '').lower():
                 add_marker(map_folium, row, "♿", None)
@@ -142,8 +143,8 @@ def add_markers_to_map(map_folium, original_data, additional_data, location_poin
     
     return blue_count, white_count, handicapped_count
 
-# Function used to add various types of parking markers to a map created with Folium
 
+# Function used to add various types of parking markers to a map created with Folium
 
 def add_marker(map_folium, row, icon, destination_point):
     latitude = row.get('latitude')
@@ -179,16 +180,20 @@ def add_marker(map_folium, row, icon, destination_point):
 # Function is used  to add visual markers for the user's location and destination on a Folium map
 
 def add_user_markers(map_folium, location_point, destination_point):
+
+#Your current position to be showed on the map 
     if location_point:
         folium.Marker(
             [location_point[1], location_point[0]],
-            popup='La tua posizione',
+            popup='Your Position',
             icon=folium.DivIcon(html='<div style="font-size: 30pt;">🏡</div>')
         ).add_to(map_folium)
+
+#Your destination displayed 
     if destination_point:
         folium.Marker(
             [destination_point[1], destination_point[0]],
-            popup='La tua destinazione',
+            popup='Your destination',
             icon=folium.DivIcon(html='<div style="font-size: 30pt;">📍</div>')
         ).add_to(map_folium)
 
@@ -205,18 +210,22 @@ def add_search_radius(map_folium, destination_point, radius):
         ).add_to(map_folium)
 
 
+#Funtion used to create the map itself
+
 def create_map():
     """Create an initial folium map centered on St. Gallen."""
     map_folium = folium.Map(location=[47.4237, 9.3747], zoom_start=14)
     return map_folium
 
 
+ #Function used to filter the parking within the radius (try to reduce long charging times)
+
 def filter_parking_by_radius(data, destination_point, radius, show_only_free, address_provided):
     if destination_point is None:
-        return data  # Restituisce i dati invariati se il punto di destinazione non è definito
+        return data 
 
     def condition(row):
-        # Estrai le coordinate direttamente dai dati se disponibili, altrimenti usa 0,0 come default
+        #Take only coordinates of data if availble
         lat = row.get('latitude') or row.get('standort', {}).get('lat', 0)
         lon = row.get('longitude') or row.get('standort', {}).get('lon', 0)
         if lat and lon:
@@ -224,7 +233,7 @@ def filter_parking_by_radius(data, destination_point, radius, show_only_free, ad
                 (lat, lon), (destination_point[1], destination_point[0])
             ).meters <= radius
             if show_only_free:
-                # Considera solo i parcheggi liberi se richiesto
+                # Only consider and show parking spaces that are free 
                 return distance_within_radius and row.get('shortfree', 0) > 0
             return distance_within_radius
         return False
@@ -232,6 +241,8 @@ def filter_parking_by_radius(data, destination_point, radius, show_only_free, ad
     filtered_data = data[data.apply(condition, axis=1)]
     return filtered_data
 
+
+#Function used to filter and find the nearest parking space
 
 def find_nearest_parking_place(data, destination_point):
     if destination_point is None or data.empty:
@@ -263,7 +274,7 @@ def find_nearest_parking_place(data, destination_point):
         return None, None
 
 
-
+#Function used to estimate the distance of walk between destination and location and nearest Parkhaus 
 
 def calculate_and_display_distances(map_folium, location_point, destination_point, nearest_parking):
     if destination_point:
@@ -285,6 +296,10 @@ def calculate_and_display_distances(map_folium, location_point, destination_poin
         else:
             st.error("No nearby Parkhaus found.")
 
+
+#Function used to let the user select time in different version; facilitate user interaction 
+#either HH:MM; HHMM; HH.MM
+
 def parse_datetime(date_str, time_str):
     try:
         if re.match(r'^\d{4}$', time_str):  # HHMM
@@ -294,6 +309,9 @@ def parse_datetime(date_str, time_str):
         return datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
     except ValueError:
         return None
+
+
+#Function used to calculate the duration of the parking time, based on time inserted
 
 def calculate_duration(arrival_datetime, departure_datetime):
     """Calculates the duration between arrival and departure times and returns the duration in days, hours, and minutes."""
@@ -307,10 +325,11 @@ def calculate_duration(arrival_datetime, departure_datetime):
     return days, hours, minutes
 
 
-       
-# Funzione ausiliaria per visualizzare le informazioni del parcheggio
+#Auxialiry function used to visualize information of parking spaces        
 def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time):
     info_column, extra_info_column = st.columns(2)
+
+ #Function used to display the left boc, containing "Nearest Parkhaus Information"
     with info_column:
         st.markdown(f"""
         <div style="background-color:#86B97A; padding:10px; border-radius:5px;">
@@ -321,18 +340,21 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
             <p>Spaces: {nearest_parkhaus.get('shortfree', 'N/A')}/{nearest_parkhaus.get('shortmax', 'N/A')}</p>
         </div>
         """, unsafe_allow_html=True)
+
+ #Function used to display the left boc, containing "Additional information"
     with extra_info_column:
         st.markdown(f"""
         <div style="background-color:#ADF09E; padding:10px; border-radius:5px;">
             <h4>Additional Information</h4>
             <p>Blue parking spots: {blue_count}</p>
             <p>White parking spots: {white_count}</p>
-            <p>Handicapped parking spots: {handicapped_count}</p>
+            <p>Handicapped parking spots: {handicapped_count}</p>    
             <p>Estimated parking fee: {parking_fee}</p>
         </div>
         """, unsafe_allow_html=True)
 
 
+#Function used to call the prices.py function and make the estiamtion of price 
 def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     parking_fee_function = getattr(prices, f"calculate_fee_{parking_name.lower().replace(' ', '_')}", None)
     if parking_fee_function:

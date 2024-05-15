@@ -44,15 +44,29 @@ def calculate_parking_fees(parking_name, arrival_datetime, rounded_total_hours):
 #standard identification--> def "name parking"(arrival_datetime, duration_hours)
 
 def calculate_fee_manor(arrival_datetime, rounded_total_hours):
-    # Calculate total parking fee at Manor based on different time blocks
+    # Define the rates and hour thresholds
+    first_hour_rate = 2.00  # CHF for the first hour
+    mid_hours_rate = 1.00 / 3  # CHF per 20 minutes between 1 and 3 hours
+    beyond_hours_rate = 1.50 / 3  # CHF per 20 minutes beyond 3 hours
+
+    # Initialize the total fee
+    total_fee = 0.0
+
+    # Check the total parking duration and apply rates accordingly
     if rounded_total_hours <= 1:
-        total_fee = 2.00  # If less than or equal to 1 hour
+        total_fee = first_hour_rate
     elif rounded_total_hours <= 3:
-        # From 1 hour to 3 hours
-        total_fee = 2.00 + (math.ceil((rounded_total_hours - 1) * 3) * 1.00)
+        # Calculate charges for the first hour
+        total_fee += first_hour_rate
+        # Calculate the remaining time in 20-minute segments
+        remaining_time_in_segments = math.ceil((rounded_total_hours - 1) * 3)
+        total_fee += remaining_time_in_segments * mid_hours_rate
     else:
-        # Beyond 3 hours
-        total_fee = (3 * 3 * 1.00) + (math.ceil((rounded_total_hours - 3) * 3) * 1.50)
+        # Charges for the first three hours
+        total_fee += first_hour_rate + (2 * 3 * mid_hours_rate)  # 2 hours in 20-minute segments
+        # Calculate time beyond three hours in 20-minute segments
+        remaining_time_in_segments = math.ceil((rounded_total_hours - 3) * 3)
+        total_fee += remaining_time_in_segments * beyond_hours_rate
 
     return f"Total parking fee at Manor: {total_fee:.2f} CHF"
 

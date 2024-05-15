@@ -271,16 +271,10 @@ def calculate_fee_stadtpark_azsg(arrival_datetime, duration_hours):
     return f"Total parking fee at Stadtpark AZSG: {total_fee:.2f} CHF"
 
 def calculate_fee_neumarkt(arrival_datetime, duration_hours):
-    rate_per_20_min = 1.0  # CHF per 20 minutes during the day
+    flat_rate = 1  # CHF per hour
 
-    # Convert duration in hours to minutes for easier calculation
-    total_minutes = duration_hours * 60
-    
-    # Calculate the number of 20-minute segments, rounding up to cover partial segments
-    segments = math.ceil(total_minutes / 20)
-    
-    # Total fee is the number of segments times the rate per segment
-    total_fee = segments * rate_per_20_min
+    # Total fee is simply the flat rate multiplied by the duration in hours, rounded up
+    total_fee = math.ceil(duration_hours) * flat_rate
 
     return f"Total parking fee at Neumarkt: {total_fee:.2f} CHF"
 

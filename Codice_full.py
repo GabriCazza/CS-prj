@@ -9,8 +9,6 @@ from geopy.distance import geodesic
 import random
 import re
 import math 
-from geopy.exc import GeocoderTimedOut, GeocoderQuotaExceeded, GeocoderUnavailable
-from geopy.geocoders import Nominatim
 
 #Used to handale the API with a rate limit (unrelible conditions)
 def safe_request(url, params):
@@ -91,35 +89,19 @@ def fetch_additional_data():
 
 # Used to convert a textual address into geographical coordinates (latitude and longitude) using the Nominatim geocoding API
 
-VALID_POSTAL_CODES = ["9000", "9001", "9008", "9010", "9011", "9012", "9014", "9015", "9016", "9030", "9037", "9042"]
-
-def validate_postal_code(location):
-    """ Verifica se il codice postale è valido per San Gallo. """
-    for code in VALID_POSTAL_CODES:
-        if code in location:
-            return True
-    return False
-
 def geocode_address(location):
-    """Attempt to geocode a location with error handling for HTTP status code 403."""
-    if not location:
-        st.error("Please enter an address.")
-        return None
-
-    full_address = f"{location}, St. Gallen, Switzerland"
-    geolocator = Nominatim(user_agent="myGeocoderApp_v1")
-    try:
-        geocoded_location = geolocator.geocode(full_address)
-        if geocoded_location:
-            return (geocoded_location.longitude, geocoded_location.latitude)
-    except GeocoderTimedOut:
-        st.error("Geocoding service timed out. Please try again later.")
-    except GeocoderQuotaExceeded:
-        st.error("Geocoding quota exceeded. Please try again later.")
-    except Exception as e:
-        st.error(f"An unexpected error occurred: {e}")
-        if e.status_code == 403:
-            st.error("Access forbidden. Check API key and request rate.")
+    """Converts an address to a point (latitude, longitude) using the Nominatim API."""
+    if location:
+        geolocator = geocoders.Nominatim(user_agent="geocoding_app", timeout=10)
+        try:
+            geocoded_location = geolocator.geocode(location + ", St. Gallen, Switzerland")
+            if geocoded_location:
+                return (geocoded_location.longitude, geocoded_location.latitude)
+        except exc.GeocoderRateLimited as e:
+            st.warning("Rate limit exceeded, waiting to retry...")
+            time.sleep(10)  # Wait 10 seconds before retrying
+        except Exception as e:
+            st.error(f"Geocoding error: {e}")
     return None
 
 
@@ -490,7 +472,7 @@ def main():
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
-
+    
     # Date and Time Selection
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())

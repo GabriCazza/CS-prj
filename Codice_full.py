@@ -462,15 +462,17 @@ def main():
     with top_row:
         col1, col2 = st.columns([0.4, 4])
         with col1:
-            st.write('h)')
+            logo_path = "image-removebg-preview (1).png"  # Ensure the image path is correct
+            st.image(logo_path, width=100)
         with col2:
             st.title("arkGallen")
 
     # Address and Destination Input
+    st.sidebar.image(logo_path, width=120)
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
-
+    
     # Date and Time Selection
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())

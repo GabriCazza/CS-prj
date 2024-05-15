@@ -397,8 +397,9 @@ def main():
     # Date and Time Selection
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())
-    arrival_time_str = st.sidebar.text_input("Enter arrival time (ex: 08.59):", key="arrival_time")
-    departure_time_str = st.sidebar.text_input("Enter departure time (ex:12:12):", key="departure_time")
+    st.sidebar.markdown("#### You can enter the time like this: 12.12/12:12/1212")
+    arrival_time_str = st.sidebar.text_input("Enter arrival time :", key="arrival_time")
+    departure_time_str = st.sidebar.text_input("Enter departure time :", key="departure_time")
 
     # Parse datetime using custom function for flexibility
     arrival_datetime = parse_datetime(arrival_date.strftime("%Y-%m-%d"), arrival_time_str)

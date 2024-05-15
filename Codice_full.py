@@ -93,15 +93,13 @@ def fetch_additional_data():
 def geocode_address(location):
     """Converts an address to a point (latitude, longitude) using the Nominatim API, specifically within St. Gallen, Switzerland."""
     if location:
-        geolocator = geocoders.Nominatim(user_agent="geocoding_app", timeout=10)
+        # Assume the location is within St. Gallen city by appending the city and country
         full_location = f"{location}, St. Gallen, Switzerland"
-        
-        # Default bounding box for St. Gallen if no custom bounding box is provided
-        if not bounding_box:
-            bounding_box = [(47.404229, 9.324815), (47.2711, 9.23305)]  # St. Gallen default coordinates
-
+        geolocator = geocoders.Nominatim(user_agent="geocoding_app", timeout=10)
+        # Define the approximate bounding box of St. Gallen city
+        viewbox = [(47.404229, 9.324815), (47.2711, 9.23305)]  # (southwest_lat, southwest_lon), (northeast_lat, northeast_lon)
         try:
-            geocoded_location = geolocator.geocode(full_location, viewbox=bounding_box, bounded=True)
+            geocoded_location = geolocator.geocode(full_location, viewbox=viewbox, bounded=True)
             if geocoded_location:
                 return (geocoded_location.longitude, geocoded_location.latitude)
         except exc.GeocoderRateLimited as e:
@@ -109,7 +107,6 @@ def geocode_address(location):
             time.sleep(10)  # Wait 10 seconds before retrying
         except Exception as e:
             st.error(f"Geocoding error: {e}")
-
     return None
 
 

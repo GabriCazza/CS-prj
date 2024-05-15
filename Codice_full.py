@@ -237,13 +237,13 @@ def find_nearest_parking_place(data, destination_point):
         st.error("Destination not specified or no parking data available.")
         return None, None
 
-    # Filter for Parkhaus
+    # Filtering parkhaus data
     parkhaus_data = data[data['category'] == 'Parkhaus']
     if parkhaus_data.empty:
         st.error("No 'Parkhaus' available in the data.")
         return None, None
 
-    # Calculate the distance of each Parkhaus from the destination
+    # Calculating distances to the destination
     parkhaus_data['distance_to_destination'] = parkhaus_data.apply(
         lambda row: geodesic(
             (row['latitude'], row['longitude']),
@@ -251,14 +251,16 @@ def find_nearest_parking_place(data, destination_point):
         ).meters, axis=1
     )
 
-    # Find the nearest Parkhaus
+    # Finding the nearest parkhaus
     nearest_parkhaus = parkhaus_data.loc[parkhaus_data['distance_to_destination'].idxmin()] if not parkhaus_data.empty else None
     if nearest_parkhaus is not None:
-        estimated_walking_time = nearest_parkhaus['distance_to_destination'] / 1000 / 1.1 * 60  # Convert meters to minutes assuming 1.1 m/s walking speed
+        # Calculate walking time in minutes, assuming walking speed is 1.1 m/s
+        estimated_walking_time = (nearest_parkhaus['distance_to_destination'] / 1.1) / 60
         return nearest_parkhaus, estimated_walking_time
     else:
         st.error("No nearby valid Parkhaus found.")
         return None, None
+
 
 
 
@@ -268,7 +270,7 @@ def calculate_and_display_distances(map_folium, location_point, destination_poin
             # Calculate distance from location point to destination
             distance_to_destination = geodesic((location_point[1], location_point[0]), (destination_point[1], destination_point[0])).meters
             time_to_destination = distance_to_destination / 1.1 / 60  # Convert to minutes
-            st.markdown(f"*Estimated walking time from your location to destination:* {int(time_to_destination)} minutes")
+            st.markdown(f"Estimated walking time from your location to destination: {int(time_to_destination)} minutes")
 
         # Check if nearest_parking DataFrame is not empty and is specifically a Parkhaus
         if nearest_parking is not None and not nearest_parking.empty and nearest_parking['category'] == 'Parkhaus':
@@ -358,7 +360,7 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
             "extended_rate": [(3, 2), (None, 1, 60)],
             "night_rate": 0.6
         },
-        "Stadtpark/AZSG": {
+        "Stadtpark AZSG": {
             "daytime": (7, 24),
             "nighttime": (24, 7),
             "extended_rate": [(3, 1.6), (None, 0.8, 60)],
@@ -370,13 +372,13 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
             "extended_rate": [(3, 2), (None, 1.5, 60)],
             "night_rate": 0.6
         },
-        "Olma fairs": {
+        "OLMA Messe": {
             "rates": [(3, 2), (None, 1.5, 60)]
         },
         "Unterer Graben": {
             "flat_rate": 2
         },
-        "Olma parking lot": {
+        "OLMA Parkplatz": {
             "daytime": (6, 23),
             "nighttime": (23, 6),
             "day_rate": 2,
@@ -389,11 +391,11 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
         return f"Information not available for {parking_name}."
 
     if 'flat_rate' in park_info:
-        total_fee = park_info['flat_rate'] * math.floor(duration_hours)
+        total_fee = park_info['flat_rate'] * duration_hours
         return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
 
     total_fee = 0
-    hours_left = math.floor(duration_hours)  # Use math.floor to round down the hours
+    hours_left = duration_hours  # Already rounded up
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
 
     # Calculate fees based on day and night rates
@@ -418,6 +420,8 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
 
 
+
+
        
 # Funzione ausiliaria per visualizzare le informazioni del parcheggio
 def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time):
@@ -427,7 +431,7 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
         <div style="background-color:#86B97A; padding:10px; border-radius:5px;">
             <h4>Nearest Parkhaus Information</h4>
             <p>Name: {nearest_parkhaus.get('phname', 'Unknown')}</p>
-            <p>Estimated Walking Time: {int(estimated_walking_time)} minutes</p>
+            <p>Estimated Walking Time from Destination: {int(estimated_walking_time)} minutes</p>
             <p>Description: {nearest_parkhaus.get('phstate', 'No Description')}</p>
             <p>Spaces: {nearest_parkhaus.get('shortfree', 'N/A')}/{nearest_parkhaus.get('shortmax', 'N/A')}</p>
         </div>
@@ -447,6 +451,7 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
 
 
 
+
 #The Whole MAIN function 
         
 def main():
@@ -457,13 +462,11 @@ def main():
     with top_row:
         col1, col2 = st.columns([0.4, 4])
         with col1:
-            logo_path = "image-removebg-preview (1).png"  # Ensure the image path is correct
-            st.image(logo_path, width=100)
+            st.write('h)')
         with col2:
             st.title("arkGallen")
 
     # Address and Destination Input
-    st.sidebar.image(logo_path, width=120)
     st.sidebar.markdown("### Enter a valid destination in St. Gallen")
     address = st.sidebar.text_input("Enter an address in St. Gallen:", key="address")
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
@@ -478,7 +481,6 @@ def main():
     arrival_datetime = parse_datetime(arrival_date.strftime("%Y-%m-%d"), arrival_time_str)
     departure_datetime = parse_datetime(departure_date.strftime("%Y-%m-%d"), departure_time_str)
     if arrival_datetime is None or departure_datetime is None:
-        st.sidebar.error("Invalid time format. Please use HHMM or HH.MM.")
         return
 
     # Calculate duration and format it
@@ -494,7 +496,7 @@ def main():
 
     total_seconds = (departure_datetime - arrival_datetime).total_seconds()
     total_hours = total_seconds / 3600
-    rounded_total_hours = math.floor(total_hours)  # Ensure charges are for complete hours only
+    rounded_total_hours = math.ceil(total_hours)  # Ensure charges are for complete hours only
 
     # Geocode addresses
     location_point = geocode_address(address) if address else None

@@ -380,8 +380,10 @@ def calculate_fee_oberer_graben(arrival_datetime, duration_hours):
 
         current_time %= 24  # Reset time after midnight
 
-    return f"Total parking fee at Oberer Graben: {total_fee:.2f} CHF"
+    # Round the total fee to the nearest whole number
+    total_fee = math.ceil(total_fee)
 
+    return f"Total parking fee at Oberer Graben: {total_fee:.2f} CHF"
     
 def calculate_fee_raiffeisen(arrival_datetime, duration_hours):
     initial_rate_hours = 3  # The first three hours have a different rate

@@ -43,33 +43,18 @@ def calculate_parking_fees(parking_name, arrival_datetime, rounded_total_hours):
 #Calculation for every single parking space
 #standard identification--> def "name parking"(arrival_datetime, duration_hours)
 
-from datetime import timedelta
 import math
 
 def calculate_fee_manor(arrival_datetime, rounded_total_hours):
-    # Definizione dei limiti temporali per la tariffa notturna
-    night_start = 21.5   # 21:30 PM
-    night_end = 0.5      # 00:30 AM, tecnicamente il giorno seguente
-    
-    # Check if parking time falls into the night rate period
-    current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
-    if night_start <= current_hour or current_hour < night_end:
-        # Calculate night fee for the entire duration if during night rate hours
-        night_hours = min(rounded_total_hours, night_end - night_start if current_hour >= night_start else night_end + (24 - current_hour))
-        segments_night = math.ceil(night_hours * 2)  # Number of 30 minute segments during night time
-        total_fee = segments_night * 1.0  # CHF 1.00 per 30 minutes at night
+    # Calculate total parking fee at Manor based on different time blocks
+    if rounded_total_hours <= 1:
+        total_fee = 2.00  # If less than or equal to 1 hour
+    elif rounded_total_hours <= 3:
+        # From 1 hour to 3 hours
+        total_fee = 2.00 + ((rounded_total_hours - 1) * 3 * (1.00 / 3))
     else:
-        # Determine the daytime rate based on the total hours parked
-        if rounded_total_hours <= 1:
-            total_fee = 2.00  # First hour rate
-        elif rounded_total_hours <= 3:
-            total_fee = 2.00 + ((rounded_total_hours - 1) * 3 * (1.00 / 3))  # 1 to 3 hours rate
-        else:
-            # Calculate for the first 3 hours
-            total_fee = 2.00 + (2 * 3 * (1.00 / 3))
-            # Remaining hours over 3 hours
-            additional_hours = rounded_total_hours - 3
-            total_fee += additional_hours * 3 * (1.50 / 3)  # Beyond 3 hours rate
+        # Beyond 3 hours
+        total_fee = (3 * 3 * (1.00 / 3)) + ((rounded_total_hours - 3) * 3 * (1.50 / 3))
 
     return f"Total parking fee at Manor: {math.ceil(total_fee):.2f} CHF"
 

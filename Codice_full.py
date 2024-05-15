@@ -395,9 +395,10 @@ def main():
     destination = st.sidebar.text_input("Enter destination in St. Gallen:", key="destination")
     
     # Date and Time Selection
+    st.sidebar.markdown("#### Select Dates 🗓️")
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())
-    st.sidebar.markdown("#### You can enter the time like this: 12.12/12:12/1212")
+    st.sidebar.markdown("#### You can enter the time like this: 12.12/ 12:12/ 1212 🕐")
     arrival_time_str = st.sidebar.text_input("Enter arrival time :", key="arrival_time")
     departure_time_str = st.sidebar.text_input("Enter departure time :", key="departure_time")
 

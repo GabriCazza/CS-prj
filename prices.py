@@ -45,9 +45,9 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
 
 def calculate_fee_manor(arrival_datetime, duration_hours):
     daytime_start = 5.5  # 5:30 AM
-    daytime_end = 21  # 9:00 PM
-    night_rate = 1  # CHF per hour at night
-    rates = [(1, 2), (3, 1, 20), (None, 1.5, 20)]  # Rates as (hours, rate, interval in minutes)
+    daytime_end = 21    # 9:00 PM
+    night_rate = 1      # CHF per hour at night
+    rates = [(1, 2, 60), (3, 1, 20), (None, 1.5, 20)]  # Rates as (hours, rate, interval in minutes)
 
     total_fee = 0
     current_time = arrival_datetime
@@ -55,18 +55,24 @@ def calculate_fee_manor(arrival_datetime, duration_hours):
     while duration_hours > 0:
         current_hour = current_time.hour + current_time.minute / 60
 
+        # Determine if current time is during day or night
         if daytime_start <= current_hour < daytime_end:
             for hours, rate, interval in rates:
-                if hours is None or duration_hours < hours:
+                if hours is None:  # For the continuous rate till the end of the duration
                     interval_hours = interval / 60
                     hours_to_charge = min(duration_hours, interval_hours)
-                    total_fee += rate * (hours_to_charge / interval_hours)
+                    total_fee += rate * hours_to_charge
                     duration_hours -= hours_to_charge
-                else:
-                    total_fee += rate
+                    current_time += timedelta(hours=hours_to_charge)
+                elif duration_hours >= hours:  # If the duration is greater than the rate hours
+                    total_fee += rate * hours
                     duration_hours -= hours
-
-        else:
+                    current_time += timedelta(hours=hours)
+                else:  # If the remaining hours are less than the block hours
+                    total_fee += rate * duration_hours
+                    current_time += timedelta(hours=duration_hours)
+                    duration_hours = 0
+        else:  # Night rate calculations
             if current_hour >= daytime_end:
                 time_till_day = 24 - current_hour + daytime_start
             else:
@@ -75,8 +81,7 @@ def calculate_fee_manor(arrival_datetime, duration_hours):
             hours_to_charge = min(duration_hours, time_till_day)
             total_fee += hours_to_charge * night_rate
             duration_hours -= hours_to_charge
-
-        current_time += timedelta(hours=hours_to_charge)
+            current_time += timedelta(hours=hours_to_charge)
 
     return math.ceil(total_fee)  # Round up the total fee to the nearest whole number
 

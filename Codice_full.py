@@ -411,22 +411,44 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
         }
     }
 
-    park_info = rates.get(parking_name)
-    if not park_info:
+    if parking_name not in rates:
         return f"Information not available for {parking_name}."
 
+    park_info = rates[parking_name]
     total_fee = 0
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
+    hours_left = duration_hours
 
-    # Check if valid_hours and day keys exist and handle them appropriately
-    if "valid_hours" in park_info and "day" in park_info["valid_hours"]:
-        if park_info["valid_hours"]["day"][0] <= current_time < park_info["valid_hours"]["day"][1]:
-            # Implement your daytime rate calculation logic here
-            pass
-    else:
-        return "Valid hours information is missing for this parking location."
+    # Check if there's a flat daily rate option that suits the duration
+    if "daily_rates" in park_info:
+        for days, cost in park_info["daily_rates"]:
+            if duration_hours <= days * 24:
+                return f"Total parking fee at {parking_name} for {days} days: {cost:.2f} CHF"
 
-    # Implement the rest of your parking fee calculation logic here
+    # Handling rates by checking time validity
+    while hours_left > 0:
+        if "underground" in park_info:
+            # Determine if it's day or night for special underground rates
+            for period, details in park_info["underground"].items():
+                start, end = details["hours"]
+                if start <= current_time < end or (start > end and not (end <= current_time < start)):
+                    # Calculate fees based on the specified rates
+                    for hours, rate, interval in details["rates"]:
+                        if hours is None or hours_left >= hours:
+                            hours_to_charge = interval if interval else hours_left
+                            total_fee += hours_to_charge * rate
+                            hours_left -= hours_to_charge
+                            current_time = (current_time + hours_to_charge) % 24
+                            break
+        else:
+            # Default rate handling outside of special conditions
+            for hours, rate, interval in park_info.get("rates", []):
+                if hours is None or hours_left >= hours:
+                    hours_to_charge = interval if interval else hours_left
+                    total_fee += hours_to_charge * rate
+                    hours_left -= hours_to_charge
+                    current_time = (current_time + hours_to_charge) % 24
+                    break
 
     return f"Total parking fee at {parking_name}: {total_fee:.2f} CHF"
 

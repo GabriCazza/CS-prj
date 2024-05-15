@@ -86,7 +86,8 @@ def calculate_fee_manor(arrival_datetime, duration_hours):
 
         current_time += timedelta(hours=duration_hours)  # Update current time
 
-    return f"Total parking fee at Manor: {total_fee:.2f} CHF"
+    return total_fee
+
 
 
 def calculate_fee_bahnhof(arrival_datetime, duration_hours):

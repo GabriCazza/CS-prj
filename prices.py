@@ -59,7 +59,7 @@ def calculate_fee_manor(arrival_datetime, rounded_total_hours):
     else:
         total_fee = long_term_rate * rounded_total_hours  # Apply long term rate if parking duration is more than 3 hours
 
-    return f"Total parking fee at Manor: {total_fee:.2f} CHF"
+    return f" at Manor: {total_fee:.2f} CHF"
 
 
 def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
@@ -87,7 +87,7 @@ def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
             additional_hours = rounded_total_hours - 1
             total_fee += math.ceil(additional_hours * 2) * (night_subsequent_rate / 2)  # Subsequent rates per 30 minutes
 
-    return f"Total parking fee at Bahnhof: {(total_fee)} CHF"
+    return f" at Bahnhof: {(total_fee)} CHF"
 
 def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):
     daytime_rate = 2.00  # CHF for the first hour
@@ -116,7 +116,7 @@ def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):
             # Calculate for each 30 minutes interval after the first hour
             total_fee += (additional_hours * 2) * night_subsequent_rate / 2
 
-    return f"Total parking fee at Brühltor: {(total_fee):.2f} CHF"
+    return f" at Brühltor: {(total_fee):.2f} CHF"
 
 
 
@@ -163,7 +163,7 @@ def calculate_fee_burggraben(arrival_datetime, duration_hours):
         else:
             rate_details = nighttime_rates
 
-    return f"Total parking fee at Burggraben: {total_fee:.2f} CHF"
+    return f" at Burggraben: {total_fee:.2f} CHF"
 
 
 def calculate_fee_stadtpark_azsg(arrival_datetime, duration_hours):
@@ -214,7 +214,7 @@ def calculate_fee_stadtpark_azsg(arrival_datetime, duration_hours):
 
         current_time = (current_time % 24)  # Reset the time after midnight
 
-    return f"Total parking fee at Stadtpark AZSG: {total_fee:.2f} CHF"
+    return f" at Stadtpark AZSG: {total_fee:.2f} CHF"
 
 def calculate_fee_neumarkt(arrival_datetime, rounded_total_hours):
     day_rate = 3.0  # CHF per hour during the day (7 AM to 10 PM)
@@ -247,7 +247,7 @@ def calculate_fee_neumarkt(arrival_datetime, rounded_total_hours):
             hours_left -= hours_to_charge
             current_time = current_time.replace(hour=int((current_time.hour + hours_to_charge) % 24))
 
-    return f"Total parking fee at Neumarkt: {total_fee:.2f} CHF"
+    return f" at Neumarkt: {total_fee:.2f} CHF"
 
 
 def calculate_fee_rathaus(arrival_datetime, rounded_total_hours):
@@ -280,7 +280,7 @@ def calculate_fee_rathaus(arrival_datetime, rounded_total_hours):
 
         current_time %= 24  # Reset time after midnight
 
-    return f"Total parking fee at Rathaus: {total_fee:.2f} CHF"
+    return f" at Rathaus: {total_fee:.2f} CHF"
 
 def calculate_fee_kreuzbleiche(arrival_datetime, rounded_total_hours):
     daytime_hours = (6, 23)  # Daytime from 6 AM to 11 PM
@@ -315,7 +315,7 @@ def calculate_fee_kreuzbleiche(arrival_datetime, rounded_total_hours):
     # Round the total fee to the nearest whole number
     total_fee = (total_fee)
 
-    return f"Total parking fee at Kreuzbleiche: {total_fee:.2f} CHF"
+    return f"at Kreuzbleiche: {total_fee:.2f} CHF"
 
 def calculate_fee_oberer_graben(arrival_datetime, rounded_total_hours):
     daytime_hours = (6, 23)  # Daytime from 6 AM to 11 PM
@@ -350,7 +350,7 @@ def calculate_fee_oberer_graben(arrival_datetime, rounded_total_hours):
     # Round the total fee to the nearest whole number
     total_fee = math.ceil(total_fee)
 
-    return f"Total parking fee at Oberer Graben: {total_fee:.2f} CHF"
+    return f" at Oberer Graben: {total_fee:.2f} CHF"
     
 def calculate_fee_raiffeisen(arrival_datetime, rounded_total_hours):
     initial_rate = 2.0  # CHF per hour for the first 3 hours
@@ -369,17 +369,17 @@ def calculate_fee_raiffeisen(arrival_datetime, rounded_total_hours):
     else:
         total_fee = rounded_total_hours * long_term_rate
 
-    return f"Total parking fee at Raiffeisen: {total_fee:.2f} CHF"
+    return f" at Raiffeisen: {total_fee:.2f} CHF"
 
 
 
 
-def calculate_fee_einstein(arrival_datetime, duration_hours):
+def calculate_fee_einstein(arrival_datetime, rounded_total_hours):
     flat_rate = 2.5  # CHF per hour regardless of duration
 
-    total_fee = flat_rate * duration_hours  # Total fee is simply the hourly rate multiplied by hours parked
+    total_fee = flat_rate * rounded_total_hours  # Total fee is simply the hourly rate multiplied by hours parked
 
-    return f"Total parking fee at Einstein: {total_fee:.2f} CHF"
+    return f" at Einstein: {total_fee:.2f} CHF"
 
 def calculate_fee_spisertor(arrival_datetime, duration_hours):
     flat_rate = 2.5  # CHF per hour regardless of duration

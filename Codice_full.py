@@ -435,7 +435,7 @@ def main():
 
     # Display parking and calculate fees
     if st.sidebar.button("Show Parking and Calculate Fees"):
-        with st.spinner("Loading information for you ;)"):
+        with st.spinner("Loading information for you 😉"):
             original_data = fetch_parking_data()
             additional_data = fetch_additional_data()
             filtered_data = filter_parking_by_radius(original_data, destination_point, radius, True, bool(address))
@@ -464,6 +464,6 @@ def main():
                     # Process valid parking fee display
                     display_parking_information(nearest_parkhaus, parking_fee, blue_count, white_count, handicapped_count, estimated_walking_time)
             else:
-                st.write("### No nearby valid Parkhaus found or the Parkhaus name is missing.")
+                st.write("### No nearby valid Parkhaus found or the Parkhaus name is missing 😔")
 if __name__ == "__main__":
     main()

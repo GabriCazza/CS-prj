@@ -355,10 +355,10 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
 
 
 #Function used to call the prices.py function and make the estiamtion of price 
-def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
+def calculate_parking_fees(parking_name, arrival_datetime, rounded_total_hours):
     parking_fee_function = getattr(prices, f"calculate_fee_{parking_name.lower().replace(' ', '_')}", None)
     if parking_fee_function:
-        return parking_fee_function(arrival_datetime, duration_hours)
+        return parking_fee_function(arrival_datetime, rounded_total_hours)
     return "Parking name not recognized. Please check the parking name."
 
 
@@ -387,8 +387,8 @@ def main():
     # Date and Time Selection
     arrival_date = st.sidebar.date_input("Arrival Date", date.today())
     departure_date = st.sidebar.date_input("Departure Date", date.today())
-    arrival_time_str = st.sidebar.text_input("Enter arrival time (HHMM or HH.MM):", key="arrival_time")
-    departure_time_str = st.sidebar.text_input("Enter departure time (HHMM or HH.MM):", key="departure_time")
+    arrival_time_str = st.sidebar.text_input("Enter arrival time (ex: 08.59):", key="arrival_time")
+    departure_time_str = st.sidebar.text_input("Enter departure time (ex:12:12):", key="departure_time")
 
     # Parse datetime using custom function for flexibility
     arrival_datetime = parse_datetime(arrival_date.strftime("%Y-%m-%d"), arrival_time_str)

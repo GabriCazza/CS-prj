@@ -318,6 +318,7 @@ def calculate_fee_kreuzbleiche(arrival_datetime, duration_hours):
 
     total_fee = 0.0
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
+
     while hours_left > 0:
         if daytime_hours[0] <= current_time < daytime_hours[1]:
             # Calculate daytime fee

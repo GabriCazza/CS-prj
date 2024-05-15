@@ -464,7 +464,7 @@ def calculate_fee_olma_parkplatz(arrival_datetime, rounded_total_hours):
             total_fee += night_rate
         current_hour = (current_hour + 1) % 24  # Wrap around to the next hour, mod 24 for midnight wrap-around
 
-    return f"Total parking fee at OLMA Parkplatz: {total_fee:.2f} CHF"
+    return f" at OLMA Parkplatz: {total_fee:.2f} CHF"
 
 
 

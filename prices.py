@@ -233,21 +233,20 @@ def calculate_fee_neumarkt(arrival_datetime, duration_hours):
 
     return f"Total parking fee at Neumarkt: {total_fee:.2f} CHF"
 
-def calculate_fee_rathaus(arrival_datetime, duration_hours):
+def calculate_fee_rathaus(arrival_datetime, rounded_total_hours):
     daytime_hours = (7, 22)  # From 7 AM to 10 PM
     night_rate = 1.2  # CHF per hour at night
     day_rate = 2.4  # CHF per hour during the day
 
     total_fee = 0.0
     current_time = arrival_datetime.hour + arrival_datetime.minute / 60
-
-    hours_left = duration_hours
+    hours_left = rounded_total_hours
 
     while hours_left > 0:
         if daytime_hours[0] <= current_time < daytime_hours[1]:
             # Calculate daytime fee
             day_hours_left = min(daytime_hours[1] - current_time, hours_left)
-            total_fee += math.ceil(day_hours_left) * day_rate  # Round up the hours to charge
+            total_fee += math.ceil(day_hours_left) * day_rate  # Apply day rate and round up
             hours_left -= day_hours_left
             current_time += day_hours_left
         else:
@@ -258,7 +257,7 @@ def calculate_fee_rathaus(arrival_datetime, duration_hours):
                 night_hours_left = daytime_hours[0] - current_time
 
             night_hours_left = min(night_hours_left, hours_left)
-            total_fee += math.ceil(night_hours_left) * night_rate  # Round up the hours to charge
+            total_fee += math.ceil(night_hours_left) * night_rate  # Apply night rate and round up
             hours_left -= night_hours_left
             current_time += night_hours_left
 

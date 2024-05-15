@@ -91,13 +91,15 @@ def fetch_additional_data():
 # Used to convert a textual address into geographical coordinates (latitude and longitude) using the Nominatim geocoding API
 
 def geocode_address(location):
-    """Converts an address to a point (latitude, longitude) using the Nominatim API, assuming the location is in St. Gallen, Switzerland."""
+    """Converts an address to a point (latitude, longitude) using the Nominatim API, specifically within St. Gallen, Switzerland."""
     if location:
         # Assume the location is within St. Gallen city by appending the city and country
         full_location = f"{location}, St. Gallen, Switzerland"
         geolocator = geocoders.Nominatim(user_agent="geocoding_app", timeout=10)
+        # Define the approximate bounding box of St. Gallen city
+        viewbox = [(47.4235, 9.362), (47.4387, 9.3984)]  # (southwest_lat, southwest_lon), (northeast_lat, northeast_lon)
         try:
-            geocoded_location = geolocator.geocode(full_location)
+            geocoded_location = geolocator.geocode(full_location, viewbox=viewbox, bounded=True)
             if geocoded_location:
                 return (geocoded_location.longitude, geocoded_location.latitude)
         except exc.GeocoderRateLimited as e:
@@ -106,6 +108,7 @@ def geocode_address(location):
         except Exception as e:
             st.error(f"Geocoding error: {e}")
     return None
+
 
 #Fucntion used to picture the parking spaces on the map based on the different categories + count of the catgories within map 
 

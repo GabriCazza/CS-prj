@@ -386,23 +386,20 @@ def calculate_fee_raiffeisen(arrival_datetime, duration_hours):
     mid_rate = 1.5  # CHF per hour from 3 to 13 hours
     long_term_rate = 1.0  # CHF per hour beyond 13 hours
     first_rate_hours = 3  # Duration for the initial rate
-    mid_rate_hours = 10  # Duration from 3 to 13 hours (10 additional hours)
+    mid_rate_limit = 13  # Upper limit for the mid rate
 
     total_fee = 0.0
 
+    # Apply the rate based on the duration_hours
     if duration_hours <= first_rate_hours:
         total_fee = duration_hours * initial_rate
-    elif duration_hours <= first_rate_hours + mid_rate_hours:
-        total_fee = first_rate_hours * initial_rate
-        remaining_hours = duration_hours - first_rate_hours
-        total_fee += remaining_hours * mid_rate
+    elif duration_hours <= mid_rate_limit:
+        total_fee = duration_hours * mid_rate
     else:
-        total_fee = first_rate_hours * initial_rate
-        total_fee += mid_rate_hours * mid_rate
-        remaining_hours = duration_hours - (first_rate_hours + mid_rate_hours)
-        total_fee += remaining_hours * long_term_rate
+        total_fee = duration_hours * long_term_rate
 
     return f"Total parking fee at Raiffeisen: {total_fee:.2f} CHF"
+
 
 
 def calculate_fee_einstein(arrival_datetime, duration_hours):

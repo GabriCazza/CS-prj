@@ -130,7 +130,7 @@ def calculate_fee_burggraben(arrival_datetime, rounded_total_hours):
     current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
 
     # Calculate daytime fees if within daytime hours
-    if 6 <= current_hour < 22:
+    if 7 <= current_hour < 24:
         if rounded_total_hours <= 1:
             total_fee += daytime_rate
         else:
@@ -143,58 +143,35 @@ def calculate_fee_burggraben(arrival_datetime, rounded_total_hours):
         else:
             total_fee += nighttime_rate  # First hour
             additional_hours = rounded_total_hours - 1
-            total_fee += math.ceil(additional_hours * 2) * (night_subsequent_rate / 2)  # Subsequent rates per 30 minutes
+            total_fee += math.ceil(additional_hours * 2) * (night_subsequent_rate)  # Subsequent rates per 30 minutes
 
     return f" at Burggraben: {(total_fee):.2f} CHF"
 
 
-def calculate_fee_stadtpark_azsg(arrival_datetime, duration_hours):
-    # Define the parking rates and hours
-    standard_rates = {
-        "event": [(1, 2.40), (None, 1.20, 0.5)],
-        "day": [(1, 1.60), (None, 0.80, 0.5)],
-        "night": [(1, 0.80), (None, 0.40, 0.5)]
-    }
-    event_days = [5]  # Assuming events occur on Saturdays (day index 5)
-    valid_hours = {"day": (7, 24), "night": (0, 7)}
-    daily_rates = [(24, 18), (48, 36), (72, 54)]  # Flat rates for full day durations
+def calculate_fee_stadtpark_azsg(arrival_datetime, rounded_total_hours):
+    daytime_rate = 1.60  # CHF for the first hour
+    day_subsequent_rate = 0.80  # CHF per 30 minutes after the first hour
+    nighttime_rate = 0.80  # CHF for the first hour at night
+    night_subsequent_rate = 0.40  # CHF per 30 minutes after the first hour at night
 
-    current_time = arrival_datetime.hour + arrival_datetime.minute / 60
-    total_fee = 0
-    hours_left = duration_hours
+    total_fee = 0.0
+    current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
 
-    # Check if it's an event day
-    is_event_day = arrival_datetime.weekday() in event_days
-
-    # Apply daily flat rates if parking duration covers full days
-    for duration, rate in daily_rates:
-        if hours_left >= duration:
-            total_fee += rate
-            hours_left -= duration
-
-    # Calculate hourly rates for the remaining time
-    while hours_left > 0:
-        if valid_hours["day"][0] <= current_time < valid_hours["day"][1]:
-            # Daytime rates
-            rate_details = standard_rates["event"] if is_event_day else standard_rates["day"]
-            for (hours, rate, interval) in rate_details:
-                if hours is None or hours_left <= hours:
-                    hours_to_charge = min(hours_left, interval)
-                    total_fee += hours_to_charge * rate
-                    hours_left -= hours_to_charge
-                    current_time += hours_to_charge
-                    break
+    # Calculate daytime fees if within daytime hours
+    if 7 <= current_hour < 24:
+        if rounded_total_hours <= 1:
+            total_fee += daytime_rate
         else:
-            # Nighttime rates
-            for (hours, rate, interval) in standard_rates["night"]:
-                if hours is None or hours_left <= hours:
-                    hours_to_charge = min(hours_left, interval)
-                    total_fee += hours_to_charge * rate
-                    hours_left -= hours_to_charge
-                    current_time += hours_to_charge
-                    break
-
-        current_time = (current_time % 24)  # Reset the time after midnight
+            total_fee += daytime_rate  # First hour
+            additional_hours = rounded_total_hours-1
+            total_fee += math.ceil(additional_hours * 2) * (day_subsequent_rate)  # Subsequent rates per 30 minutes
+    else:  # Calculate nighttime fees
+        if rounded_total_hours <= 1:
+            total_fee += nighttime_rate
+        else:
+            total_fee += nighttime_rate  # First hour
+            additional_hours = rounded_total_hours - 1
+            total_fee += math.ceil(additional_hours * 2) * (night_subsequent_rate)  # Subsequent rates per 30 minutes
 
     return f" at Stadtpark AZSG: {total_fee:.2f} CHF"
 

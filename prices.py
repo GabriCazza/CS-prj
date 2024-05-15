@@ -88,7 +88,6 @@ def calculate_fee_manor(arrival_datetime, duration_hours):
 
 
 def calculate_fee_bahnhof(arrival_datetime, duration_hours):
-    # Rates for various durations at Bahnhof
     rates = [
         (0.1667, 0),  # Free for up to 10 minutes
         (0.3333, 0.50),  # 11 to 20 minutes at 0.50 CHF
@@ -96,40 +95,28 @@ def calculate_fee_bahnhof(arrival_datetime, duration_hours):
         (1, 3.00),  # First hour at 3.00 CHF
         (None, 2.00, 0.5)  # Beyond first hour, 2.00 CHF per 30 minutes
     ]
-    daily_rates = [(1, 25), (2, 50), (3, 75)]  # Daily flat rates for 1, 2, and 3 days
 
     total_fee = 0
+    current_time = arrival_datetime
     hours_processed = 0
 
-    # Apply daily flat rates if the parking duration is more than 24 hours
-    for days, rate in daily_rates:
-        if duration_hours >= 24 * days:
-            total_fee += rate
-            duration_hours -= 24 * days
-            hours_processed += 24 * days
-
-    # Process remaining hours after applying daily rates
+    # Apply the first hour rate
+    if duration_hours > 1:
+        total_fee += 3.00  # First hour at 3 CHF
+        duration_hours -= 1
+        hours_processed += 1
+    
+    # Apply the rate beyond the first hour
     while duration_hours > 0:
-        applicable_rate_found = False
-        for duration, rate, interval in rates:
-            if duration is None or duration_hours < duration:
-                # Calculate the charge for the remaining time if it doesn't fit exactly into a specific interval
-                chargeable_duration = min(duration_hours, interval if duration is None else duration)
-                total_fee += chargeable_duration / interval * rate
-                duration_hours -= chargeable_duration
-                applicable_rate_found = True
-                break
-            elif duration_hours >= duration:
-                # Calculate the charge for the full rate duration
-                total_fee += rate
-                duration_hours -= duration
-
-        if not applicable_rate_found:
-            # If no applicable rate is found, charge for the last specified rate
-            total_fee += duration_hours / interval * rate
+        if duration_hours >= 0.5:
+            total_fee += 2.00  # Every 30 minutes at 2 CHF
+            duration_hours -= 0.5
+        else:
+            total_fee += (duration_hours / 0.5) * 2.00  # Remaining time less than 30 minutes
             break
 
-    return f"Total parking fee at Bahnhof: {total_fee:.2f} CHF"
+    return math.ceil(total_fee)  # Round up the total fee to the nearest whole number
+
 
 def calculate_fee_bruehltor(arrival_datetime, duration_hours):
     # Defining rate details for Brühltor

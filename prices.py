@@ -413,45 +413,36 @@ def calculate_fee_spisertor(arrival_datetime, duration_hours):
     return f"Total parking fee at Spisertor: {total_fee:.2f} CHF"
 
 def calculate_fee_spelterini(arrival_datetime, duration_hours):
-    total_fee = 0
+    daytime_start = 7  # Daytime starts at 7 AM
+    daytime_end = 24  # Daytime ends at midnight
+    extended_rate_hours = 3  # First three hours
+    extended_rate = 2  # CHF for the first three hours
+    extended_increment = 1.5  # CHF per hour after the first three hours
+    night_rate = 0.6  # Night rate per hour
+    
     current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
+    total_fee = 0
+    hours_processed = 0
 
-    daytime_start = 7
-    daytime_end = 24
-    nighttime_end = 7  # Until 7 AM
-    extended_rate_hours = 3
-    extended_rate = 2
-    extended_increment = 1.5
-    extended_interval = 1  # Every hour
+    # Calculate for the first three hours or less
+    hours_at_extended_rate = min(duration_hours, extended_rate_hours)
+    total_fee += hours_at_extended_rate * extended_rate
+    hours_processed += hours_at_extended_rate
 
-    while duration_hours > 0:
-        if daytime_start <= current_hour < daytime_end:
-            if duration_hours <= extended_rate_hours:
-                rate = extended_rate
-                hours_to_charge = duration_hours
-            else:
-                rate = extended_rate
-                hours_to_charge = extended_rate_hours
-                duration_hours -= extended_rate_hours
-                extended_rate_hours = 0  # Consume the extended rate hours
+    # Calculate for additional hours at extended increment rate
+    if duration_hours > extended_rate_hours:
+        additional_hours = duration_hours - extended_rate_hours
+        total_fee += additional_hours * extended_increment
+        hours_processed += additional_hours
 
-            total_fee += rate * hours_to_charge
-            current_hour += hours_to_charge
-            duration_hours -= hours_to_charge
-
-        elif nighttime_end <= current_hour or current_hour < daytime_start:
-            if duration_hours > 0:
-                rate = 0.6  # Night rate
-                hours_to_charge = duration_hours  # Charge the remaining hours at night rate
-                total_fee += rate * hours_to_charge
-                duration_hours -= hours_to_charge
-
-        current_hour %= 24  # Cycle the hours past midnight
+    # Calculate for any night rate if applicable
+    if current_hour + hours_processed >= daytime_end:
+        hours_at_night_rate = current_hour + hours_processed - daytime_end
+        if hours_at_night_rate > 0:
+            total_fee += hours_at_night_rate * night_rate
 
     return f"Total parking fee at Spelterini: {total_fee:.2f} CHF"
 
-
-    return f"Total parking fee at Spelterini: {total_fee:.2f} CHF"
 
 def calculate_fee_olma_messe(arrival_datetime, duration_hours):
     total_fee = 0

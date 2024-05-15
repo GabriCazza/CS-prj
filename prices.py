@@ -52,9 +52,9 @@ def calculate_fee_manor(arrival_datetime, duration_hours):
     
     # Definizione delle tariffe
     first_hour_rate = 2.00
-    hourly_rate_after_first = 1.00 / 3  # 1 CHF every 20 minutes
-    hourly_rate_after_three = 1.50 / 3  # 1.5 CHF every 20 minutes
-    night_rate = 1.00 / 2               # 1 CHF every 30 minutes
+    hourly_rate_after_first = 3 / 3  # 1 CHF every 20 minutes
+    hourly_rate_after_three = 4.50 / 3  # 1.5 CHF every 20 minutes
+    night_rate = 2.00 / 2               # 1 CHF every 30 minutes
     
     total_fee = 0
     current_time = arrival_datetime

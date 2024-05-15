@@ -129,27 +129,24 @@ def calculate_fee_burggraben(arrival_datetime, rounded_total_hours):
     total_fee = 0.0
     current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
 
-    # Day and night hours definition
-    daytime_hours = (7, 24)  # Daytime from 7 AM to midnight
-    nighttime_hours = (24, 7)  # Nighttime from midnight to 7 AM, wraps around day
+    # Round the total hours to the nearest half-hour
+    rounded_half_hours = math.ceil(rounded_total_hours * 2) / 2
 
-    # Calculate fees based on the rounded hours to the nearest half-hour
-    if daytime_hours[0] <= current_hour < daytime_hours[1]:
-        if rounded_total_hours <= 1:
+    # Calculate daytime fees if within daytime hours
+    if 6 <= current_hour < 22:
+        if rounded_half_hours <= 1:
             total_fee += daytime_rate
         else:
             total_fee += daytime_rate  # First hour
-            # Calculate subsequent hours rounded to 30 minutes
-            additional_half_hours = math.floor((rounded_total_hours - 1) * 2)
-            total_fee += additional_half_hours * (day_subsequent_rate / 2)
-    else:  # Nighttime calculation
-        if rounded_total_hours <= 1:
+            additional_half_hours = (rounded_half_hours - 1) * 2
+            total_fee += additional_half_hours * (day_subsequent_rate / 2)  # Subsequent rates per 30 minutes
+    else:  # Calculate nighttime fees
+        if rounded_half_hours <= 1:
             total_fee += nighttime_rate
         else:
             total_fee += nighttime_rate  # First hour
-            # Calculate subsequent hours rounded to 30 minutes
-            additional_half_hours = math.floor((rounded_total_hours - 1) * 2)
-            total_fee += additional_half_hours * (night_subsequent_rate / 2)
+            additional_half_hours = (rounded_half_hours - 1) * 2
+            total_fee += math.ceil(additional_half_hours) * (night_subsequent_rate / 2)  # Subsequent rates per 30 minutes
 
 
     return f" at Burggraben: {total_fee:.2f} CHF"

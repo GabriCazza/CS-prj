@@ -120,48 +120,30 @@ def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):
 
 
 
-def calculate_fee_burggraben(arrival_datetime, duration_hours):
-    # Rates and times definitions
-    daytime_rates = [
-        (1, 2.00),  # First hour at 2.00 CHF
-        (None, 1.00, 0.5)  # Beyond first hour, 1.00 CHF per 30 minutes
-    ]
-    nighttime_rates = [
-        (1, 1.20),  # First hour at 1.20 CHF
-        (None, 0.60, 0.5)  # Beyond first hour, 0.60 CHF per 30 minutes
-    ]
-    weekend_rates = [
-        (1, 2.40),  # First hour at 2.40 CHF
-        (None, 1.20, 0.5)  # Beyond first hour, 1.20 CHF per 30 minutes
-    ]
-    valid_hours = {"day": (7, 24), "night": (0, 7)}
+def calculate_fee_burggraben(arrival_datetime, rounded_total_hours):
+    daytime_rate = 2.00  # CHF for the first hour
+    day_subsequent_rate = 1.00  # CHF per 30 minutes after the first hour
+    nighttime_rate = 1.20  # CHF for the first hour at night
+    night_subsequent_rate = 0.60  # CHF per 30 minutes after the first hour at night
 
-    current_time = arrival_datetime.hour + arrival_datetime.minute / 60
-    total_fee = 0
-    hours_left = duration_hours
-    is_weekend = arrival_datetime.weekday() >= 5  # 5 for Saturday, 6 for Sunday
+    total_fee = 0.0
+    current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
 
-    # Determine rate details based on weekend
-    rate_details = weekend_rates if is_weekend else daytime_rates if 7 <= current_time < 24 else nighttime_rates
-
-    while hours_left > 0:
-        for (hours, rate, interval) in rate_details:
-            if hours is None or hours_left < hours:
-                hours_to_charge = min(hours_left, interval if interval else hours)
-                total_fee += (hours_to_charge / interval if interval else hours_to_charge) * rate
-                hours_left -= hours_to_charge
-                current_time += hours_to_charge
-                break
-            else:
-                total_fee += rate
-                hours_left -= hours
-
-        # Update rate details based on time after processing current rates
-        current_time = (current_time % 24)  # Reset the time after midnight
-        if 7 <= current_time < 24:
-            rate_details = weekend_rates if is_weekend else daytime_rates
+    # Calculate daytime fees if within daytime hours
+    if 6 <= current_hour < 22:
+        if rounded_total_hours <= 1:
+            total_fee += daytime_rate
         else:
-            rate_details = nighttime_rates
+            total_fee += daytime_rate  # First hour
+            additional_hours = rounded_total_hours - 1
+            total_fee += (additional_hours * 2) * (day_subsequent_rate / 2)  # Subsequent rates per 30 minutes
+    else:  # Calculate nighttime fees
+        if rounded_total_hours <= 1:
+            total_fee += nighttime_rate
+        else:
+            total_fee += nighttime_rate  # First hour
+            additional_hours = rounded_total_hours - 1
+            total_fee += math.ceil(additional_hours * 2) * (night_subsequent_rate / 2)  # Subsequent rates per 30 minutes
 
     return f" at Burggraben: {total_fee:.2f} CHF"
 
@@ -372,8 +354,6 @@ def calculate_fee_raiffeisen(arrival_datetime, rounded_total_hours):
     return f" at Raiffeisen: {total_fee:.2f} CHF"
 
 
-
-
 def calculate_fee_einstein(arrival_datetime, rounded_total_hours):
     flat_rate = 2.5  # CHF per hour regardless of duration
 
@@ -423,7 +403,7 @@ def calculate_fee_spelterini(arrival_datetime, rounded_total_hours):
     return f" at Spelterini: {total_fee:.2f} CHF"
 
 
-def calculate_fee_olma_messe(arrival_datetime, duration_hours):
+def calculate_fee_olma_messe(arrival_datetime, rounded_total_hours):
     total_fee = 0
     current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
     base_hours = 3
@@ -431,23 +411,23 @@ def calculate_fee_olma_messe(arrival_datetime, duration_hours):
     incremental_rate = 1.5
     rate_interval = 1  # Rate changes every hour after the first three hours
 
-    if duration_hours <= base_hours:
-        total_fee = base_rate * duration_hours
+    if rounded_total_hours <= base_hours:
+        total_fee = base_rate * rounded_total_hours
     else:
         total_fee = base_rate * base_hours
-        additional_hours = duration_hours - base_hours
+        additional_hours = rounded_total_hours - base_hours
         while additional_hours > 0:
             hours_to_charge = min(additional_hours, rate_interval)
             total_fee += incremental_rate * hours_to_charge
             additional_hours -= hours_to_charge
 
-    return f"Total parking fee at OLMA Messe: {total_fee:.2f} CHF"
+    return f" at OLMA Messe: {total_fee:.2f} CHF"
 
-def calculate_fee_unterer_graben(arrival_datetime, duration_hours):
+def calculate_fee_unterer_graben(arrival_datetime, rounded_total_hours):
     flat_rate = 2  # Flat rate per hour
-    total_fee = flat_rate * duration_hours
+    total_fee = flat_rate * rounded_total_hours
 
-    return f"Total parking fee at Unterer Graben: {total_fee:.2f} CHF"
+    return f"at Unterer Graben: {total_fee:.2f} CHF"
 
 def calculate_fee_olma_parkplatz(arrival_datetime, rounded_total_hours):
     daytime_start = 6  # Daytime starts at 6 AM

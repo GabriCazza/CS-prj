@@ -91,32 +91,21 @@ def fetch_additional_data():
 # Used to convert a textual address into geographical coordinates (latitude and longitude) using the Nominatim geocoding API
 
 def geocode_address(location):
-    """Converts an address to a point (latitude, longitude) with postal code validation."""
-    # List of valid postal codes for St. Gallen City
-    valid_postal_codes = {"9000", "9001", "9008", "9010", "9011", "9012", "9014", "9015", "9016", "9030", "9037", "9042"}
-    
+    """Converts an address to a point (latitude, longitude) using the Nominatim API, assuming the location is in St. Gallen, Switzerland."""
     if location:
+        # Assume the location is within St. Gallen city by appending the city and country
+        full_location = f"{location}, St. Gallen, Switzerland"
         geolocator = geocoders.Nominatim(user_agent="geocoding_app", timeout=10)
         try:
-            # Attempt to geocode the provided location
-            geocoded_location = geolocator.geocode(location + ", St. Gallen, Switzerland")
+            geocoded_location = geolocator.geocode(full_location)
             if geocoded_location:
-                # Extract postal code from the geocoding response
-                address_components = geocoded_location.address.split(',')
-                postal_code = next((component.strip() for component in address_components if component.strip().isdigit()), None)
-                
-                # Check if the postal code is within the valid range
-                if postal_code in valid_postal_codes:
-                    return (geocoded_location.longitude, geocoded_location.latitude)
-                else:
-                    st.error("The location specified is outside of the valid postal codes for St. Gallen City.")
+                return (geocoded_location.longitude, geocoded_location.latitude)
         except exc.GeocoderRateLimited as e:
             st.warning("Rate limit exceeded, waiting to retry...")
             time.sleep(10)  # Wait 10 seconds before retrying
         except Exception as e:
             st.error(f"Geocoding error: {e}")
     return None
-
 
 #Fucntion used to picture the parking spaces on the map based on the different categories + count of the catgories within map 
 

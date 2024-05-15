@@ -38,42 +38,45 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
         return "Parking name not recognized. Please check the parking name."
     
 def calculate_fee_manor(arrival_datetime, duration_hours):
-    # Manor parking details
     daytime_start = 5.5  # 5:30 AM
-    daytime_end = 21    # 9:00 PM
+    daytime_end = 21  # 9:00 PM
     night_rate = 1  # CHF per hour at night
-    rates = [(1, 2), (3, 3, 20), (None, 4.5, 20)]  # Rates as (hours, rate, interval in minutes)
-    
-    end_time = arrival_datetime + timedelta(hours=duration_hours)
+    rates = [(1, 2), (3, 1, 20), (None, 1.5, 20)]  # Rates as (hours, rate, interval in minutes)
+
     total_fee = 0
     current_time = arrival_datetime
 
     while duration_hours > 0:
-        current_hour = current_time.hour + current_time.minute/60
-        
+        current_hour = current_time.hour + current_time.minute / 60
+
         if daytime_start <= current_hour < daytime_end:
             # Daytime rate calculations
-            for hours, rate, interval in rates:
-                if hours is None or duration_hours < hours:
-                    minutes_to_charge = duration_hours * 60  # Convert hours to minutes
-                else:
-                    minutes_to_charge = hours * 60
-                
-                intervals_count = int(minutes_to_charge / interval)
-                total_fee += intervals_count * rate
-                minutes_to_charge -= intervals_count * interval
-                duration_hours -= intervals_count * (interval / 60)  # Convert minutes back to hours
+            for rate_detail in rates:
+                if len(rate_detail) == 3:
+                    hours, rate, interval = rate_detail
+                elif len(rate_detail) == 2:
+                    hours, rate = rate_detail
+                    interval = 60  # Default interval to 60 minutes if not specified
 
                 if hours is None or duration_hours < hours:
+                    minutes_to_charge = min(duration_hours * 60, interval)  # Convert hours to minutes or use the specified interval
+                    intervals_count = int(minutes_to_charge / interval)
+                    total_fee += intervals_count * rate
+                    minutes_to_charge -= intervals_count * interval
+                    duration_hours -= intervals_count * (interval / 60)  # Convert minutes back to hours
                     break
-        
+                elif duration_hours >= hours:
+                    total_fee += rate
+                    duration_hours -= hours
+
         else:
             # Nighttime rate calculation
             if current_hour >= daytime_end:
-                time_till_day = 24 - current_hour + daytime_start
+                hours_to_midnight = 24 - current_hour
+                time_till_day = hours_to_midnight + daytime_start
             else:
                 time_till_day = daytime_start - current_hour
-            
+
             if duration_hours < time_till_day:
                 total_fee += duration_hours * night_rate
                 duration_hours = 0
@@ -81,7 +84,7 @@ def calculate_fee_manor(arrival_datetime, duration_hours):
                 total_fee += time_till_day * night_rate
                 duration_hours -= time_till_day
 
-        current_time += timedelta(hours=duration_hours)  # Move current time forward
+        current_time += timedelta(hours=duration_hours)  # Update current time
 
     return f"Total parking fee at Manor: {total_fee:.2f} CHF"
 

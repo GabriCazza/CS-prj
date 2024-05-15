@@ -1,6 +1,9 @@
 from datetime import datetime, timedelta
 import math
 
+#This file is used to explain the prices calculation as every single parkhaus is different 
+
+#Function that return the parking, based on nearest parking space 
 def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     if parking_name == "Manor":
         return calculate_fee_manor(arrival_datetime, duration_hours)
@@ -37,6 +40,9 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     else:
         return "Parking name not recognized. Please check the parking name."
     
+#Calculation for every single parking space
+#standard identification--> def "name parking"(arrival_datetime, duration_hours)
+
 def calculate_fee_manor(arrival_datetime, duration_hours):
     daytime_start = 5.5  # 5:30 AM
     daytime_end = 21  # 9:00 PM
@@ -50,43 +56,29 @@ def calculate_fee_manor(arrival_datetime, duration_hours):
         current_hour = current_time.hour + current_time.minute / 60
 
         if daytime_start <= current_hour < daytime_end:
-            # Daytime rate calculations
-            for rate_detail in rates:
-                if len(rate_detail) == 3:
-                    hours, rate, interval = rate_detail
-                elif len(rate_detail) == 2:
-                    hours, rate = rate_detail
-                    interval = 60  # Default interval to 60 minutes if not specified
-
+            for hours, rate, interval in rates:
                 if hours is None or duration_hours < hours:
-                    minutes_to_charge = min(duration_hours * 60, interval)  # Convert hours to minutes or use the specified interval
-                    intervals_count = int(minutes_to_charge / interval)
-                    total_fee += intervals_count * rate
-                    minutes_to_charge -= intervals_count * interval
-                    duration_hours -= intervals_count * (interval / 60)  # Convert minutes back to hours
-                    break
-                elif duration_hours >= hours:
+                    interval_hours = interval / 60
+                    hours_to_charge = min(duration_hours, interval_hours)
+                    total_fee += rate * (hours_to_charge / interval_hours)
+                    duration_hours -= hours_to_charge
+                else:
                     total_fee += rate
                     duration_hours -= hours
 
         else:
-            # Nighttime rate calculation
             if current_hour >= daytime_end:
-                hours_to_midnight = 24 - current_hour
-                time_till_day = hours_to_midnight + daytime_start
+                time_till_day = 24 - current_hour + daytime_start
             else:
                 time_till_day = daytime_start - current_hour
 
-            if duration_hours < time_till_day:
-                total_fee += duration_hours * night_rate
-                duration_hours = 0
-            else:
-                total_fee += time_till_day * night_rate
-                duration_hours -= time_till_day
+            hours_to_charge = min(duration_hours, time_till_day)
+            total_fee += hours_to_charge * night_rate
+            duration_hours -= hours_to_charge
 
-        current_time += timedelta(hours=duration_hours)  # Update current time
+        current_time += timedelta(hours=hours_to_charge)
 
-    return total_fee
+    return math.ceil(total_fee)  # Round up the total fee to the nearest whole number
 
 
 

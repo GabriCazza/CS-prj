@@ -135,8 +135,8 @@ def calculate_fee_burggraben(arrival_datetime, rounded_total_hours):
             total_fee += daytime_rate
         else:
             total_fee += daytime_rate  # First hour
-            additional_hours = rounded_total_hours 
-            total_fee += (additional_hours * 2) * (day_subsequent_rate / 2)  # Subsequent rates per 30 minutes
+            additional_hours = rounded_total_hours-1
+            total_fee += (additional_hours * 2) * (day_subsequent_rate)  # Subsequent rates per 30 minutes
     else:  # Calculate nighttime fees
         if rounded_total_hours <= 1:
             total_fee += nighttime_rate

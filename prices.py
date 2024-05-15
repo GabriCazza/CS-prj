@@ -129,30 +129,23 @@ def calculate_fee_burggraben(arrival_datetime, rounded_total_hours):
     total_fee = 0.0
     current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
 
-    # Day and night hours definition
-    daytime_hours = (7, 24)  # Daytime from 7 AM to midnight
-    nighttime_hours = (24, 7)  # Nighttime from midnight to 7 AM, wraps around day
-
-    # Calculate fees based on the rounded hours to the nearest half-hour
-    if daytime_hours[0] <= current_hour < daytime_hours[1]:
+    # Determine whether the parking time falls into daytime or nighttime
+    if 7 <= current_hour < 24:
         if rounded_total_hours <= 1:
             total_fee += daytime_rate
         else:
             total_fee += daytime_rate  # First hour
-            # Calculate subsequent hours rounded to 30 minutes
-            additional_half_hours = math.ceil((rounded_total_hours - 1) * 2)
-            total_fee += additional_half_hours * (day_subsequent_rate / 2)
+            additional_half_hours = math.ceil((rounded_total_hours - 1) * 2)  # Additional half-hours
+            total_fee += additional_half_hours * day_subsequent_rate / 2
     else:  # Nighttime calculation
         if rounded_total_hours <= 1:
             total_fee += nighttime_rate
         else:
             total_fee += nighttime_rate  # First hour
-            # Calculate subsequent hours rounded to 30 minutes
-            additional_half_hours = math.ceil((rounded_total_hours - 1) * 2)
-            total_fee += additional_half_hours * (night_subsequent_rate / 2)
+            additional_half_hours = math.ceil((rounded_total_hours - 1) * 2)  # Additional half-hours
+            total_fee += additional_half_hours * night_subsequent_rate / 2
 
-
-    return f" at Burggraben: {total_fee:.2f} CHF"
+    return f" at Burggraben: {math.ceil(total_fee):.2f} CHF"
 
 
 def calculate_fee_stadtpark_azsg(arrival_datetime, duration_hours):

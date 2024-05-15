@@ -10,7 +10,7 @@ def calculate_parking_fees(parking_name, arrival_datetime, duration_hours):
     elif parking_name == "Bahnhof":
         return calculate_fee_bahnhof(arrival_datetime, duration_hours)
     elif parking_name == "Brühltor":
-        return calculate_fee_brültor(arrival_datetime, duration_hours)
+        return calculate_fee_brühltor(arrival_datetime, duration_hours)
     elif parking_name == "Burggraben":
         return calculate_fee_burggraben(arrival_datetime, duration_hours)
     elif parking_name == "Stadtpark AZSG":
@@ -88,35 +88,51 @@ def calculate_fee_manor(arrival_datetime, duration_hours):
 
 
 def calculate_fee_bahnhof(arrival_datetime, duration_hours):
-    rates = [
-        (0.1667, 0),  # Free for up to 10 minutes
-        (0.3333, 0.50),  # 11 to 20 minutes at 0.50 CHF
-        (0.5, 1.50),  # 21 to 30 minutes at 1.50 CHF
-        (1, 3.00),  # First hour at 3.00 CHF
-        (None, 2.00, 0.5)  # Beyond first hour, 2.00 CHF per 30 minutes
+    daytime_rates = [
+        (1, 2.40),  # First hour at 2.40 CHF from 6 AM to 10 PM
+        (None, 1.20, 0.5)  # Beyond the first hour, 1.20 CHF per 30 minutes
+    ]
+    nighttime_rates = [
+        (1, 1.20),  # First hour at 1.20 CHF from 10 PM to 6 AM
+        (None, 0.60, 0.5)  # Beyond the first hour, 0.60 CHF per 30 minutes
     ]
 
     total_fee = 0
-    current_time = arrival_datetime
-    hours_processed = 0
+    current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
+    hours_left = duration_hours
 
-    # Apply the first hour rate
-    if duration_hours > 1:
-        total_fee += 3.00  # First hour at 3 CHF
-        duration_hours -= 1
-        hours_processed += 1
-    
-    # Apply the rate beyond the first hour, rounding duration to the nearest 30 minutes for billing
-    while duration_hours > 0:
-        if duration_hours >= 0.5:
-            total_fee += 2.00  # Every 30 minutes at 2 CHF
-            duration_hours -= 0.5
+    while hours_left > 0:
+        # Determine if current hour is during day or night rates
+        if 6 <= current_hour < 22:
+            # Daytime rates
+            for duration, rate, interval in daytime_rates:
+                if duration is None or hours_left < duration:
+                    hours_to_charge = min(hours_left, interval)
+                    total_fee += math.ceil(hours_to_charge / interval) * rate
+                    hours_left -= hours_to_charge
+                    current_hour += hours_to_charge
+                    break
+                else:
+                    total_fee += rate
+                    hours_left -= duration
+                    current_hour += duration
         else:
-            # Round up to the next 30 minutes if there's any remaining time less than 30 minutes
-            total_fee += 2.00
-            break
+            # Nighttime rates
+            for duration, rate, interval in nighttime_rates:
+                if duration is None or hours_left < duration:
+                    hours_to_charge = min(hours_left, interval)
+                    total_fee += math.ceil(hours_to_charge / interval) * rate
+                    hours_left -= hours_to_charge
+                    current_hour += hours_to_charge
+                    break
+                else:
+                    total_fee += rate
+                    hours_left -= duration
+                    current_hour += duration
 
-    return math.ceil(total_fee) 
+        current_hour = current_hour % 24  # Reset the hour after midnight
+
+    return f"Total parking fee at Bahnhof: {math.ceil(total_fee)} CHF"
 
 def calculate_fee_brühltor(arrival_datetime, duration_hours):
     # Defining rate details for Brühltor

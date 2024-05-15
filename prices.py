@@ -339,9 +339,10 @@ def calculate_fee_kreuzbleiche(arrival_datetime, duration_hours):
             hours_left -= night_hours_left
             current_time += night_hours_left
 
-        current_time %= 24  # Reset time after midnight
+        current_time = (current_time % 24)  # Reset time after midnight
 
-    # Round the total fee to the nearest whole number
+    # Here, instead of rounding up, it rounds to the nearest half hour to reflect more precise charging
+    total_fee = round(total_fee * 2) / 2  # Round to the nearest 0.5
 
     return f"Total parking fee at Kreuzbleiche: {total_fee:.2f} CHF"
 

@@ -187,21 +187,27 @@ def calculate_fee_burggraben(arrival_datetime, duration_hours):
             # Daytime rates
             rate_details = weekend_rates if is_weekend else standard_rates["day"]
             for (hours, rate, interval) in rate_details:
-                if hours is None or hours_left <= hours:
+                if hours is None or hours_left < hours:
                     hours_to_charge = min(hours_left, interval)
-                    total_fee += hours_to_charge * rate
+                    total_fee += math.ceil(hours_to_charge / interval) * rate  # Round up to the nearest half-hour
                     hours_left -= hours_to_charge
                     current_time += hours_to_charge
                     break
+                elif hours_left >= hours:
+                    total_fee += rate
+                    hours_left -= hours
         else:
             # Nighttime rates
             for (hours, rate, interval) in standard_rates["night"]:
-                if hours is None or hours_left <= hours:
+                if hours is None or hours_left < hours:
                     hours_to_charge = min(hours_left, interval)
-                    total_fee += hours_to_charge * rate
+                    total_fee += math.ceil(hours_to_charge / interval) * rate  # Round up to the nearest half-hour
                     hours_left -= hours_to_charge
                     current_time += hours_to_charge
                     break
+                elif hours_left >= hours:
+                    total_fee += rate
+                    hours_left -= hours
 
         current_time = (current_time % 24)  # Reset the time after midnight
 

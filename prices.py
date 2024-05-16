@@ -97,31 +97,34 @@ def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
 
 
 def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):
-    daytime_rate = 2.00  # CHF for the first hour
-    day_subsequent_rate = 1.00  # CHF per 30 minutes after the first hour
-    nighttime_rate = 1.20  # CHF for the first hour at night
-    night_subsequent_rate = 0.60  # CHF per 30 minutes after the first hour at night
+    daytime_rate_first_hour = 2.00
+    day_subsequent_rate = 1.00
+    nighttime_rate_first_hour = 1.20
+    night_subsequent_rate = 0.60
 
     total_fee = 0.0
-    current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
+    current_time = arrival_datetime
+    remaining_hours = rounded_total_hours
 
-    # Correct time ranges for day and night
-    if 7 <= current_hour < 22:  # Daytime fees calculation
-        if rounded_total_hours <= 1:
-            total_fee += daytime_rate
+    while remaining_hours > 0:
+        current_hour = current_time.hour + current_time.minute / 60
+
+        if 6 <= current_hour < 22:
+            if total_fee == 0:  # First hour
+                total_fee += daytime_rate_first_hour
+                remaining_hours -= 1
+            else:
+                total_fee += day_subsequent_rate
+                remaining_hours -= 0.5
         else:
-            total_fee += daytime_rate  # First hour
-            additional_hours = rounded_total_hours - 1
-            # Calculate for each 30 minutes interval after the first hour
-            total_fee += (additional_hours * 2) * day_subsequent_rate / 2
-    else:  # Nighttime fees calculation
-        if rounded_total_hours <= 1:
-            total_fee += nighttime_rate
-        else:
-            total_fee += nighttime_rate  # First hour
-            additional_hours = rounded_total_hours - 1
-            # Calculate for each 30 minutes interval after the first hour
-            total_fee += (additional_hours * 2) * night_subsequent_rate / 2
+            if total_fee == 0:  # First hour
+                total_fee += nighttime_rate_first_hour
+                remaining_hours -= 1
+            else:
+                total_fee += night_subsequent_rate
+                remaining_hours -= 0.5
+
+        current_time += timedelta(minutes=30)
 
     return f" at Brühltor: {(total_fee):.2f} CHF"
 

@@ -10,6 +10,9 @@ import random
 import re
 import math 
 import prices
+from folium.plugins import MarkerCluster
+
+
 
 #Used to handale the API with a rate limit (unrelible conditions)
 def safe_request(url, params):
@@ -124,34 +127,37 @@ def add_markers_to_map(map_folium, original_data, additional_data, location_poin
     filtered_original_data = filter_parking_by_radius(original_data, destination_point, radius, show_parkhaus, address_provided)
     filtered_additional_data = filter_parking_by_radius(additional_data, destination_point, radius, False, address_provided)
 
-    #USed to count the marks within radius 
-    blue_count = 0
-    white_count = 0
-    handicapped_count = 0
+    # Clustering setup
+    parkhaus_cluster = MarkerCluster(name="Parkhaus").add_to(map_folium)
+    blue_zone_cluster = MarkerCluster(name="Blue Zone").add_to(map_folium)
+    white_zone_cluster = MarkerCluster(name="White Zone").add_to(map_folium)
+    handicapped_cluster = MarkerCluster(name="Handicapped Zone").add_to(map_folium)
 
-    if show_parkhaus: #Parkhaus picture 
+    blue_count, white_count, handicapped_count = 0, 0, 0
+
+    if show_parkhaus: # Parkhaus picture 
         for _, row in filtered_original_data.iterrows():
             if row.get('category', '') == 'Parkhaus':
-                add_marker(map_folium, row, "🅿️", destination_point)
+                add_marker(parkhaus_cluster, row, "🅿️", destination_point)
 
-    if show_extended_blue: #Blue zone 
+    if show_extended_blue: # Blue zone 
         for _, row in filtered_additional_data.iterrows():
             if "erweiterte blaue zone" in row.get('info', '').lower():
-                add_marker(map_folium, row, "🔵", None)
+                add_marker(blue_zone_cluster, row, "🔵", None)
                 blue_count += 1
 
-    if show_white:#White Zone
+    if show_white: # White Zone
         for _, row in filtered_additional_data.iterrows():
             if "weiss (bewirtschaftet)" in row.get('info', '').lower() or "weisse zone" in row.get('info', '').lower():
-                add_marker(map_folium, row, "⚪", None)
+                add_marker(white_zone_cluster, row, "⚪", None)
                 white_count += 1
 
-    if show_handicapped: #Handicap parking spaces
+    if show_handicapped: # Handicap parking spaces
         for _, row in filtered_additional_data.iterrows():
             if "invalidenparkplatz" in row.get('info', '').lower():
-                add_marker(map_folium, row, "♿", None)
+                add_marker(handicapped_cluster, row, "♿", None)
                 handicapped_count += 1
-    
+
     return blue_count, white_count, handicapped_count
 
 

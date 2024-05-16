@@ -43,23 +43,7 @@ def calculate_parking_fees(parking_name, arrival_datetime, rounded_total_hours):
 #Calculation for every single parking space
 #standard identification--> def "name parking"(arrival_datetime, duration_hours)
 
-def calculate_fee_manor(arrival_datetime, rounded_total_hours):
-    initial_rate = 2.0  # CHF for less than 1 hour
-    mid_rate = 3.0  # CHF per hour for 1 to 3 hours
-    long_term_rate = 4.5  # CHF per hour for more than 3 hours
 
-    # Initialize the total fee
-    total_fee = 0.0
-
-    # Apply the rate based on the rounded_total_hours
-    if rounded_total_hours <= 1:
-        total_fee = initial_rate  # Apply initial rate if parking duration is less than 1 hour
-    elif rounded_total_hours <= 3:
-        total_fee = mid_rate * rounded_total_hours  # Apply mid rate if parking duration is between 1 and 3 hours
-    else:
-        total_fee = long_term_rate * rounded_total_hours  # Apply long term rate if parking duration is more than 3 hours
-
-    return f" at Manor: {total_fee:.2f} CHF"
 
 
 def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
@@ -293,6 +277,26 @@ def calculate_fee_kreuzbleiche(arrival_datetime, rounded_total_hours):
     total_fee = (total_fee)
 
     return f"at Kreuzbleiche: {total_fee:.2f} CHF"
+
+
+def calculate_fee_manor(arrival_datetime, rounded_total_hours):
+    initial_rate = 2.0  # CHF for less than 1 hour
+    mid_rate = 3.0  # CHF per hour for 1 to 3 hours
+    long_term_rate = 4.5  # CHF per hour for more than 3 hours
+
+    # Initialize the total fee
+    total_fee = 0.0
+
+    # Apply the rate based on the rounded_total_hours
+    if rounded_total_hours <= 1:
+        total_fee = initial_rate  # Apply initial rate if parking duration is less than 1 hour
+    elif rounded_total_hours <= 3:
+        total_fee = mid_rate * rounded_total_hours  # Apply mid rate if parking duration is between 1 and 3 hours
+    else:
+        total_fee = long_term_rate * rounded_total_hours  # Apply long term rate if parking duration is more than 3 hours
+
+    return f" at Manor: {total_fee:.2f} CHF"
+
 
 def calculate_fee_oberer_graben(arrival_datetime, rounded_total_hours):
     daytime_hours = (6, 23)  # Daytime from 6 AM to 11 PM

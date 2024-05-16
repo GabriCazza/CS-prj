@@ -63,31 +63,41 @@ def calculate_fee_manor(arrival_datetime, rounded_total_hours):
 
 
 def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
-    daytime_rate = 2.40  # CHF for the first hour
-    day_subsequent_rate = 1.20  # CHF per 30 minutes after the first hour
-    nighttime_rate = 1.20  # CHF for the first hour at night
-    night_subsequent_rate = 0.60  # CHF per 30 minutes after the first hour at night
-
     total_fee = 0.0
-    current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
+    current_time = arrival_datetime
 
-    # Calculate daytime fees if within daytime hours
-    if 6 <= current_hour < 22:
-        if rounded_total_hours <= 1:
-            total_fee += daytime_rate
-        else:
-            total_fee += daytime_rate  # First hour
-            additional_hours = rounded_total_hours - 1
-            total_fee += math.ceil(additional_hours * 2) * (day_subsequent_rate/2)  # Subsequent rates per 30 minutes
-    else:  # Calculate nighttime fees
-        if rounded_total_hours <= 1:
-            total_fee += nighttime_rate
-        else:
-            total_fee += nighttime_rate  # First hour
-            additional_hours = rounded_total_hours - 1
-            total_fee += math.ceil(additional_hours * 2) * (night_subsequent_rate / 2)  # Subsequent rates per 30 minutes
+    # Define the rates and hours
+    daytime_start = 6  # 6 AM
+    daytime_end = 22  # 10 PM
+    night_start = 22  # 10 PM
+    night_end = 6  # 6 AM
 
-    return f" at Bahnhof: {(total_fee)} CHF"
+    while rounded_total_hours > 0:
+        current_hour = current_time.hour + current_time.minute / 60
+
+        # Check if the current time is within daytime hours
+        if daytime_start <= current_hour < daytime_end:
+            if rounded_total_hours <= 2:
+                total_fee += rounded_total_hours * 2.40  # CHF per hour
+                break
+            else:
+                total_fee += 2 * 2.40  # CHF for the first 2 hours
+                rounded_total_hours -= 2
+                total_fee += rounded_total_hours * 1.20  # CHF per hour after 2 hours
+                break
+        else:  # Nighttime hours
+            if rounded_total_hours <= 2:
+                total_fee += rounded_total_hours * 1.20  # CHF per hour
+                break
+            else:
+                total_fee += 2 * 1.20  # CHF for the first 2 hours
+                rounded_total_hours -= 2
+                total_fee += rounded_total_hours * 0.80  # CHF per hour after 2 hours
+                break
+
+        current_time += timedelta(hours=rounded_total_hours)
+
+    return f"at Bahnhof: {total_fee:.2f} CHF"
 
 def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):
     daytime_rate = 2.00  # CHF for the first hour

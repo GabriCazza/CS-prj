@@ -64,42 +64,50 @@ def calculate_fee_manor(arrival_datetime, rounded_total_hours):
 
 def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
     daytime_rate_first_hour = 2.40
-    daytime_rate_subsequent_half_hour = 1.20  # 2.40 CHF per ora, quindi 1.20 CHF per 30 minuti
+    day_subsequent_rate = 1.20
     nighttime_rate_first_hour = 1.20
-    nighttime_rate_subsequent_half_hour = 0.60  # 1.20 CHF per ora, quindi 0.60 CHF per 30 minuti
+    night_subsequent_rate = 0.60
 
     total_fee = 0.0
     current_time = arrival_datetime
-    remaining_half_hours = math.ceil(rounded_total_hours * 2)  # Converti ore arrotondate in segmenti da 30 minuti
+    remaining_hours = rounded_total_hours
 
-    first_hour_daytime = True  # Indica se stiamo calcolando la prima ora diurna
-    first_hour_nighttime = True  # Indica se stiamo calcolando la prima ora notturna
-
-    while remaining_half_hours > 0:
+    while remaining_hours > 0:
         current_hour = current_time.hour + current_time.minute / 60
 
-        if 6 <= current_hour < 22:  # Tariffe diurne
-            if first_hour_daytime:
+        if 6 <= current_hour < 22:
+            if remaining_hours <= 1:
                 total_fee += daytime_rate_first_hour
-                first_hour_daytime = False
-                remaining_half_hours -= 2  # Prima ora copre 2 segmenti da 30 minuti
+                remaining_hours -= 1
             else:
-                total_fee += daytime_rate_subsequent_half_hour
-                remaining_half_hours -= 1
-        else:  # Tariffe notturne
-            if first_hour_nighttime:
+                total_fee += daytime_rate_first_hour
+                remaining_hours -= 1
+                while remaining_hours > 0:
+                    if remaining_hours >= 1:
+                        total_fee += daytime_rate_first_hour
+                        remaining_hours -= 1
+                    else:
+                        total_fee += day_subsequent_rate
+                        remaining_hours -= 0.5
+        else:
+            if remaining_hours <= 1:
                 total_fee += nighttime_rate_first_hour
-                first_hour_nighttime = False
-                remaining_half_hours -= 2  # Prima ora copre 2 segmenti da 30 minuti
+                remaining_hours -= 1
             else:
-                total_fee += nighttime_rate_subsequent_half_hour
-                remaining_half_hours -= 1
+                total_fee += nighttime_rate_first_hour
+                remaining_hours -= 1
+                while remaining_hours > 0:
+                    if remaining_hours >= 1:
+                        total_fee += nighttime_rate_first_hour
+                        remaining_hours -= 1
+                    else:
+                        total_fee += night_subsequent_rate
+                        remaining_hours -= 0.5
 
-        current_time += timedelta(minutes=30)
-
+        current_time += timedelta(hours=remaining_hours)
+        current_time = current_time.replace(minute=0, second=0, microsecond=0)
 
     return f"at Bahnhof: {total_fee:.2f} CHF"
-
 
 
 def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):

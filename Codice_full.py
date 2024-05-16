@@ -410,7 +410,7 @@ def main():
         total_seconds = duration_delta.total_seconds()
         total_hours = total_seconds / 3600
         rounded_total_hours = math.ceil(total_hours * 2) / 2  # Ensure charges are for complete half-hours
-        st.sidebar.write(f"Duration of parking: {int(duration_delta.days)} days, {int(duration_delta.seconds // 3600)} hours, {int((duration_delta.seconds % 3600) // 60)}")
+        st.sidebar.write(f"Duration of parking: {int(duration_delta.days)} days, {int(duration_delta.seconds // 3600)} hours, {int((duration_delta.seconds % 3600) // 60)} minutes")
     else:
         st.sidebar.error("Departure time must be after arrival time.")
         return

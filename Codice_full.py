@@ -454,6 +454,10 @@ def main():
             st.markdown("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
             
             nearest_parkhaus, estimated_walking_time = find_nearest_parking_place(filtered_data, destination_point)
+
+            # Display additional information
+            display_additional_information(nearest_parkhaus, estimated_walking_time, blue_count, white_count, handicapped_count)
+
             if nearest_parkhaus is not None and not nearest_parkhaus.empty:
                 parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, rounded_total_hours)
 
@@ -469,5 +473,3 @@ def main():
             else:
                 st.write("""## No Parkhaus within the Radius😔""")
                 st.write("""### Try to make the radius bigger🔎""")
-if __name__ == "__main__":
-    main()

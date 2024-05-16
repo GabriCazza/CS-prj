@@ -72,32 +72,37 @@ def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
     night_start = 22  # 10 PM
     night_end = 6  # 6 AM
 
-    while rounded_total_hours > 0:
+    remaining_hours = rounded_total_hours
+
+    while remaining_hours > 0:
         current_hour = current_time.hour + current_time.minute / 60
 
-        # Check if the current time is within daytime hours
         if daytime_start <= current_hour < daytime_end:
-            if rounded_total_hours <= 1:
-                total_fee += rounded_total_hours * 2.40  # CHF per hour
+            # Daytime rates
+            if remaining_hours <= 2:
+                total_fee += remaining_hours * 2.40
                 break
             else:
-                total_fee += 2 * 2.40  # CHF for the first 2 hours
-                rounded_total_hours -= 2
-                total_fee += rounded_total_hours * 1.20  # CHF per hour after 2 hours
+                total_fee += 2 * 2.40
+                remaining_hours -= 2
+                total_fee += remaining_hours * 1.20
                 break
-        else:  # Nighttime hours
-            if rounded_total_hours <= 2:
-                total_fee += rounded_total_hours * 1.20  # CHF per hour
+        else:
+            # Nighttime rates
+            if remaining_hours <= 2:
+                total_fee += remaining_hours * 1.20
                 break
             else:
-                total_fee += 2 * 1.20  # CHF for the first 2 hours
-                rounded_total_hours -= 2
-                total_fee += rounded_total_hours * 0.80  # CHF per hour after 2 hours
+                total_fee += 2 * 1.20
+                remaining_hours -= 2
+                total_fee += remaining_hours * 0.80
                 break
 
-        current_time += timedelta(hours=rounded_total_hours)
+        # Update current time and loop
+        current_time += timedelta(hours=remaining_hours)
 
     return f"at Bahnhof: {total_fee:.2f} CHF"
+
 
 def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):
     daytime_rate = 2.00  # CHF for the first hour

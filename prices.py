@@ -162,7 +162,7 @@ def calculate_fee_stadtpark_azsg(arrival_datetime, rounded_total_hours):
     first_hour = True
 
     # Calculate the number of 30-minute intervals
-    total_half_hours = math.ceil(rounded_total_hours * 2)
+    total_half_hours = (rounded_total_hours * 2)
 
     for _ in range(total_half_hours):  # Loop over each half-hour segment
         current_hour = current_time.hour + current_time.minute / 60
@@ -183,7 +183,7 @@ def calculate_fee_stadtpark_azsg(arrival_datetime, rounded_total_hours):
         if current_time >= arrival_datetime + timedelta(hours=rounded_total_hours):
             break
 
-    return f"Total parking fee at Stadtpark AZSG: {total_fee:.2f} CHF"
+    return f"at Stadtpark AZSG: {total_fee:.2f} CHF"
 
 def calculate_fee_neumarkt(arrival_datetime, rounded_total_hours):
     day_rate = 3.0  # CHF per hour during the day (7 AM to 10 PM)

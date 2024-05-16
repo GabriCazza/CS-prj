@@ -473,8 +473,8 @@ def main():
                         display_parking_information(nearest_parkhaus, parking_fee, estimated_walking_time)
             else:
                 with info_column:
-                    st.error("No Parkhaus within the Radius😔")
-                    st.write("Try to make the radius bigger🔎")
+                    st.write("# No Parkhaus within the Radius😔")
+                    st.write("# Try to make the radius bigger🔎")
                 
 if __name__ == "__main__":
     main()

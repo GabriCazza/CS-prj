@@ -338,10 +338,25 @@ def calculate_fee_einstein(arrival_datetime, rounded_total_hours):
 
     return f" at Einstein: {total_fee:.2f} CHF"
 
-def calculate_fee_spisertor(arrival_datetime, rounded_total_hours):
-    flat_rate = 2.5  # CHF per hour regardless of duration
+def calculate_fee_spisertor(arrival_datetime, rounded_total_hours, lost_ticket=False):
+    flat_rate = 2.5  # CHF per hour
+    max_daily_rate = 30  # CHF per day
+    lost_ticket_fee = 50  # CHF for a lost ticket
 
-    total_fee = flat_rate * rounded_total_hours  # Total fee is simply the hourly rate multiplied by hours parked
+    # Calculate the total number of complete 24-hour periods
+    complete_days = rounded_total_hours // 24
+    remaining_hours = rounded_total_hours % 24
+
+    # Calculate the fee for the complete 24-hour periods
+    total_fee = complete_days * max_daily_rate
+
+    # Calculate the fee for the remaining hours
+    remaining_fee = min(flat_rate * remaining_hours, max_daily_rate)
+    total_fee += remaining_fee
+
+    # Add lost ticket fee if applicable
+    if lost_ticket:
+        total_fee += lost_ticket_fee
 
     return f" at Spisertor: {total_fee:.2f} CHF"
 

@@ -1,4 +1,4 @@
-# CS-project
+# CS_project_ParkGallen
 Um diese Website zu erstellen, benötigen wir drei Hauptdateien. 
 
 1. Die erste Datei enthält den kompletten Code mit den verschiedenen Funktionen darin. 
@@ -10,3 +10,5 @@ In diese Datei werden zwei weitere Dateien importiert:
 Innerhalb des Codes gibt es verschiedene Kommentare, um die wichtigsten Funktionen zu erklären. Die Kommentare sind auf Englisch, da die meisten der Gruppe es vorzogen, in dieser Sprache zu arbeiten. 
 
 Dieses Projekt wurde mit der Hilfe von ChatGpt realisiert
+
+Gabriele Cazzaniga; Leonardo Pozzi; Andrea Wang; Andrin Mueller; Barbara Vieira; Paulina Karstens; Celina Pearson 

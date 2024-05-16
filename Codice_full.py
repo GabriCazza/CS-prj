@@ -341,38 +341,27 @@ def calculate_duration(arrival_datetime, departure_datetime):
 
 def display_additional_information(blue_count, white_count, handicapped_count):
     # Display the right box, containing "Additional information"
-    col1, col2 = st.columns(2)
-    with col1:
-        st.markdown(f"""
-        <div style="background-color:#ADF09E; padding:10px; border-radius:5px;">
-            <h4>Additional Information</h4>
-            <p>Blue parking spots: {blue_count}</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with col2:
-        st.markdown(f"""
-        <div style="background-color:#ADF09E; padding:10px; border-radius:5px;">
-            <h4>Additional Information</h4>
-            <p>White parking spots: {white_count}</p>
-            <p>Handicapped parking spots: {handicapped_count}</p>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style="background-color:#ADF09E; padding:10px; border-radius:5px;">
+        <h4>Additional Information</h4>
+        <p>Blue parking spots: {blue_count}</p>
+        <p>White parking spots: {white_count}</p>
+        <p>Handicapped parking spots: {handicapped_count}</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 def display_parking_information(nearest_parkhaus, parking_fee, estimated_walking_time):
-    info_column, _ = st.columns(2)
-
     # Display the left box, containing "Nearest Parkhaus Information"
-    with info_column:
-        st.markdown(f"""
-        <div style="background-color:#86B97A; padding:10px; border-radius:5px;">
-            <h4>Nearest Parkhaus Information</h4>
-            <p>Name: {nearest_parkhaus.get('phname', 'Unknown')}</p>
-            <p>Estimated Walking Time from Destination: {int(estimated_walking_time)} minutes</p>
-            <p>Description: {nearest_parkhaus.get('phstate', 'No Description')}</p>
-            <p>Spaces: {nearest_parkhaus.get('shortfree', 'N/A')}/{nearest_parkhaus.get('shortmax', 'N/A')}</p>
-            <p>Estimated parking fee: {parking_fee}</p>
-        </div>
-        """, unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style="background-color:#86B97A; padding:10px; border-radius:5px;">
+        <h4>Nearest Parkhaus Information</h4>
+        <p>Name: {nearest_parkhaus.get('phname', 'Unknown')}</p>
+        <p>Estimated Walking Time from Destination: {int(estimated_walking_time)} minutes</p>
+        <p>Description: {nearest_parkhaus.get('phstate', 'No Description')}</p>
+        <p>Spaces: {nearest_parkhaus.get('shortfree', 'N/A')}/{nearest_parkhaus.get('shortmax', 'N/A')}</p>
+        <p>Estimated parking fee: {parking_fee}</p>
+    </div>
+    """, unsafe_allow_html=True)
 
 
 def calculate_parking_fees(parking_name, arrival_datetime, rounded_total_hours):

@@ -63,7 +63,6 @@ def calculate_fee_manor(arrival_datetime, rounded_total_hours):
 
 
 def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
-    # Define rates
     daytime_rate_first_hour = 2.40
     daytime_rate_subsequent_hours = 1.20
     nighttime_rate_first_hour = 1.20
@@ -71,36 +70,36 @@ def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
 
     total_fee = 0.0
     current_time = arrival_datetime
+    remaining_hours = rounded_total_hours
 
-    # Loop over each hour
-    while rounded_total_hours > 0:
+    while remaining_hours > 0:
         current_hour = current_time.hour + current_time.minute / 60
+        hours_to_charge = min(remaining_hours, 1)  # Always charge in increments of 1 hour
 
         if 6 <= current_hour < 22:  # Daytime rates
-            if rounded_total_hours <= 1:
-                total_fee += daytime_rate_first_hour
-            elif rounded_total_hours <= 2:
-                total_fee += daytime_rate_first_hour
-                total_fee += (rounded_total_hours - 1) * daytime_rate_first_hour
+            if remaining_hours <= 1:
+                total_fee += hours_to_charge * daytime_rate_first_hour
+            elif remaining_hours <= 2:
+                total_fee += hours_to_charge * daytime_rate_first_hour
             else:
-                total_fee += daytime_rate_first_hour
-                total_fee += daytime_rate_first_hour
-                total_fee += (rounded_total_hours - 2) * daytime_rate_subsequent_hours
+                total_fee += 2 * daytime_rate_first_hour  # Charge first two hours at daytime first hour rate
+                remaining_hours -= 2
+                hours_to_charge -= 2
+                total_fee += hours_to_charge * daytime_rate_subsequent_hours  # Charge remaining at subsequent rate
 
         else:  # Nighttime rates
-            if rounded_total_hours <= 1:
-                total_fee += nighttime_rate_first_hour
-            elif rounded_total_hours <= 2:
-                total_fee += nighttime_rate_first_hour
-                total_fee += (rounded_total_hours - 1) * nighttime_rate_first_hour
+            if remaining_hours <= 1:
+                total_fee += hours_to_charge * nighttime_rate_first_hour
+            elif remaining_hours <= 2:
+                total_fee += hours_to_charge * nighttime_rate_first_hour
             else:
-                total_fee += nighttime_rate_first_hour
-                total_fee += nighttime_rate_first_hour
-                total_fee += (rounded_total_hours - 2) * nighttime_rate_subsequent_hours
+                total_fee += 2 * nighttime_rate_first_hour  # Charge first two hours at nighttime first hour rate
+                remaining_hours -= 2
+                hours_to_charge -= 2
+                total_fee += hours_to_charge * nighttime_rate_subsequent_hours  # Charge remaining at subsequent rate
 
-        # Move to the next hour
+        remaining_hours -= 1
         current_time += timedelta(hours=1)
-        rounded_total_hours -= 1
 
     return f"at Bahnhof: {total_fee:.2f} CHF"
 

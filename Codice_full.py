@@ -188,7 +188,7 @@ def add_marker(cluster, row, icon, destination_point):
         icon=folium.DivIcon(
             icon_size=(150, 36),
             icon_anchor=(7, 20),
-            html=f'<div style="font-size: 10pt">{icon}</div>'
+            html=f'<div style="font-size: 20pt">{icon}</div>'
         )
     ).add_to(cluster)
 
@@ -201,7 +201,7 @@ def add_user_markers(map_folium, location_point, destination_point):
         folium.Marker(
             [location_point[1], location_point[0]],
             popup='Your Position',
-            icon=folium.DivIcon(html='<div style="font-size: 30pt;">🏡</div>')
+            icon=folium.DivIcon(html='<div style="font-size: 40pt;">🏡</div>')
         ).add_to(map_folium)
 
 #Your destination displayed 
@@ -209,7 +209,7 @@ def add_user_markers(map_folium, location_point, destination_point):
         folium.Marker(
             [destination_point[1], destination_point[0]],
             popup='Your destination',
-            icon=folium.DivIcon(html='<div style="font-size: 30pt;">📍</div>')
+            icon=folium.DivIcon(html='<div style="font-size: 40pt;">📍</div>')
         ).add_to(map_folium)
 
 

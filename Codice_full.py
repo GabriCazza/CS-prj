@@ -364,17 +364,12 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
         """, unsafe_allow_html=True)
 
 
-#Function used to call the prices.py function and make the estiamtion of price 
 def calculate_parking_fees(parking_name, arrival_datetime, rounded_total_hours):
     parking_fee_function = getattr(prices, f"calculate_fee_{parking_name.lower().replace(' ', '_')}", None)
     if parking_fee_function:
         return parking_fee_function(arrival_datetime, rounded_total_hours)
     return "Parking name not recognized. Please check the parking name."
 
-
-
-#The Whole MAIN function 
-        
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")
 
@@ -413,7 +408,7 @@ def main():
         duration_delta = departure_datetime - arrival_datetime
         total_seconds = duration_delta.total_seconds()
         total_hours = total_seconds / 3600
-        rounded_total_hours = math.ceil(total_hours)  # Ensure charges are for complete hours only
+        rounded_total_hours = math.ceil(total_hours * 2) / 2  # Ensure charges are for complete half-hours
         st.sidebar.write(f"Duration of parking: {int(duration_delta.days)} days, {int(duration_delta.seconds // 3600)} hours, {int((duration_delta.seconds % 3600) // 60)}")
     else:
         st.sidebar.error("Departure time must be after arrival time.")

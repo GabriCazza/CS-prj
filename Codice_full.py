@@ -341,14 +341,22 @@ def calculate_duration(arrival_datetime, departure_datetime):
 
 def display_additional_information(blue_count, white_count, handicapped_count):
     # Display the right box, containing "Additional information"
-    st.markdown(f"""
-    <div style="background-color:#ADF09E; padding:10px; border-radius:5px;">
-        <h4>Additional Information</h4>
-        <p>Blue parking spots: {blue_count}</p>
-        <p>White parking spots: {white_count}</p>
-        <p>Handicapped parking spots: {handicapped_count}</p>
-    </div>
-    """, unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown(f"""
+        <div style="background-color:#ADF09E; padding:10px; border-radius:5px;">
+            <h4>Additional Information</h4>
+            <p>Blue parking spots: {blue_count}</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with col2:
+        st.markdown(f"""
+        <div style="background-color:#ADF09E; padding:10px; border-radius:5px;">
+            <h4>Additional Information</h4>
+            <p>White parking spots: {white_count}</p>
+            <p>Handicapped parking spots: {handicapped_count}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
 def display_parking_information(nearest_parkhaus, parking_fee, estimated_walking_time):
     info_column, _ = st.columns(2)

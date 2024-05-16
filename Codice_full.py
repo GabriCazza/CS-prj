@@ -163,7 +163,7 @@ def add_markers_to_map(map_folium, original_data, additional_data, location_poin
 
 # Function used to add various types of parking markers to a map created with Folium
 
-def add_marker(map_folium, row, icon, destination_point):
+def add_marker(cluster, row, icon, destination_point):
     latitude = row.get('latitude')
     longitude = row.get('longitude')
     if latitude is None or longitude is None:
@@ -172,7 +172,6 @@ def add_marker(map_folium, row, icon, destination_point):
     if icon == "🅿️" and destination_point:
         # Handling for Parkhaus markers
         name = row.get('phname', 'No Name Provided')
-        # Format description to include "Description:" followed by the Parkhaus state
         description = f"Description: {row.get('phstate', 'No State Provided')}"
         parking_distance = geodesic((latitude, longitude), (destination_point[1], destination_point[0])).meters
         estimated_walking_time = int(parking_distance / 1.1 / 60)  # Walking speed approximation
@@ -180,7 +179,6 @@ def add_marker(map_folium, row, icon, destination_point):
         total_spaces = row.get('shortmax', 'N/A')
         popup_text = f"Name: {name}<br>{description}<br>Estimated Walking Time: {estimated_walking_time} minutes<br>Spaces: {spaces_available}/{total_spaces}"
     else:
-        # Simplified handling for other markers
         address = row.get('address', 'No Address Provided')
         popup_text = f"Address: {address}"
 
@@ -192,7 +190,7 @@ def add_marker(map_folium, row, icon, destination_point):
             icon_anchor=(7, 20),
             html=f'<div style="font-size: 10pt">{icon}</div>'
         )
-    ).add_to(map_folium)
+    ).add_to(cluster)
 
 # Function is used  to add visual markers for the user's location and destination on a Folium map
 

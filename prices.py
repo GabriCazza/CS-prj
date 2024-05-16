@@ -63,43 +63,47 @@ def calculate_fee_manor(arrival_datetime, rounded_total_hours):
 
 
 def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
+    daytime_rate_first_hour = 2.40
+    daytime_rate_subsequent_hours = 1.20
+    nighttime_rate_first_hour = 1.20
+    nighttime_rate_subsequent_hours = 0.80
+
     total_fee = 0.0
     current_time = arrival_datetime
-
-    # Define the rates and hours
-    daytime_start = 6  # 6 AM
-    daytime_end = 22  # 10 PM
-    night_start = 22  # 10 PM
-    night_end = 6  # 6 AM
-
     remaining_hours = rounded_total_hours
 
     while remaining_hours > 0:
         current_hour = current_time.hour + current_time.minute / 60
 
-        if daytime_start <= current_hour < daytime_end:
-            # Daytime rates
-            if remaining_hours <= 2:
-                total_fee += remaining_hours * 2.40
+        if 6 <= current_hour < 22:
+            if remaining_hours <= 1:
+                total_fee += remaining_hours * daytime_rate_first_hour
                 break
             else:
-                total_fee += 2 * 2.40
-                remaining_hours -= 2
-                total_fee += remaining_hours * 1.20
-                break
+                total_fee += 1 * daytime_rate_first_hour
+                remaining_hours -= 1
+                if remaining_hours <= 2:
+                    total_fee += remaining_hours * daytime_rate_subsequent_hours
+                    break
+                else:
+                    total_fee += 2 * daytime_rate_subsequent_hours
+                    remaining_hours -= 2
         else:
-            # Nighttime rates
-            if remaining_hours <= 2:
-                total_fee += remaining_hours * 1.20
+            if remaining_hours <= 1:
+                total_fee += remaining_hours * nighttime_rate_first_hour
                 break
             else:
-                total_fee += 2 * 1.20
-                remaining_hours -= 2
-                total_fee += remaining_hours * 0.80
-                break
+                total_fee += 1 * nighttime_rate_first_hour
+                remaining_hours -= 1
+                if remaining_hours <= 2:
+                    total_fee += remaining_hours * nighttime_rate_subsequent_hours
+                    break
+                else:
+                    total_fee += 2 * nighttime_rate_subsequent_hours
+                    remaining_hours -= 2
 
-        # Update current time and loop
         current_time += timedelta(hours=remaining_hours)
+        current_time = current_time.replace(minute=0, second=0, microsecond=0)
 
     return f"at Bahnhof: {total_fee:.2f} CHF"
 

@@ -30,7 +30,8 @@ def safe_request(url, params):
             attempts += 1
         else:
             break
-    return None  
+    return None   #Written with the help of ChatGPT, in order to prevent and help with the rate of requests a user can make 
+
 
 #Call of the first API (Parkhaus platzte)
 
@@ -103,7 +104,7 @@ def geocode_address(location):
         geolocator = geocoders.Nominatim(user_agent="geocoding_app", timeout=10)
         full_location = f"{location}, St. Gallen, Switzerland"
         
-        # Custom bounding box coordinates based on the red marked area from the user's map
+        # Custom bounding box coordinates based on St. gallen map (Aid of ChatGPT)
         southwest_bound = (47.404229, 9.324815)  # Adjusted to the southwest boundary
         northeast_bound = (47.4400, 9.4400)      # Adjusted to the northeast boundary
         
@@ -113,7 +114,7 @@ def geocode_address(location):
                 return (geocoded_location.longitude, geocoded_location.latitude)
         except exc.GeocoderRateLimited as e:
             st.warning("Rate limit exceeded, waiting to retry...")
-            time.sleep(10)  # Wait 10 seconds before retrying
+            time.sleep(10)  # Wait 10 seconds before retrying (chatgpt)
         except Exception as e:
             st.error(f"Geocoding error: {e}")
     return None
@@ -182,6 +183,7 @@ def add_marker(cluster, row, icon, destination_point):
         address = row.get('address', 'No Address Provided')
         popup_text = f"Address: {address}"
 
+#Display on the map and the size of it
     folium.Marker(
         location=[latitude, longitude],
         popup=folium.Popup(popup_text, max_width=250),
@@ -191,6 +193,7 @@ def add_marker(cluster, row, icon, destination_point):
             html=f'<div style="font-size: 20pt">{icon}</div>'
         )
     ).add_to(cluster)
+
 
 # Function is used  to add visual markers for the user's location and destination on a Folium map
 
@@ -228,8 +231,8 @@ def add_search_radius(map_folium, destination_point, radius):
 #Funtion used to create the map itself
 
 def create_map():
-    """Create an initial folium map centered on St. Gallen."""
-    map_folium = folium.Map(location=[47.4237, 9.3747], zoom_start=14)
+    #Create an initial folium map centered on St. Gallen
+    map_folium = folium.Map(location=[47.4237, 9.3747], zoom_start=14) 
     return map_folium
 
 
@@ -264,7 +267,7 @@ def find_nearest_parking_place(data, destination_point):
         return None, None
 
     # Filtering parkhaus data
-    parkhaus_data = data[data['category'] == 'Parkhaus']
+    parkhaus_data = data[data['category'] == 'Parkhaus']   #Help of ChatGPT
     if parkhaus_data.empty:
         st.error("No 'Parkhaus' available in the data.")
         return None, None
@@ -278,7 +281,7 @@ def find_nearest_parking_place(data, destination_point):
     )
 
     # Finding the nearest parkhaus
-    nearest_parkhaus = parkhaus_data.loc[parkhaus_data['distance_to_destination'].idxmin()] if not parkhaus_data.empty else None
+    nearest_parkhaus = parkhaus_data.loc[parkhaus_data['distance_to_destination'].idxmin()] if not parkhaus_data.empty else None   #Help of ChatGPT
     if nearest_parkhaus is not None:
         # Calculate walking time in minutes, assuming walking speed is 1.1 m/s
         estimated_walking_time = (nearest_parkhaus['distance_to_destination'] / 1.1) / 60
@@ -316,7 +319,7 @@ def calculate_and_display_distances(map_folium, location_point, destination_poin
 
 def parse_datetime(date_str, time_str):
     try:
-        if re.match(r'^\d{4}$', time_str):  # HHMM
+        if re.match(r'^\d{4}$', time_str):  # HHMM (ChatGPT help)
             time_str = f"{time_str[:2]}:{time_str[2:]}"
         elif re.match(r'^\d{2}\.\d{2}$', time_str):  # HH.MM
             time_str = time_str.replace('.', ':')
@@ -339,7 +342,9 @@ def calculate_duration(arrival_datetime, departure_datetime):
     return days, hours, minutes
 
 
-def display_additional_information(blue_count, white_count, handicapped_count):
+#Function used to display the information underneath the map
+
+def display_additional_information(blue_count, white_count, handicapped_count):  #Asked ChatGPT on how to do it on streamlit, but then we programmed it 
     # Display the right box, containing "Additional information"
     st.markdown(f"""
     <div style="background-color:#ADF09E; padding:10px; border-radius:5px;">
@@ -364,12 +369,16 @@ def display_parking_information(nearest_parkhaus, parking_fee, estimated_walking
     """, unsafe_allow_html=True)
 
 
+#Function to call the other code (prices.py), needed to estimate the prices
+
 def calculate_parking_fees(parking_name, arrival_datetime, rounded_total_hours):
     parking_fee_function = getattr(prices, f"calculate_fee_{parking_name.lower().replace(' ', '_')}", None)
     if parking_fee_function:
         return parking_fee_function(arrival_datetime, rounded_total_hours)
     return "Parking name not recognized. Please check the parking name."
 
+
+#All the function into the main
 
 def main():
     st.set_page_config(page_title="Parking Spaces in St.Gallen", page_icon="🅿️", layout="wide")

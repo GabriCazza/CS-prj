@@ -83,12 +83,15 @@ def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
                 total_fee += daytime_rate_first_hour
                 remaining_hours -= 1
                 while remaining_hours > 0:
-                    if remaining_hours >= 1:
-                        total_fee += daytime_rate_first_hour
-                        remaining_hours -= 1
+                    if 6 <= current_hour < 22:  # Ensure it's still daytime
+                        if remaining_hours >= 1:
+                            total_fee += daytime_rate_first_hour
+                            remaining_hours -= 1
+                        else:
+                            total_fee += day_subsequent_rate
+                            remaining_hours -= 0.5
                     else:
-                        total_fee += day_subsequent_rate
-                        remaining_hours -= 0.5
+                        break
         else:  # Nighttime rates
             if remaining_hours <= 1:
                 total_fee += nighttime_rate_first_hour
@@ -97,14 +100,18 @@ def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
                 total_fee += nighttime_rate_first_hour
                 remaining_hours -= 1
                 while remaining_hours > 0:
-                    if remaining_hours >= 1:
-                        total_fee += nighttime_rate_first_hour
-                        remaining_hours -= 1
+                    if current_hour >= 22 or current_hour < 6:  # Ensure it's still nighttime
+                        if remaining_hours >= 1:
+                            total_fee += nighttime_rate_first_hour
+                            remaining_hours -= 1
+                        else:
+                            total_fee += night_subsequent_rate
+                            remaining_hours -= 0.5
                     else:
-                        total_fee += night_subsequent_rate
-                        remaining_hours -= 0.5
+                        break
 
         current_time += timedelta(minutes=30)
+        current_hour = current_time.hour + current_time.minute / 60
 
     return f"at Bahnhof: {total_fee:.2f} CHF"
 

@@ -109,7 +109,7 @@ def calculate_fee_brühltor(arrival_datetime, rounded_total_hours):
     while remaining_hours > 0:
         current_hour = current_time.hour + current_time.minute / 60
 
-        if 6 <= current_hour < 22:
+        if 7 <= current_hour < 24:
             if total_fee == 0:  # First hour
                 total_fee += daytime_rate_first_hour
                 remaining_hours -= 1

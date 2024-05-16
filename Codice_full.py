@@ -413,7 +413,7 @@ def main():
         duration_delta = departure_datetime - arrival_datetime
         total_seconds = duration_delta.total_seconds()
         total_hours = total_seconds / 3600
-        rounded_total_hours = (total_hours)  # Ensure charges are for complete hours only
+        rounded_total_hours = math.ceil(total_hours)  # Ensure charges are for complete hours only
         st.sidebar.write(f"Duration of parking: {int(duration_delta.days)} days, {int(duration_delta.seconds // 3600)} hours, {int((duration_delta.seconds % 3600) // 60)}")
     else:
         st.sidebar.error("Departure time must be after arrival time.")

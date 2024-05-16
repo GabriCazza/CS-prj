@@ -162,37 +162,32 @@ def calculate_fee_burggraben(arrival_datetime, rounded_total_hours):
     return f" at Burggraben: {(total_fee):.2f} CHF"
 
 def calculate_fee_stadtpark_azsg(arrival_datetime, rounded_total_hours):
-    daytime_rate = 1.60  # CHF for the first hour
-    day_subsequent_rate = 0.80  # CHF per 30 minutes after the first hour
-    nighttime_rate = 0.80  # CHF for the first hour at night
-    night_subsequent_rate = 0.40  # CHF per 30 minutes after the first hour at night
+    daytime_rate_first_hour = 1.60
+    day_subsequent_rate = 0.80
+    nighttime_rate_first_hour = 0.80
+    night_subsequent_rate = 0.40
 
     total_fee = 0.0
     current_time = arrival_datetime
+    remaining_hours = rounded_total_hours
 
-    # Define daytime and nighttime hours
-    daytime_start = 7
-    nighttime_start = 24
-
-    # Calculate the number of 30-minute intervals
-    total_half_hours = math.ceil(rounded_total_hours * 2)
-    is_first_hour = True
-
-    for _ in range(total_half_hours):  # Loop over each half-hour segment
+    while remaining_hours > 0:
         current_hour = current_time.hour + current_time.minute / 60
-        
-        if daytime_start <= current_hour < nighttime_start:
-            if is_first_hour:
-                total_fee += daytime_rate  # Charge for the first hour
-                is_first_hour = False
+
+        if 6 <= current_hour < 22:
+            if total_fee == 0:  # First hour
+                total_fee += daytime_rate_first_hour
+                remaining_hours -= 1
             else:
-                total_fee += day_subsequent_rate  # Charge for each 30 minutes after the first hour
+                total_fee += day_subsequent_rate
+                remaining_hours -= 0.5
         else:
-            if is_first_hour:
-                total_fee += nighttime_rate  # Charge for the first hour
-                is_first_hour = False
+            if total_fee == 0:  # First hour
+                total_fee += nighttime_rate_first_hour
+                remaining_hours -= 1
             else:
-                total_fee += night_subsequent_rate  # Charge for each 30 minutes after the first hour
+                total_fee += night_subsequent_rate
+                remaining_hours -= 0.5
 
         current_time += timedelta(minutes=30)
 

@@ -104,8 +104,7 @@ def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
                         total_fee += night_subsequent_rate
                         remaining_hours -= 0.5
 
-        current_time += timedelta(hours=remaining_hours)
-        current_time = current_time.replace(minute=0, second=0, microsecond=0)
+        current_time += timedelta(minutes=30)
 
     return f"at Bahnhof: {total_fee:.2f} CHF"
 

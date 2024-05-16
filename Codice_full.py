@@ -365,9 +365,6 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
 
 
 def calculate_parking_fees(parking_name, arrival_datetime, rounded_total_hours):
-    # Import the 'prices' module containing the individual parking fee functions
-    import prices
-
     parking_fee_function = getattr(prices, f"calculate_fee_{parking_name.lower().replace(' ', '_')}", None)
     if parking_fee_function:
         return parking_fee_function(arrival_datetime, rounded_total_hours)

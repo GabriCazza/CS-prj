@@ -359,7 +359,7 @@ def display_parking_information(nearest_parkhaus, parking_fee, estimated_walking
         <p>Estimated Walking Time from Destination: {int(estimated_walking_time)} minutes</p>
         <p>Description: {nearest_parkhaus.get('phstate', 'No Description')}</p>
         <p>Spaces: {nearest_parkhaus.get('shortfree', 'N/A')}/{nearest_parkhaus.get('shortmax', 'N/A')}</p>
-        <p>Estimated parking fee: {parking_fee}</p>
+        <p>Estimated parking fee {parking_fee}</p>
     </div>
     """, unsafe_allow_html=True)
 

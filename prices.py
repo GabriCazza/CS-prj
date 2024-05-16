@@ -163,14 +163,14 @@ def calculate_fee_stadtpark_azsg(arrival_datetime, rounded_total_hours):
             total_fee += daytime_rate
         else:
             total_fee += daytime_rate  # Charge for the first hour
-            additional_half_hours = math.ceil((rounded_total_hours - 1) * 2)  # Calculate the number of 30-minute intervals
+            additional_half_hours = ((rounded_total_hours - 1) * 2)  # Calculate the number of 30-minute intervals
             total_fee += additional_half_hours * day_subsequent_rate  # Apply the rate for each 30 minutes
     else:  # Calculate fees for nighttime
         if rounded_total_hours <= 1:
             total_fee += nighttime_rate
         else:
             total_fee += nighttime_rate  # Charge for the first hour
-            additional_half_hours = math.ceil((rounded_total_hours - 1) * 2)  # Calculate the number of 30-minute intervals
+            additional_half_hours = ((rounded_total_hours - 1) * 2)  # Calculate the number of 30-minute intervals
             total_fee += additional_half_hours * night_subsequent_rate  # Apply the rate for each 30 minutes
 
     return f" at Stadtpark AZSG: {total_fee:.2f} CHF"

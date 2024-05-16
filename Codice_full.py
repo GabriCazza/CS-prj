@@ -451,8 +451,11 @@ def main():
             
             nearest_parkhaus, estimated_walking_time = find_nearest_parking_place(filtered_data, destination_point)
 
-            # Always display additional information
-            display_additional_information(blue_count, white_count, handicapped_count)
+            info_column, extra_info_column = st.columns(2)
+
+            # Display additional information on the right
+            with extra_info_column:
+                display_additional_information(blue_count, white_count, handicapped_count)
 
             if nearest_parkhaus is not None and not nearest_parkhaus.empty:
                 parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, rounded_total_hours)
@@ -462,13 +465,16 @@ def main():
                     parking_fee = f"{parking_fee:.2f} CHF"  # Format numerical fee as a string
 
                 if "Information not available" in parking_fee or "Rate information is incomplete" in parking_fee:
-                    st.error(parking_fee)
+                    with info_column:
+                        st.error(parking_fee)
                 else:
                     # Process valid parking fee display
-                    display_parking_information(nearest_parkhaus, parking_fee, estimated_walking_time)
+                    with info_column:
+                        display_parking_information(nearest_parkhaus, parking_fee, estimated_walking_time)
             else:
-                st.write("""## No Parkhaus within the Radius😔""")
-                st.write("""### Try to make the radius bigger🔎""")
+                with info_column:
+                    st.error("No Parkhaus within the Radius😔")
+                    st.write("Try to make the radius bigger🔎")
                 
 if __name__ == "__main__":
     main()

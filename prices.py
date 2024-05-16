@@ -343,7 +343,7 @@ def calculate_fee_spisertor(arrival_datetime, rounded_total_hours):
 
     total_fee = flat_rate * rounded_total_hours  # Total fee is simply the hourly rate multiplied by hours parked
 
-    return f"Total parking fee at Spisertor: {total_fee:.2f} CHF"
+    return f" at Spisertor: {total_fee:.2f} CHF"
 
 def calculate_fee_spelterini(arrival_datetime, rounded_total_hours):
     daytime_hours = (7, 24)  # Daytime from 6 AM to 11 PM

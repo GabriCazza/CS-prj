@@ -367,40 +367,6 @@ def display_parking_information(nearest_parkhaus, parking_fee, blue_count, white
         </div>
         """, unsafe_allow_html=True)
 
-def display_additional_information(nearest_parkhaus, estimated_walking_time, blue_count, white_count, handicapped_count):
-    info_column, extra_info_column = st.columns(2)
-
-    # Display the left box, containing "Nearest Parkhaus Information"
-    with info_column:
-        if nearest_parkhaus is not None and not nearest_parkhaus.empty:
-            st.markdown(f"""
-            <div style="background-color:#86B97A; padding:10px; border-radius:5px;">
-                <h4>Nearest Parkhaus Information</h4>
-                <p>Name: {nearest_parkhaus.get('phname', 'Unknown')}</p>
-                <p>Estimated Walking Time from Destination: {int(estimated_walking_time)} minutes</p>
-                <p>Description: {nearest_parkhaus.get('phstate', 'No Description')}</p>
-                <p>Spaces: {nearest_parkhaus.get('shortfree', 'N/A')}/{nearest_parkhaus.get('shortmax', 'N/A')}</p>
-            </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown("""
-            <div style="background-color:#86B97A; padding:10px; border-radius:5px;">
-                <h4>Nearest Parkhaus Information</h4>
-                <p>No nearby Parkhaus found.</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-    # Display the right box, containing "Additional information"
-    with extra_info_column:
-        st.markdown(f"""
-        <div style="background-color:#ADF09E; padding:10px; border-radius:5px;">
-            <h4>Additional Information</h4>
-            <p>Blue parking spots: {blue_count}</p>
-            <p>White parking spots: {white_count}</p>
-            <p>Handicapped parking spots: {handicapped_count}</p>
-        </div>
-        """, unsafe_allow_html=True)
-
 
 def calculate_parking_fees(parking_name, arrival_datetime, rounded_total_hours):
     parking_fee_function = getattr(prices, f"calculate_fee_{parking_name.lower().replace(' ', '_')}", None)
@@ -488,10 +454,6 @@ def main():
             st.markdown("🏡 = Your Location | 📍= Your Destination | 🅿️ = Parkhaus | 🔵 = Extended Blue Zone | ⚪ = White Parking | ♿ = Handicapped")
             
             nearest_parkhaus, estimated_walking_time = find_nearest_parking_place(filtered_data, destination_point)
-
-            # Display additional information
-            display_additional_information(nearest_parkhaus, estimated_walking_time, blue_count, white_count, handicapped_count)
-
             if nearest_parkhaus is not None and not nearest_parkhaus.empty:
                 parking_fee = calculate_parking_fees(nearest_parkhaus.get('phname', 'Unknown'), arrival_datetime, rounded_total_hours)
 
@@ -507,6 +469,5 @@ def main():
             else:
                 st.write("""## No Parkhaus within the Radius😔""")
                 st.write("""### Try to make the radius bigger🔎""")
-
-    if __name__ == "__main__":
-        main()
+if __name__ == "__main__":
+    main()

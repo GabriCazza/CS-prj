@@ -1,5 +1,9 @@
 # CS_project_ParkGallen
-Um diese Website zu erstellen, benötigen wir drei Hauptdateien. 
+
+Unsere App heißt Park Gallen und hat zum Ziel, das Parkplatzproblem zu lösen. Wie oft ist es Ihnen schon passiert, dass Sie irgendwo hingehen und nicht wissen, ob ein Parkplatz frei ist? Dank Park Gallen können Sie nach Ihrem Ziel suchen und die Parkplätze in Ihrer Nähe sehen. Das Tool kann täglich genutzt werden, um Ihre Parkprobleme zu lösen
+
+
+## Um diese Website zu erstellen, benötigen wir drei Hauptdateien. 
 
 1. Die erste Datei enthält den kompletten Code mit den verschiedenen Funktionen darin. 
 

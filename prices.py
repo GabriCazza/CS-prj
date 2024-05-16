@@ -155,23 +155,31 @@ def calculate_fee_stadtpark_azsg(arrival_datetime, rounded_total_hours):
     night_subsequent_rate = 0.40  # CHF per 30 minutes after the first hour at night
 
     total_fee = 0.0
-    current_hour = arrival_datetime.hour + arrival_datetime.minute / 60
+    current_time = arrival_datetime
 
-    # Determine if the parking time is during the day or night
-    if  7<= current_hour < 24:
-        if rounded_total_hours <= 1:
-            total_fee += daytime_rate
+    # Define daytime and nighttime hours
+    daytime_start = 7
+    nighttime_start = 24
+    first_hour = True
+
+    for _ in range(int(rounded_total_hours * 2)):  # Loop over each half-hour segment
+        current_hour = current_time.hour + current_time.minute / 60
+        if daytime_start <= current_hour < nighttime_start:
+            if first_hour:
+                total_fee += daytime_rate
+                first_hour = False
+            else:
+                total_fee += day_subsequent_rate
         else:
-            total_fee += daytime_rate  # Charge for the first hour
-            additional_half_hours = ((rounded_total_hours - 1) * 2)  # Calculate the number of 30-minute intervals
-            total_fee += additional_half_hours * day_subsequent_rate  # Apply the rate for each 30 minutes
-    else:  # Calculate fees for nighttime
-        if rounded_total_hours <= 1:
-            total_fee += nighttime_rate
-        else:
-            total_fee += nighttime_rate  # Charge for the first hour
-            additional_half_hours = ((rounded_total_hours - 1) * 2)  # Calculate the number of 30-minute intervals
-            total_fee += additional_half_hours * night_subsequent_rate  # Apply the rate for each 30 minutes
+            if first_hour:
+                total_fee += nighttime_rate
+                first_hour = False
+            else:
+                total_fee += night_subsequent_rate
+
+        current_time += timedelta(minutes=30)
+        if current_time >= arrival_datetime + timedelta(hours=rounded_total_hours):
+            break
 
     return f" at Stadtpark AZSG: {total_fee:.2f} CHF"
 

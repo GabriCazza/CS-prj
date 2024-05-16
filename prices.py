@@ -77,7 +77,7 @@ def calculate_fee_bahnhof(arrival_datetime, rounded_total_hours):
 
         # Check if the current time is within daytime hours
         if daytime_start <= current_hour < daytime_end:
-            if rounded_total_hours <= 2:
+            if rounded_total_hours <= 1:
                 total_fee += rounded_total_hours * 2.40  # CHF per hour
                 break
             else:
